@@ -1,22 +1,6 @@
 import { apiClient } from "./client"
-import type { ApiResponse } from "./client"
-
-export type { ApiResponse } from "./client"
-
-export interface Token {
-  access_token: string
-  token_type: string
-}
-
-export interface UserOut {
-  id: string
-  email: string
-  full_name: string | null
-  is_active: boolean
-  role: string
-  created_at: string
-  updated_at: string
-}
+import type { ApiResponse } from "@/types/api"
+import type { Token, UserOut } from "@/types/auth"
 
 export const authApi = {
   async login(email: string, password: string): Promise<ApiResponse<Token>> {

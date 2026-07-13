@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react"
 import { authApi } from "@/lib/api/auth"
-import type { UserOut } from "@/lib/api/auth"
+import type { UserOut } from "@/types/auth"
 
 interface AuthContextType {
   token: string | null
