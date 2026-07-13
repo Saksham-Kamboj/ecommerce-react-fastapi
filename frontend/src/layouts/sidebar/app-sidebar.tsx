@@ -5,7 +5,6 @@ import { useAuth } from "@/contexts/AuthContext"
 import { appConfig } from "@/config/app"
 
 import { NavMain } from "./nav-main"
-import { NavProjects } from "./nav-projects"
 import { NavSecondary } from "./nav-secondary"
 import { NavUser } from "./nav-user"
 import {
@@ -24,10 +23,8 @@ import {
   Settings2Icon,
   LifeBuoyIcon,
   SendIcon,
-  FrameIcon,
-  PieChartIcon,
-  MapIcon,
 } from "lucide-react"
+import { Link } from "react-router-dom"
 
 // Hardcode navigation for now, but in a real app this could be dynamic based on role
 const navMain = [
@@ -120,30 +117,13 @@ const navMain = [
 const navSecondary = [
   {
     title: "Support",
-    url: "#",
+    url: "https://github.com/Saksham-Kamboj/ecommerce-react-fastapi",
     icon: <LifeBuoyIcon />,
   },
   {
     title: "Feedback",
-    url: "#",
+    url: "https://github.com/Saksham-Kamboj/ecommerce-react-fastapi",
     icon: <SendIcon />,
-  },
-]
-const projects = [
-  {
-    name: "Design Engineering",
-    url: "#",
-    icon: <FrameIcon />,
-  },
-  {
-    name: "Sales & Marketing",
-    url: "#",
-    icon: <PieChartIcon />,
-  },
-  {
-    name: "Travel",
-    url: "#",
-    icon: <MapIcon />,
   },
 ]
 
@@ -159,10 +139,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar variant="inset" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="border-b border-border">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<a href="#" />}>
+            <SidebarMenuButton size="lg" render={<Link to="/" />}>
               <div className="flex aspect-square size-10 items-center justify-center overflow-hidden rounded-lg">
                 <img src="/e-com-logo.png" alt="Logo" className="size-full object-cover" />
               </div>
@@ -180,7 +160,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />
-        <NavProjects projects={projects} />
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
