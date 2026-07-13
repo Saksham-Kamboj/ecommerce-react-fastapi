@@ -271,6 +271,7 @@ export function UsersPage() {
         emptyMessage="No users found."
         pagination={pagination}
         onPageChange={handlePageChange}
+        showIndex={true}
       />
 
       <UserFormDialog

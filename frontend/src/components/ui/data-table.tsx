@@ -16,6 +16,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import type { Pagination as PaginationType } from "@/types/api"
 import { cn } from "@/lib/utils"
 
@@ -32,6 +33,7 @@ interface DataTableProps<T> {
   isLoading?: boolean
   error?: string | null
   emptyMessage?: string
+  showIndex?: boolean
 
   // Pagination Props
   pagination?: PaginationType | null
@@ -44,72 +46,94 @@ export function DataTable<T>({
   isLoading = false,
   error = null,
   emptyMessage = "No data found.",
+  showIndex = false,
   pagination,
   onPageChange,
 }: DataTableProps<T>) {
+  const getRowIndex = (rowIndex: number) => {
+    if (pagination) {
+      return (
+        (pagination.currentPage - 1) * pagination.itemsPerPage + rowIndex + 1
+      )
+    }
+    return rowIndex + 1
+  }
   return (
-    <div className="rounded-md border bg-card shadow-xs">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            {columns.map((col, index) => (
-              <TableHead key={index} className={col.className}>
-                {col.header}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isLoading ? (
-            <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-32 text-center text-muted-foreground"
-              >
-                <div className="flex flex-col items-center justify-center gap-2">
-                  <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-primary"></div>
-                  <p>Loading...</p>
-                </div>
-              </TableCell>
+    <div className="flex flex-col overflow-hidden rounded-md border bg-card shadow-xs">
+      <ScrollArea className="relative h-[calc(100vh-280px)] w-full">
+        <Table wrapperClassName="overflow-visible">
+          <TableHeader className="sticky top-0 z-10 bg-card shadow-xs">
+            <TableRow className="hover:bg-transparent">
+              {showIndex && (
+                <TableHead className="w-[50px] pl-4 text-center font-semibold">
+                  #
+                </TableHead>
+              )}
+              {columns.map((col, index) => (
+                <TableHead key={index} className={col.className}>
+                  {col.header}
+                </TableHead>
+              ))}
             </TableRow>
-          ) : error ? (
-            <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-32 text-center text-destructive"
-              >
-                {error}
-              </TableCell>
-            </TableRow>
-          ) : data.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-32 text-center text-muted-foreground"
-              >
-                {emptyMessage}
-              </TableCell>
-            </TableRow>
-          ) : (
-            data.map((row, rowIndex) => (
-              <TableRow
-                key={rowIndex}
-                className="group cursor-default transition-colors hover:bg-muted/50"
-              >
-                {columns.map((col, colIndex) => (
-                  <TableCell key={colIndex} className={col.className}>
-                    {col.cell
-                      ? col.cell(row)
-                      : col.accessorKey
-                        ? String(row[col.accessorKey] ?? "—")
-                        : "—"}
-                  </TableCell>
-                ))}
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-32 text-center text-muted-foreground"
+                >
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-primary"></div>
+                    <p>Loading...</p>
+                  </div>
+                </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : error ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-32 text-center text-destructive"
+                >
+                  {error}
+                </TableCell>
+              </TableRow>
+            ) : data.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-32 text-center text-muted-foreground"
+                >
+                  {emptyMessage}
+                </TableCell>
+              </TableRow>
+            ) : (
+              data.map((row, rowIndex) => (
+                <TableRow
+                  key={rowIndex}
+                  className="group cursor-default transition-colors hover:bg-muted/50"
+                >
+                  {showIndex && (
+                    <TableCell className="w-[50px] pl-4 text-center text-xs font-medium text-muted-foreground">
+                      {getRowIndex(rowIndex)}
+                    </TableCell>
+                  )}
+                  {columns.map((col, colIndex) => (
+                    <TableCell key={colIndex} className={col.className}>
+                      {col.cell
+                        ? col.cell(row)
+                        : col.accessorKey
+                          ? String(row[col.accessorKey] ?? "—")
+                          : "—"}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
 
       {/* Pagination Section */}
       {pagination && pagination.totalPages > 1 && onPageChange && (
