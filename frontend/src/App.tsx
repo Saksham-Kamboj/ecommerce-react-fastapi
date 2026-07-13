@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom"
 import { AuthLayout } from "@/layouts/AuthLayout"
 import { Login } from "@/pages/Login"
 import { Register } from "@/pages/Register"
+import { ForgotPassword } from "@/pages/ForgotPassword"
 import { GuestRoute } from "@/components/auth/GuestRoute"
 import { AdminRoutes } from "@/routes/AdminRoutes"
 import { UserRoutes } from "@/routes/UserRoutes"
@@ -37,6 +38,7 @@ export function App() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
       </Route>
 
