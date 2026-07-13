@@ -212,7 +212,7 @@ export function UserFormDialog({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 border-t pt-4 mt-6">
+          <div className="mt-6 flex justify-end gap-2 border-t pt-4">
             <Button
               type="button"
               variant="outline"
