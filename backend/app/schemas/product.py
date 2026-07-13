@@ -1,0 +1,32 @@
+import uuid
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field
+
+class ProductBase(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
+    description: str | None = None
+    price: float = Field(..., ge=0.0)
+    stock_quantity: int = Field(0, ge=0)
+    is_active: bool = True
+
+class ProductCreate(ProductBase):
+    pass
+
+class ProductUpdate(BaseModel):
+    name: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = None
+    price: float | None = Field(None, ge=0.0)
+    stock_quantity: int | None = Field(None, ge=0)
+    is_active: bool | None = None
+
+class ProductOut(ProductBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+
+class ProductCartOut(ProductBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
