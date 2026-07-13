@@ -1,21 +1,43 @@
-import { Button } from "@/components/ui/button"
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthLayout } from "@/layouts/AuthLayout";
+import { Login } from "@/pages/Login";
+import { Register } from "@/pages/Register";
+import { GuestRoute } from "@/components/auth/GuestRoute";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+
+function Dashboard() {
+  const { logout } = useAuth();
+  return (
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+      <p>Welcome to your protected dashboard!</p>
+      <Button onClick={logout} className="mt-4">Logout</Button>
+    </div>
+  );
+}
 
 export function App() {
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
-    </div>
-  )
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      
+      {/* Routes only accessible to non-logged-in users */}
+      <Route element={<GuestRoute />}>
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
+      </Route>
+
+      {/* Routes only accessible to logged-in users */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        {/* Add more protected routes here */}
+      </Route>
+    </Routes>
+  );
 }
 
-export default App
+export default App;
