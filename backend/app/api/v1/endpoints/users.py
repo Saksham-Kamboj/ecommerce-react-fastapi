@@ -2,7 +2,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db, get_current_active_admin
+from app.api.deps import get_db, get_current_active_admin, get_current_active_user
 from app.models.user import User
 from app.crud.crud_user import user as user_crud
 from app.schemas.user import UserCreate, UserOut, UserUpdate
@@ -10,6 +10,10 @@ from app.schemas.response import ApiResponse, PaginatedApiResponse, paginate
 
 router = APIRouter()
 
+
+@router.get("/me", response_model=ApiResponse[UserOut])
+def get_me(current_user: User = Depends(get_current_active_user)):
+    return ApiResponse(message="Current user retrieved successfully", data=current_user)
 
 @router.post("/", response_model=ApiResponse[UserOut])
 def create_user(user_in: UserCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_admin)):

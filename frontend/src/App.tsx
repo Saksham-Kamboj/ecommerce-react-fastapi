@@ -1,28 +1,37 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthLayout } from "@/layouts/AuthLayout";
-import { Login } from "@/pages/Login";
-import { Register } from "@/pages/Register";
-import { GuestRoute } from "@/components/auth/GuestRoute";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
+import { Routes, Route, Navigate } from "react-router-dom"
+import { AuthLayout } from "@/layouts/AuthLayout"
+import { Login } from "@/pages/Login"
+import { Register } from "@/pages/Register"
+import { GuestRoute } from "@/components/auth/GuestRoute"
+import { AdminRoutes } from "@/routes/AdminRoutes"
+import { UserRoutes } from "@/routes/UserRoutes"
+import { useAuth } from "@/contexts/AuthContext"
 
-function Dashboard() {
-  const { logout } = useAuth();
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-      <p>Welcome to your protected dashboard!</p>
-      <Button onClick={logout} className="mt-4">Logout</Button>
-    </div>
-  );
+function RootRedirect() {
+  const { isAuthenticated, isLoading, user } = useAuth()
+
+  if (isLoading)
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        Loading...
+      </div>
+    )
+
+  if (!isAuthenticated || !user) return <Navigate to="/login" replace />
+
+  if (user.role === "superadmin") {
+    return <Navigate to="/admin/dashboard" replace />
+  }
+
+  return <Navigate to="/user/dashboard" replace />
 }
 
 export function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      
+      <Route path="/" element={<RootRedirect />} />
+      <Route path="/dashboard" element={<RootRedirect />} />
+
       {/* Routes only accessible to non-logged-in users */}
       <Route element={<GuestRoute />}>
         <Route element={<AuthLayout />}>
@@ -31,13 +40,11 @@ export function App() {
         </Route>
       </Route>
 
-      {/* Routes only accessible to logged-in users */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        {/* Add more protected routes here */}
-      </Route>
+      {/* Role-specific route modules */}
+      <Route path="/admin/*" element={<AdminRoutes />} />
+      <Route path="/user/*" element={<UserRoutes />} />
     </Routes>
-  );
+  )
 }
 
-export default App;
+export default App

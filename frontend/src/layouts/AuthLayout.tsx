@@ -1,13 +1,16 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom"
 
 export function AuthLayout() {
   return (
-    <div className="flex min-h-svh flex-col md:flex-row bg-background">
+    <div className="flex min-h-svh flex-col bg-background md:flex-row">
       {/* Left side - Branding/Image */}
-      <div className="hidden md:flex flex-1 flex-col justify-center px-10 bg-zinc-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-        <div className="z-20 relative">
-          <Link to="/" className="text-2xl font-bold tracking-tight mb-10 inline-block">
+      <div className="relative hidden flex-1 flex-col justify-center overflow-hidden bg-zinc-900 px-10 text-white md:flex">
+        <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="relative z-20">
+          <Link
+            to="/"
+            className="mb-10 inline-block text-2xl font-bold tracking-tight"
+          >
             EKVAYU Commerce
           </Link>
           <div className="mt-auto">
@@ -22,7 +25,7 @@ export function AuthLayout() {
           </div>
         </div>
       </div>
-      
+
       {/* Right side - Form */}
       <div className="flex flex-1 items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-sm">
@@ -30,5 +33,5 @@ export function AuthLayout() {
         </div>
       </div>
     </div>
-  );
+  )
 }

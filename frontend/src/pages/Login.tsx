@@ -1,38 +1,46 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
-import { authApi } from "@/lib/api/auth";
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { useAuth } from "@/contexts/AuthContext"
+import { authApi } from "@/lib/api/auth"
 
 export function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+    e.preventDefault()
+    setError("")
+    setLoading(true)
 
     try {
-      const response = await authApi.login(email, password);
+      const response = await authApi.login(email, password)
       if (response.data?.access_token) {
-        login(response.data.access_token);
-        navigate("/dashboard"); // Or wherever the user should go
+        login(response.data.access_token)
+        navigate("/dashboard") // Or wherever the user should go
       }
     } catch (err) {
-      const error = err as Error;
-      setError(error.message || "Failed to login. Please check your credentials.");
+      const error = err as Error
+      setError(
+        error.message || "Failed to login. Please check your credentials."
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <Card className="border-0 shadow-none sm:border sm:shadow-sm">
@@ -45,8 +53,12 @@ export function Login() {
       <CardContent>
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" type="button">Github</Button>
-            <Button variant="outline" type="button">Google</Button>
+            <Button variant="outline" type="button">
+              Github
+            </Button>
+            <Button variant="outline" type="button">
+              Google
+            </Button>
           </div>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -59,14 +71,18 @@ export function Login() {
             </div>
           </div>
           <form className="grid gap-4" onSubmit={handleSubmit}>
-            {error && <div className="text-sm font-medium text-destructive">{error}</div>}
+            {error && (
+              <div className="text-sm font-medium text-destructive">
+                {error}
+              </div>
+            )}
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="m@example.com" 
-                required 
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -74,14 +90,17 @@ export function Login() {
             <div className="grid gap-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link to="/forgot-password" className="text-sm text-muted-foreground hover:text-primary">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-muted-foreground hover:text-primary"
+                >
                   Forgot password?
                 </Link>
               </div>
-              <Input 
-                id="password" 
-                type="password" 
-                required 
+              <Input
+                id="password"
+                type="password"
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -99,5 +118,5 @@ export function Login() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
