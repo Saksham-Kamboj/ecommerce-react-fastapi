@@ -1,9 +1,7 @@
-// API response types
-export interface ApiResponse<T> {
-  success: boolean
-  message: string
-  data: T
-}
+import { apiClient } from "./client"
+import type { ApiResponse } from "./client"
+
+export type { ApiResponse } from "./client"
 
 export interface Token {
   access_token: string
@@ -20,23 +18,11 @@ export interface UserOut {
   updated_at: string
 }
 
-const API_BASE = "/api/v1"
-
 export const authApi = {
   async login(email: string, password: string): Promise<ApiResponse<Token>> {
-    const response = await fetch(`${API_BASE}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
+    return apiClient<Token>("/auth/login", {
+      data: { email, password },
     })
-
-    const data = await response.json()
-    if (!response.ok) {
-      throw new Error(data.message || "Login failed")
-    }
-    return data
   },
 
   async register(
@@ -44,65 +30,35 @@ export const authApi = {
     fullName: string,
     password: string
   ): Promise<ApiResponse<UserOut>> {
-    const response = await fetch(`${API_BASE}/auth/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, full_name: fullName, password }),
+    return apiClient<UserOut>("/auth/register", {
+      data: { email, full_name: fullName, password },
     })
-
-    const data = await response.json()
-    if (!response.ok) {
-      throw new Error(data.message || "Registration failed")
-    }
-    return data
   },
 
   async getMe(token: string): Promise<ApiResponse<UserOut>> {
-    const response = await fetch(`${API_BASE}/users/me`, {
+    // The client automatically attaches the token from localStorage
+    // but we can also pass it explicitly if we wanted to
+    return apiClient<UserOut>("/users/me", {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${token}`,
-      },
+        Authorization: `Bearer ${token}`
+      }
     })
-
-    const data = await response.json()
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to fetch user profile")
-    }
-    return data
   },
 
   async sendOtp(email: string): Promise<ApiResponse<null>> {
-    const response = await fetch(`${API_BASE}/auth/send-otp`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || 'Failed to send OTP');
-    }
-    return data;
+    return apiClient<null>("/auth/send-otp", {
+      data: { email },
+    })
   },
 
-  async resetPassword(email: string, otpCode: string, newPassword: string): Promise<ApiResponse<null>> {
-    const response = await fetch(`${API_BASE}/auth/reset-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, otp_code: otpCode, new_password: newPassword }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || 'Failed to reset password');
-    }
-    return data;
+  async resetPassword(
+    email: string,
+    otpCode: string,
+    newPassword: string
+  ): Promise<ApiResponse<null>> {
+    return apiClient<null>("/auth/reset-password", {
+      data: { email, otp_code: otpCode, new_password: newPassword },
+    })
   },
 }
