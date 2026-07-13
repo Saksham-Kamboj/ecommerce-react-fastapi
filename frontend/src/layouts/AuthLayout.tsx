@@ -4,9 +4,9 @@ import { appConfig } from "@/config/app"
 
 export function AuthLayout() {
   return (
-    <div className="flex min-h-svh flex-col bg-background md:flex-row relative">
+    <div className="relative flex min-h-svh flex-col bg-background md:flex-row">
       <ModeToggle />
-      
+
       {/* Left side - Branding/Image */}
       <div className="relative hidden flex-1 flex-col justify-center overflow-hidden bg-zinc-900 px-10 text-white md:flex">
         <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 to-transparent" />
@@ -22,7 +22,9 @@ export function AuthLayout() {
               <p className="text-lg">
                 &ldquo;{appConfig.testimonial.quote}&rdquo;
               </p>
-              <footer className="text-sm">{appConfig.testimonial.author}</footer>
+              <footer className="text-sm">
+                {appConfig.testimonial.author}
+              </footer>
             </blockquote>
           </div>
         </div>

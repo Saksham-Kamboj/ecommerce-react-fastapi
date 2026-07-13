@@ -1,49 +1,52 @@
-import type { ApiResponse } from "@/types/api";
+import type { ApiResponse } from "@/types/api"
 
-const API_BASE = "/api/v1";
+const API_BASE = "/api/v1"
 
 interface ApiOptions extends RequestInit {
-  data?: unknown;
+  data?: unknown
 }
 
 /**
  * A common API client wrapper for fetch.
  * Automatically handles JSON parsing, Authorization headers, and error throwing.
  */
-export async function apiClient<T>(endpoint: string, options: ApiOptions = {}): Promise<ApiResponse<T>> {
-  const { data, headers: customHeaders, ...customConfig } = options;
+export async function apiClient<T>(
+  endpoint: string,
+  options: ApiOptions = {}
+): Promise<ApiResponse<T>> {
+  const { data, headers: customHeaders, ...customConfig } = options
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token")
 
-  const headers = new Headers(customHeaders);
-  
+  const headers = new Headers(customHeaders)
+
   // Set JSON content type if data is provided and it's not FormData
   if (data && !(data instanceof FormData)) {
-    headers.set("Content-Type", "application/json");
+    headers.set("Content-Type", "application/json")
   }
 
   // Attach auth token if available
   if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+    headers.set("Authorization", `Bearer ${token}`)
   }
 
   const config: RequestInit = {
     method: data ? "POST" : "GET", // Default to POST if there is data, otherwise GET
     headers,
     ...customConfig,
-  };
-
-  if (data) {
-    config.body = data instanceof FormData ? data : JSON.stringify(data);
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, config);
-  
-  let result;
+  if (data) {
+    config.body = data instanceof FormData ? data : JSON.stringify(data)
+  }
+
+  const response = await fetch(`${API_BASE}${endpoint}`, config)
+
+  let result
   try {
-    result = await response.json();
+    result = await response.json()
   } catch {
-    result = null;
+    result = null
   }
 
   if (!response.ok) {
@@ -52,9 +55,13 @@ export async function apiClient<T>(endpoint: string, options: ApiOptions = {}): 
       // localStorage.removeItem("token");
       // Optionally trigger a page reload or global state update to force re-login
     }
-    
-    throw new Error(result?.message || result?.detail || `Request failed with status ${response.status}`);
+
+    throw new Error(
+      result?.message ||
+        result?.detail ||
+        `Request failed with status ${response.status}`
+    )
   }
 
-  return result as ApiResponse<T>;
+  return result as ApiResponse<T>
 }

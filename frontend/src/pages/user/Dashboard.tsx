@@ -3,15 +3,14 @@ import { useAuth } from "@/contexts/AuthContext"
 
 export function UserDashboard() {
   const { user } = useAuth()
-  
+
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="mb-2 text-3xl font-bold text-primary">
-          User Dashboard
-        </h1>
+        <h1 className="mb-2 text-3xl font-bold text-primary">User Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome back, {user?.full_name || user?.email}! Here is an overview of your activity.
+          Welcome back, {user?.full_name || user?.email}! Here is an overview of
+          your activity.
         </p>
       </div>
 

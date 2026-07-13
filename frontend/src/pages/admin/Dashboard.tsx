@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext"
 
 export function AdminDashboard() {
   const { user } = useAuth()
-  
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -11,7 +11,8 @@ export function AdminDashboard() {
           Admin Dashboard
         </h1>
         <p className="text-muted-foreground">
-          Welcome back, {user?.full_name || user?.email}! You have full administrative access.
+          Welcome back, {user?.full_name || user?.email}! You have full
+          administrative access.
         </p>
       </div>
 
@@ -23,7 +24,7 @@ export function AdminDashboard() {
           </p>
           <Button variant="outline">Go to Users</Button>
         </div>
-        
+
         <div className="rounded-lg border bg-card p-6 shadow-sm">
           <h2 className="mb-2 text-xl font-semibold">System Settings</h2>
           <p className="mb-4 text-sm text-muted-foreground">

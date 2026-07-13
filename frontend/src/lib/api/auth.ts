@@ -25,8 +25,8 @@ export const authApi = {
     return apiClient<UserOut>("/users/me", {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     })
   },
 

@@ -17,17 +17,25 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon, LifeBuoyIcon, SendIcon, FrameIcon, PieChartIcon, MapIcon, TerminalIcon } from "lucide-react"
+import {
+  TerminalSquareIcon,
+  BotIcon,
+  BookOpenIcon,
+  Settings2Icon,
+  LifeBuoyIcon,
+  SendIcon,
+  FrameIcon,
+  PieChartIcon,
+  MapIcon,
+  TerminalIcon,
+} from "lucide-react"
 
 // Hardcode navigation for now, but in a real app this could be dynamic based on role
 const navMain = [
   {
     title: "Playground",
     url: "#",
-    icon: (
-      <TerminalSquareIcon
-      />
-    ),
+    icon: <TerminalSquareIcon />,
     isActive: true,
     items: [
       {
@@ -47,10 +55,7 @@ const navMain = [
   {
     title: "Models",
     url: "#",
-    icon: (
-      <BotIcon
-      />
-    ),
+    icon: <BotIcon />,
     items: [
       {
         title: "Genesis",
@@ -69,10 +74,7 @@ const navMain = [
   {
     title: "Documentation",
     url: "#",
-    icon: (
-      <BookOpenIcon
-      />
-    ),
+    icon: <BookOpenIcon />,
     items: [
       {
         title: "Introduction",
@@ -95,10 +97,7 @@ const navMain = [
   {
     title: "Settings",
     url: "#",
-    icon: (
-      <Settings2Icon
-      />
-    ),
+    icon: <Settings2Icon />,
     items: [
       {
         title: "General",
@@ -123,44 +122,29 @@ const navSecondary = [
   {
     title: "Support",
     url: "#",
-    icon: (
-      <LifeBuoyIcon
-      />
-    ),
+    icon: <LifeBuoyIcon />,
   },
   {
     title: "Feedback",
     url: "#",
-    icon: (
-      <SendIcon
-      />
-    ),
+    icon: <SendIcon />,
   },
 ]
 const projects = [
   {
     name: "Design Engineering",
     url: "#",
-    icon: (
-      <FrameIcon
-      />
-    ),
+    icon: <FrameIcon />,
   },
   {
     name: "Sales & Marketing",
     url: "#",
-    icon: (
-      <PieChartIcon
-      />
-    ),
+    icon: <PieChartIcon />,
   },
   {
     name: "Travel",
     url: "#",
-    icon: (
-      <MapIcon
-      />
-    ),
+    icon: <MapIcon />,
   },
 ]
 
@@ -169,7 +153,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // Format the user object for NavUser
   const navUser = {
-    name: user?.full_name || user?.email?.split('@')[0] || "User",
+    name: user?.full_name || user?.email?.split("@")[0] || "User",
     email: user?.email || "",
     avatar: "", // Can add an avatar URL if available in the backend later
   }
@@ -185,7 +169,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{appConfig.name}</span>
-                <span className="truncate text-xs">{user?.role === 'superadmin' ? 'Admin Panel' : 'Customer Panel'}</span>
+                <span className="truncate text-xs">
+                  {user?.role === "superadmin"
+                    ? "Admin Panel"
+                    : "Customer Panel"}
+                </span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
