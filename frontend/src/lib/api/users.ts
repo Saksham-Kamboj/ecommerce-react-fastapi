@@ -7,9 +7,12 @@ export const usersApi = {
     skip = 0,
     limit = 10
   ): Promise<PaginatedApiResponse<UserOut>> => {
-    const res = await apiClient<UserOut[]>(`/users/?skip=${skip}&limit=${limit}`, {
-      method: "GET",
-    })
+    const res = await apiClient<UserOut[]>(
+      `/users/?skip=${skip}&limit=${limit}`,
+      {
+        method: "GET",
+      }
+    )
     return res as unknown as PaginatedApiResponse<UserOut>
   },
 

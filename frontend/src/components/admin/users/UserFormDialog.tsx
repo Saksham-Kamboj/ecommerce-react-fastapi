@@ -117,17 +117,29 @@ export function UserFormDialog({
         >
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" placeholder="m@example.com" {...form.register("email")} />
+            <Input
+              id="email"
+              placeholder="m@example.com"
+              {...form.register("email")}
+            />
             {form.formState.errors.email && (
-              <p className="text-sm font-medium text-destructive">{form.formState.errors.email.message}</p>
+              <p className="text-sm font-medium text-destructive">
+                {form.formState.errors.email.message}
+              </p>
             )}
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="full_name">Full Name</Label>
-            <Input id="full_name" placeholder="John Doe" {...form.register("full_name")} />
+            <Input
+              id="full_name"
+              placeholder="John Doe"
+              {...form.register("full_name")}
+            />
             {form.formState.errors.full_name && (
-              <p className="text-sm font-medium text-destructive">{form.formState.errors.full_name.message}</p>
+              <p className="text-sm font-medium text-destructive">
+                {form.formState.errors.full_name.message}
+              </p>
             )}
           </div>
 
@@ -140,9 +152,16 @@ export function UserFormDialog({
                 </span>
               )}
             </Label>
-            <Input id="password" type="password" placeholder="••••••••" {...form.register("password")} />
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              {...form.register("password")}
+            />
             {form.formState.errors.password && (
-              <p className="text-sm font-medium text-destructive">{form.formState.errors.password.message}</p>
+              <p className="text-sm font-medium text-destructive">
+                {form.formState.errors.password.message}
+              </p>
             )}
           </div>
 
@@ -152,7 +171,10 @@ export function UserFormDialog({
               control={form.control}
               name="role"
               render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <SelectTrigger id="role">
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
@@ -164,7 +186,9 @@ export function UserFormDialog({
               )}
             />
             {form.formState.errors.role && (
-              <p className="text-sm font-medium text-destructive">{form.formState.errors.role.message}</p>
+              <p className="text-sm font-medium text-destructive">
+                {form.formState.errors.role.message}
+              </p>
             )}
           </div>
 

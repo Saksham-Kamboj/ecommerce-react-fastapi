@@ -1,58 +1,65 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { MoreHorizontal, Plus, Pencil, Trash2 } from "lucide-react"
 import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { DataTable, type ColumnDef } from "@/components/ui/data-table"
 import { usersApi } from "@/lib/api/users"
 import type { UserOut, UserCreate, UserUpdate } from "@/types/auth"
+import type { Pagination as PaginationType } from "@/types/api"
 import { UserFormDialog } from "@/components/admin/users/UserFormDialog"
 import { UserDeleteDialog } from "@/components/admin/users/UserDeleteDialog"
 
 export function UsersPage() {
   const [users, setUsers] = useState<UserOut[]>([])
+  const [pagination, setPagination] = useState<PaginationType | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Pagination state
+  const [page, setPage] = useState(1)
+  const limit = 10
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   // Dialog states
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UserOut | null>(null)
 
-  const fetchUsers = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      // Currently fetching first 50 users (could add real pagination later)
-      const res = await usersApi.getUsers(0, 50)
-      setUsers(res.data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch users")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchUsers()
-  }, [fetchUsers])
+    let ignore = false
+    const loadUsers = async () => {
+      try {
+        const skip = (page - 1) * limit
+        const res = await usersApi.getUsers(skip, limit)
+        if (!ignore) {
+          setUsers(res.data)
+          setPagination(res.pagination)
+        }
+      } catch (err) {
+        if (!ignore) {
+          setError(err instanceof Error ? err.message : "Failed to fetch users")
+        }
+      } finally {
+        if (!ignore) setIsLoading(false)
+      }
+    }
+    loadUsers()
+    return () => {
+      ignore = true
+    }
+  }, [page, limit, refreshTrigger])
 
   const handleCreateUser = () => {
     setSelectedUser(null)
@@ -76,7 +83,9 @@ export function UsersPage() {
       await usersApi.createUser(data as UserCreate)
     }
     setIsFormOpen(false)
-    fetchUsers() // Refresh list
+    setIsLoading(true)
+    setError(null)
+    setRefreshTrigger((prev) => prev + 1)
   }
 
   const handleConfirmDelete = async () => {
@@ -84,7 +93,9 @@ export function UsersPage() {
     try {
       await usersApi.deleteUser(selectedUser.id)
       setIsDeleteOpen(false)
-      fetchUsers() // Refresh list
+      setIsLoading(true)
+      setError(null)
+      setRefreshTrigger((prev) => prev + 1)
     } catch (err) {
       alert(
         "Failed to delete user: " +
@@ -93,124 +104,174 @@ export function UsersPage() {
     }
   }
 
+  // Helper to generate initials for avatar
+  const getInitials = (name?: string | null, email?: string | null) => {
+    if (name) {
+      return name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .substring(0, 2)
+        .toUpperCase()
+    }
+    if (email) {
+      return email.substring(0, 2).toUpperCase()
+    }
+    return "??"
+  }
+
+  const userColumns: ColumnDef<UserOut>[] = [
+    {
+      header: "User",
+      className: "pl-6",
+      cell: (user) => (
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 border shadow-xs">
+            <AvatarImage
+              src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user.email}`}
+              alt={user.full_name || user.email}
+            />
+            <AvatarFallback className="bg-primary/5 text-xs font-semibold text-primary">
+              {getInitials(user.full_name, user.email)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <span className="leading-none font-medium text-foreground">
+              {user.full_name || "Unknown User"}
+            </span>
+            <span className="mt-1 text-xs text-muted-foreground">
+              {user.email}
+            </span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      header: "Role",
+      cell: (user) => (
+        <Badge
+          variant={user.role === "superadmin" ? "default" : "secondary"}
+          className={
+            user.role === "superadmin"
+              ? "bg-indigo-500 shadow-xs hover:bg-indigo-600"
+              : ""
+          }
+        >
+          {user.role}
+        </Badge>
+      ),
+    },
+    {
+      header: "Status",
+      cell: (user) =>
+        user.is_active ? (
+          <Badge
+            variant="outline"
+            className="border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-400"
+          >
+            Active
+          </Badge>
+        ) : (
+          <Badge
+            variant="outline"
+            className="border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-400"
+          >
+            Inactive
+          </Badge>
+        ),
+    },
+    {
+      header: "Joined",
+      className: "hidden md:table-cell",
+      cell: (user) => (
+        <span className="text-sm text-muted-foreground">
+          {user.created_at
+            ? format(new Date(user.created_at), "MMM d, yyyy")
+            : "—"}
+        </span>
+      ),
+    },
+    {
+      header: "Updated",
+      className: "hidden md:table-cell",
+      cell: (user) => (
+        <span className="text-sm text-muted-foreground">
+          {user.updated_at
+            ? format(new Date(user.updated_at), "MMM d, yyyy")
+            : "—"}
+        </span>
+      ),
+    },
+    {
+      header: "",
+      className: "w-[70px] pr-6",
+      cell: (user) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                className="h-8 w-8 cursor-pointer p-0 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100"
+              />
+            }
+          >
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[160px]">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(user.id)}
+              >
+                Copy user ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleEditUser(user)}>
+                <Pencil className="mr-2 h-4 w-4" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleDeleteClick(user)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ]
+
+  const handlePageChange = (newPage: number) => {
+    setIsLoading(true)
+    setError(null)
+    setPage(newPage)
+  }
+
   return (
-    <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
+    <div className="flex-1 space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Users</h2>
-        <Button onClick={handleCreateUser}>
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Users</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage your team members and their account permissions here.
+          </p>
+        </div>
+        <Button onClick={handleCreateUser} className="cursor-pointer shadow-xs">
           <Plus className="mr-2 h-4 w-4" /> Add User
         </Button>
       </div>
 
-      <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  Loading users...
-                </TableCell>
-              </TableRow>
-            ) : error ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="h-24 text-center text-destructive"
-                >
-                  {error}
-                </TableCell>
-              </TableRow>
-            ) : users.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="h-24 text-center text-muted-foreground"
-                >
-                  No users found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">
-                    {user.full_name || "—"}
-                  </TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        user.role === "superadmin" ? "default" : "secondary"
-                      }
-                    >
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {user.is_active ? (
-                      <Badge
-                        variant="outline"
-                        className="border-green-200 bg-green-50 text-green-600"
-                      >
-                        Active
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className="border-red-200 bg-red-50 text-red-600"
-                      >
-                        Inactive
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {user.created_at
-                      ? format(new Date(user.created_at), "MMM d, yyyy")
-                      : "—"}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger 
-                        render={<Button variant="ghost" className="h-8 w-8 p-0" />}
-                      >
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                          onClick={() => navigator.clipboard.writeText(user.id)}
-                        >
-                          Copy user ID
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleEditUser(user)}>
-                          <Pencil className="mr-2 h-4 w-4" /> Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteClick(user)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        data={users}
+        columns={userColumns}
+        isLoading={isLoading}
+        error={error}
+        emptyMessage="No users found."
+        pagination={pagination}
+        onPageChange={handlePageChange}
+      />
 
       <UserFormDialog
         open={isFormOpen}
