@@ -102,7 +102,7 @@ export function UserFormDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+        <DialogHeader className="border-b pb-4">
           <DialogTitle>{isEditing ? "Edit User" : "Create User"}</DialogTitle>
           <DialogDescription>
             {isEditing
@@ -113,22 +113,8 @@ export function UserFormDialog({
 
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
-          className="space-y-4 pt-4"
+          className="space-y-4 pt-2"
         >
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              placeholder="m@example.com"
-              {...form.register("email")}
-            />
-            {form.formState.errors.email && (
-              <p className="text-sm font-medium text-destructive">
-                {form.formState.errors.email.message}
-              </p>
-            )}
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="full_name">Full Name</Label>
             <Input
@@ -139,6 +125,20 @@ export function UserFormDialog({
             {form.formState.errors.full_name && (
               <p className="text-sm font-medium text-destructive">
                 {form.formState.errors.full_name.message}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              placeholder="m@example.com"
+              {...form.register("email")}
+            />
+            {form.formState.errors.email && (
+              <p className="text-sm font-medium text-destructive">
+                {form.formState.errors.email.message}
               </p>
             )}
           </div>
@@ -175,7 +175,7 @@ export function UserFormDialog({
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
-                  <SelectTrigger id="role">
+                  <SelectTrigger id="role" className="w-full">
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
@@ -212,12 +212,11 @@ export function UserFormDialog({
             </div>
           </div>
 
-          <div className="flex justify-end pt-4">
+          <div className="flex justify-end gap-2 border-t pt-4 mt-6">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="mr-2"
             >
               Cancel
             </Button>
