@@ -4,34 +4,22 @@ import { Login } from "@/pages/auth/Login"
 import { Register } from "@/pages/auth/Register"
 import { ForgotPassword } from "@/pages/auth/ForgotPassword"
 import { GuestRoute } from "@/components/auth/GuestRoute"
-import { AdminRoutes } from "@/routes/AdminRoutes"
-import { UserRoutes } from "@/routes/UserRoutes"
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
+import { AppLayout } from "@/layouts/AppLayout"
+import { AdminDashboard } from "@/pages/admin/Dashboard"
+import { UserDashboard } from "@/pages/user/Dashboard"
 import { useAuth } from "@/contexts/AuthContext"
 
-function RootRedirect() {
-  const { isAuthenticated, isLoading, user } = useAuth()
-
-  if (isLoading)
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        Loading...
-      </div>
-    )
-
-  if (!isAuthenticated || !user) return <Navigate to="/login" replace />
-
-  if (user.role === "superadmin") {
-    return <Navigate to="/admin/dashboard" replace />
-  }
-
-  return <Navigate to="/user/dashboard" replace />
+function DashboardRouter() {
+  const { user } = useAuth()
+  if (user?.role === "superadmin") return <AdminDashboard />
+  return <UserDashboard />
 }
 
 export function App() {
   return (
     <Routes>
-      <Route path="/" element={<RootRedirect />} />
-      <Route path="/dashboard" element={<RootRedirect />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
       {/* Routes only accessible to non-logged-in users */}
       <Route element={<GuestRoute />}>
@@ -42,9 +30,16 @@ export function App() {
         </Route>
       </Route>
 
-      {/* Role-specific route modules */}
-      <Route path="/admin/*" element={<AdminRoutes />} />
-      <Route path="/user/*" element={<UserRoutes />} />
+      {/* Authenticated routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={<DashboardRouter />} />
+          {/* We can add more common or role-specific routes here later */}
+        </Route>
+      </Route>
+
+      {/* Catch-all route */}
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   )
 }

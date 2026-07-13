@@ -23,16 +23,23 @@ import {
   Settings2Icon,
   LifeBuoyIcon,
   SendIcon,
+  LayoutDashboardIcon,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
 // Hardcode navigation for now, but in a real app this could be dynamic based on role
 const navMain = [
   {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: <LayoutDashboardIcon />,
+    isActive: true,
+  },
+  {
     title: "Playground",
     url: "#",
     icon: <TerminalSquareIcon />,
-    isActive: true,
+    isActive: false,
     items: [
       {
         title: "History",
