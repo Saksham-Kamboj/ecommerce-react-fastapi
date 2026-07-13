@@ -1,5 +1,6 @@
 import { Outlet, Link } from "react-router-dom"
 import { ModeToggle } from "@/components/theme/mode-toggle"
+import { appConfig } from "@/config/app"
 
 export function AuthLayout() {
   return (
@@ -14,16 +15,14 @@ export function AuthLayout() {
             to="/"
             className="mb-10 inline-block text-2xl font-bold tracking-tight"
           >
-            EKVAYU Commerce
+            {appConfig.name}
           </Link>
           <div className="mt-auto">
             <blockquote className="space-y-2">
               <p className="text-lg">
-                &ldquo;This library has saved me countless hours of work and
-                helped me deliver stunning designs to my clients faster than
-                ever before.&rdquo;
+                &ldquo;{appConfig.testimonial.quote}&rdquo;
               </p>
-              <footer className="text-sm">Sofia Davis</footer>
+              <footer className="text-sm">{appConfig.testimonial.author}</footer>
             </blockquote>
           </div>
         </div>

@@ -2,11 +2,12 @@
 
 import * as React from "react"
 import { useAuth } from "@/contexts/AuthContext"
+import { appConfig } from "@/config/app"
 
-import { NavMain } from "@/components/layout/sidebar/nav-main"
-import { NavProjects } from "@/components/layout/sidebar/nav-projects"
-import { NavSecondary } from "@/components/layout/sidebar/nav-secondary"
-import { NavUser } from "@/components/layout/sidebar/nav-user"
+import { NavMain } from "./nav-main"
+import { NavProjects } from "./nav-projects"
+import { NavSecondary } from "./nav-secondary"
+import { NavUser } from "./nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -165,7 +166,7 @@ const projects = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth()
-  
+
   // Format the user object for NavUser
   const navUser = {
     name: user?.full_name || user?.email?.split('@')[0] || "User",
@@ -183,7 +184,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <TerminalIcon className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">EKVAYU Commerce</span>
+                <span className="truncate font-medium">{appConfig.name}</span>
                 <span className="truncate text-xs">{user?.role === 'superadmin' ? 'Admin Panel' : 'Customer Panel'}</span>
               </div>
             </SidebarMenuButton>

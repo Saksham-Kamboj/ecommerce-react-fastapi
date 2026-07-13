@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/layout/sidebar/app-sidebar"
+import { AppSidebar } from "./sidebar/app-sidebar"
 import { ModeToggle } from "@/components/theme/mode-toggle"
 import { Separator } from "@/components/ui/separator"
 import {
