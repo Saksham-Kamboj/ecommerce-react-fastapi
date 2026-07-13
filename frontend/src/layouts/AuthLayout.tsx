@@ -1,8 +1,11 @@
 import { Outlet, Link } from "react-router-dom"
+import { ModeToggle } from "@/components/mode-toggle"
 
 export function AuthLayout() {
   return (
-    <div className="flex min-h-svh flex-col bg-background md:flex-row">
+    <div className="flex min-h-svh flex-col bg-background md:flex-row relative">
+      <ModeToggle />
+      
       {/* Left side - Branding/Image */}
       <div className="relative hidden flex-1 flex-col justify-center overflow-hidden bg-zinc-900 px-10 text-white md:flex">
         <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 to-transparent" />
