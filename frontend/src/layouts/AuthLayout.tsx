@@ -5,7 +5,9 @@ import { appConfig } from "@/config/app"
 export function AuthLayout() {
   return (
     <div className="relative flex min-h-svh flex-col bg-background md:flex-row">
-      <ModeToggle />
+      <div className="absolute top-4 right-4 z-50">
+        <ModeToggle />
+      </div>
 
       {/* Left side - Branding/Image */}
       <div className="relative hidden flex-1 flex-col justify-center overflow-hidden bg-zinc-900 px-10 text-white md:flex">

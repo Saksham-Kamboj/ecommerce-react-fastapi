@@ -21,7 +21,7 @@ export function ModeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="absolute top-4 right-4 z-50 cursor-pointer"
+      className="cursor-pointer"
       title={`Switch to ${theme === "light" ? "dark" : theme === "dark" ? "system" : "light"} theme`}
     >
       <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />

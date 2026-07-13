@@ -27,7 +27,6 @@ import {
   FrameIcon,
   PieChartIcon,
   MapIcon,
-  TerminalIcon,
 } from "lucide-react"
 
 // Hardcode navigation for now, but in a real app this could be dynamic based on role
@@ -164,8 +163,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<a href="#" />}>
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <TerminalIcon className="size-4" />
+              <div className="flex aspect-square size-10 items-center justify-center overflow-hidden rounded-lg">
+                <img src="/e-com-logo.png" alt="Logo" className="size-full object-cover" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{appConfig.name}</span>
