@@ -3,10 +3,10 @@
 import * as React from "react"
 import { useAuth } from "@/contexts/AuthContext"
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
+import { NavMain } from "@/components/layout/sidebar/nav-main"
+import { NavProjects } from "@/components/layout/sidebar/nav-projects"
+import { NavSecondary } from "@/components/layout/sidebar/nav-secondary"
+import { NavUser } from "@/components/layout/sidebar/nav-user"
 import {
   Sidebar,
   SidebarContent,

@@ -1,5 +1,5 @@
 import { Outlet, Link } from "react-router-dom"
-import { ModeToggle } from "@/components/mode-toggle"
+import { ModeToggle } from "@/components/theme/mode-toggle"
 
 export function AuthLayout() {
   return (
