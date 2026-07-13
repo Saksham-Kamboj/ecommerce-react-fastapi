@@ -12,3 +12,19 @@ export interface UserOut {
   created_at: string
   updated_at: string
 }
+
+export interface UserCreate {
+  email: string
+  password?: string
+  full_name?: string
+  role?: string
+  is_active?: boolean
+}
+
+export interface UserUpdate {
+  email?: string
+  password?: string
+  full_name?: string
+  role?: string
+  is_active?: boolean
+}

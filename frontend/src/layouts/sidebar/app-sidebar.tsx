@@ -24,6 +24,7 @@ import {
   LifeBuoyIcon,
   SendIcon,
   LayoutDashboardIcon,
+  UsersIcon,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -34,6 +35,13 @@ const navMain = [
     url: "/dashboard",
     icon: <LayoutDashboardIcon />,
     isActive: true,
+  },
+  {
+    title: "Users",
+    url: "/users",
+    icon: <UsersIcon />,
+    isActive: false,
+    requireRole: "superadmin",
   },
   {
     title: "Playground",
@@ -137,6 +145,14 @@ const navSecondary = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth()
 
+  // Filter nav items based on role
+  const filteredNavMain = navMain.filter((item) => {
+    if (item.requireRole && item.requireRole !== user?.role) {
+      return false
+    }
+    return true
+  })
+
   // Format the user object for NavUser
   const navUser = {
     name: user?.full_name || user?.email?.split("@")[0] || "User",
@@ -151,7 +167,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link to="/" />}>
               <div className="flex aspect-square size-10 items-center justify-center overflow-hidden rounded-lg">
-                <img src="/e-com-logo.png" alt="Logo" className="size-full object-cover" />
+                <img
+                  src="/e-com-logo.png"
+                  alt="Logo"
+                  className="size-full object-cover"
+                />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{appConfig.name}</span>
@@ -166,7 +186,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navMain} />
+        <NavMain items={filteredNavMain} />
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

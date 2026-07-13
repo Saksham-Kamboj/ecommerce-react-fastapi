@@ -17,16 +17,17 @@ export function DynamicBreadcrumb() {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem className="hidden md:block">
-          <BreadcrumbLink render={<Link to="/" />}>
-            Home
-          </BreadcrumbLink>
+          <BreadcrumbLink render={<Link to="/" />}>Home</BreadcrumbLink>
         </BreadcrumbItem>
-        {pathnames.length > 0 && <BreadcrumbSeparator className="hidden md:block" />}
-        
+        {pathnames.length > 0 && (
+          <BreadcrumbSeparator className="hidden md:block" />
+        )}
+
         {pathnames.map((name, index) => {
           const routeTo = `/${pathnames.slice(0, index + 1).join("/")}`
           const isLast = index === pathnames.length - 1
-          const formattedName = name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, " ")
+          const formattedName =
+            name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, " ")
 
           return (
             <React.Fragment key={routeTo}>
@@ -34,7 +35,10 @@ export function DynamicBreadcrumb() {
                 {isLast ? (
                   <BreadcrumbPage>{formattedName}</BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink render={<Link to={routeTo} />} className="hidden md:block">
+                  <BreadcrumbLink
+                    render={<Link to={routeTo} />}
+                    className="hidden md:block"
+                  >
                     {formattedName}
                   </BreadcrumbLink>
                 )}

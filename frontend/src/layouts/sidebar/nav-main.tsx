@@ -38,7 +38,11 @@ export function NavMain({
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
-          const isItemActive = location.pathname === item.url || (item.url !== '#' && item.url !== '/' && location.pathname.startsWith(item.url))
+          const isItemActive =
+            location.pathname === item.url ||
+            (item.url !== "#" &&
+              item.url !== "/" &&
+              location.pathname.startsWith(item.url))
           return (
             <Collapsible
               key={item.title}
@@ -69,7 +73,10 @@ export function NavMain({
                         const isSubActive = location.pathname === subItem.url
                         return (
                           <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton render={<Link to={subItem.url} />} isActive={isSubActive}>
+                            <SidebarMenuSubButton
+                              render={<Link to={subItem.url} />}
+                              isActive={isSubActive}
+                            >
                               <span>{subItem.title}</span>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>

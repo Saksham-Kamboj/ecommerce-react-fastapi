@@ -7,7 +7,9 @@ import { GuestRoute } from "@/components/auth/GuestRoute"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { AppLayout } from "@/layouts/AppLayout"
 import { AdminDashboard } from "@/pages/admin/Dashboard"
+import { UsersPage } from "@/pages/admin/Users"
 import { UserDashboard } from "@/pages/user/Dashboard"
+import { RoleRoute } from "@/components/auth/RoleRoute"
 import { useAuth } from "@/contexts/AuthContext"
 
 function DashboardRouter() {
@@ -34,7 +36,11 @@ export function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<DashboardRouter />} />
-          {/* We can add more common or role-specific routes here later */}
+
+          {/* Admin only routes */}
+          <Route element={<RoleRoute allowedRoles={["superadmin"]} />}>
+            <Route path="/users" element={<UsersPage />} />
+          </Route>
         </Route>
       </Route>
 
