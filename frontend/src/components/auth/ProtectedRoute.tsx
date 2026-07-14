@@ -1,15 +1,12 @@
 import { Navigate, Outlet } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
+import PageLoading from "../custom/PageLoading"
 
 export function ProtectedRoute() {
   const { isAuthenticated, isLoading } = useAuth()
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        Loading...
-      </div>
-    )
+    return <PageLoading />
   }
 
   if (!isAuthenticated) {

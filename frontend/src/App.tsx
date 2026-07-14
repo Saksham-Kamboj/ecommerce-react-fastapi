@@ -2,8 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom"
 import { AdminRoutes } from "@/routes/AdminRoutes"
 import { UserRoutes } from "@/routes/UserRoutes"
 import { AuthRoutes } from "@/routes/AuthRoutes"
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { useAuth } from "@/contexts/AuthContext"
+import PageLoading from "./components/custom/PageLoading"
 
 function ProtectedRouter() {
   const { user } = useAuth()
@@ -12,19 +12,21 @@ function ProtectedRouter() {
 }
 
 export function App() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
+
+  if (isLoading) {
+    return <PageLoading />
+  }
 
   return (
     <Routes>
       <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
 
-      {/* Guest Routes */}
-      <Route path="/*" element={<AuthRoutes />} />
-
-      {/* Authenticated Routes */}
-      <Route element={<ProtectedRoute />}>
+      {isAuthenticated ? (
         <Route path="/*" element={<ProtectedRouter />} />
-      </Route>
+      ) : (
+        <Route path="/*" element={<AuthRoutes />} />
+      )}
     </Routes>
   )
 }
