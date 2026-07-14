@@ -17,14 +17,11 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import {
-  TerminalSquareIcon,
-  BotIcon,
-  BookOpenIcon,
-  Settings2Icon,
   LifeBuoyIcon,
   SendIcon,
   LayoutDashboardIcon,
   UsersIcon,
+  ShoppingBag,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -44,90 +41,32 @@ const navMain = [
     requireRole: "superadmin",
   },
   {
-    title: "Playground",
-    url: "#",
-    icon: <TerminalSquareIcon />,
+    title: "Products",
+    url: "/products",
+    icon: <ShoppingBag />,
     isActive: false,
-    items: [
-      {
-        title: "History",
-        url: "#",
-      },
-      {
-        title: "Starred",
-        url: "#",
-      },
-      {
-        title: "Settings",
-        url: "#",
-      },
-    ],
+    requireRole: "superadmin",
   },
-  {
-    title: "Models",
-    url: "#",
-    icon: <BotIcon />,
-    items: [
-      {
-        title: "Genesis",
-        url: "#",
-      },
-      {
-        title: "Explorer",
-        url: "#",
-      },
-      {
-        title: "Quantum",
-        url: "#",
-      },
-    ],
-  },
-  {
-    title: "Documentation",
-    url: "#",
-    icon: <BookOpenIcon />,
-    items: [
-      {
-        title: "Introduction",
-        url: "#",
-      },
-      {
-        title: "Get Started",
-        url: "#",
-      },
-      {
-        title: "Tutorials",
-        url: "#",
-      },
-      {
-        title: "Changelog",
-        url: "#",
-      },
-    ],
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: <Settings2Icon />,
-    items: [
-      {
-        title: "General",
-        url: "#",
-      },
-      {
-        title: "Team",
-        url: "#",
-      },
-      {
-        title: "Billing",
-        url: "#",
-      },
-      {
-        title: "Limits",
-        url: "#",
-      },
-    ],
-  },
+  // {
+  //   title: "Playground",
+  //   url: "#",
+  //   icon: <TerminalSquareIcon />,
+  //   isActive: false,
+  //   items: [
+  //     {
+  //       title: "History",
+  //       url: "#",
+  //     },
+  //     {
+  //       title: "Starred",
+  //       url: "#",
+  //     },
+  //     {
+  //       title: "Settings",
+  //       url: "#",
+  //     },
+  //   ],
+  // },
 ]
 const navSecondary = [
   {
