@@ -22,17 +22,12 @@ import {
   UserCircleIcon,
   UsersIcon,
   ShoppingBag,
+  LayoutDashboardIcon,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
 // Hardcode navigation for now, but in a real app this could be dynamic based on role
-const navMain = [
-  {
-    title: "Profile",
-    url: "/profile",
-    icon: <UserCircleIcon />,
-    isActive: true,
-  },
+const navCommon = [
   {
     title: "Users",
     url: "/users",
@@ -63,9 +58,30 @@ const navSecondary = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth()
 
-  // Filter nav items based on role
-  const filteredNavMain = navMain.filter((item) => {
-    if (item.requireRole && item.requireRole !== user?.role) {
+  const isAdmin = user?.role === "superadmin"
+
+  // First nav item differs by role
+  const firstNavItem = isAdmin
+    ? {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: <LayoutDashboardIcon />,
+        isActive: true,
+      }
+    : {
+        title: "Profile",
+        url: "/profile",
+        icon: <UserCircleIcon />,
+        isActive: true,
+      }
+
+  // Build full nav list and filter by role
+  const filteredNavMain = [firstNavItem, ...navCommon].filter((item) => {
+    if (
+      "requireRole" in item &&
+      item.requireRole &&
+      item.requireRole !== user?.role
+    ) {
       return false
     }
     return true

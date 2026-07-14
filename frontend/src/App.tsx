@@ -12,20 +12,20 @@ function ProtectedRouter() {
 }
 
 export function App() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading, user } = useAuth()
 
   if (isLoading) {
     return <PageLoading />
   }
 
+  const getDefaultPath = () => {
+    if (!isAuthenticated) return "/login"
+    return user?.role === "superadmin" ? "/dashboard" : "/profile"
+  }
+
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          <Navigate to={isAuthenticated ? "/profile" : "/login"} replace />
-        }
-      />
+      <Route path="/" element={<Navigate to={getDefaultPath()} replace />} />
 
       {isAuthenticated ? (
         <Route path="/*" element={<ProtectedRouter />} />
