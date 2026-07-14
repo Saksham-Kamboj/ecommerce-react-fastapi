@@ -14,10 +14,11 @@ import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/CartContext"
 import { useWishlist } from "@/contexts/WishlistContext"
 import { CartSheet } from "@/components/cart/CartSheet"
+import { WishlistSheet } from "@/components/wishlist/WishlistSheet"
 
 export function AppLayout() {
   const { cart, setIsCartOpen } = useCart()
-  const { items: wishlistItems } = useWishlist()
+  const { items: wishlistItems, setIsWishlistOpen } = useWishlist()
 
   const itemCount = cart?.items.length || 0
   const wishlistCount = wishlistItems.length
@@ -38,6 +39,7 @@ export function AppLayout() {
               variant="ghost"
               size="icon"
               className="relative h-9 w-9 overflow-visible"
+              onClick={() => setIsWishlistOpen(true)}
               aria-label="Open wishlist"
             >
               <Heart className="h-[1.2rem] w-[1.2rem]" />
@@ -76,6 +78,7 @@ export function AppLayout() {
         </div>
       </SidebarInset>
       <CartSheet />
+      <WishlistSheet />
     </SidebarProvider>
   )
 }

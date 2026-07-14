@@ -15,6 +15,8 @@ import { useAuth } from "./AuthContext"
 interface WishlistContextType {
   items: WishlistItemOut[]
   isLoading: boolean
+  isWishlistOpen: boolean
+  setIsWishlistOpen: (open: boolean) => void
   isWishlisted: (productId: string) => boolean
   toggle: (productId: string) => Promise<void>
   refresh: () => Promise<void>
@@ -27,6 +29,7 @@ export function WishlistProvider({
 }: Readonly<{ children: React.ReactNode }>) {
   const [items, setItems] = useState<WishlistItemOut[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false)
   const { isAuthenticated } = useAuth()
 
   // Track whether the initial load has been triggered
@@ -95,8 +98,16 @@ export function WishlistProvider({
   )
 
   const value = useMemo(
-    () => ({ items, isLoading, isWishlisted, toggle, refresh }),
-    [items, isLoading, isWishlisted, toggle, refresh]
+    () => ({
+      items,
+      isLoading,
+      isWishlistOpen,
+      setIsWishlistOpen,
+      isWishlisted,
+      toggle,
+      refresh,
+    }),
+    [items, isLoading, isWishlistOpen, isWishlisted, toggle, refresh]
   )
 
   return (
