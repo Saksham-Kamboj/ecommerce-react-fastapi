@@ -26,8 +26,8 @@ export function CartSheet() {
 
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
-      <SheetContent className="flex w-full flex-col sm:max-w-md">
-        <SheetHeader className="px-1">
+      <SheetContent className="flex w-full max-h-screen flex-col sm:max-w-md">
+        <SheetHeader className="border-b border-border p-2">
           <SheetTitle className="flex items-center gap-2 text-xl">
             <ShoppingCart className="h-5 w-5" />
             Your Cart {hasItems && `(${items.length})`}
@@ -38,8 +38,8 @@ export function CartSheet() {
         </SheetHeader>
 
         {hasItems ? (
-          <>
-            <ScrollArea className="-mx-4 flex-1 px-4">
+          <div className="flex flex-col flex-1 min-h-0">
+            <ScrollArea className="flex-1 min-h-0 px-4">
               <div className="flex flex-col gap-6 py-4">
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4">
@@ -107,7 +107,7 @@ export function CartSheet() {
               </div>
             </ScrollArea>
 
-            <div className="mt-auto flex flex-col gap-4 border-t pt-4">
+            <div className="flex flex-col gap-2 border-t border-border p-4 pt-4">
               <div className="flex items-center justify-between font-medium">
                 <span>Subtotal</span>
                 <span className="text-xl font-bold">₹{total.toFixed(2)}</span>
@@ -132,7 +132,7 @@ export function CartSheet() {
                 </Button>
               </div>
             </div>
-          </>
+          </div>
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-muted-foreground">
             <ShoppingCart className="h-16 w-16 text-muted-foreground/30" />
