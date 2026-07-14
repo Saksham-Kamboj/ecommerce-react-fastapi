@@ -91,6 +91,7 @@ export function UserFormDialog({
 
   const handleSubmit = async (values: FormValues) => {
     try {
+      form.clearErrors("root")
       const submitData = { ...values }
 
       // If editing and password is empty, don't send it
@@ -100,8 +101,11 @@ export function UserFormDialog({
 
       await onSubmit(submitData)
       form.reset()
-    } catch {
-      // Error handled by parent
+    } catch (err) {
+      form.setError("root", {
+        type: "manual",
+        message: err instanceof Error ? err.message : "Failed to save user",
+      })
     }
   }
 
@@ -124,6 +128,11 @@ export function UserFormDialog({
           onSubmit={form.handleSubmit(handleSubmit)}
           className="space-y-4 p-4"
         >
+          {form.formState.errors.root && (
+            <div className="rounded-md bg-destructive/15 p-3 text-sm font-medium text-destructive">
+              {form.formState.errors.root.message}
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="full_name">Full Name</Label>
             <Input
