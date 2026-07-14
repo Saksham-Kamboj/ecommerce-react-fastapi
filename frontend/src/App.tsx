@@ -3,7 +3,7 @@ import { AdminRoutes } from "@/routes/AdminRoutes"
 import { UserRoutes } from "@/routes/UserRoutes"
 import { AuthRoutes } from "@/routes/AuthRoutes"
 import { useAuth } from "@/contexts/AuthContext"
-import PageLoading from "./components/custom/PageLoading"
+import PageLoading from "@/components/custom/PageLoading"
 
 function ProtectedRouter() {
   const { user } = useAuth()
