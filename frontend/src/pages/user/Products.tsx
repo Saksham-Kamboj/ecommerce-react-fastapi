@@ -3,23 +3,48 @@ import { productsApi } from "@/lib/api/products"
 import type { ProductOut } from "@/types/product"
 import { ProductCard } from "@/components/user/ProductCard"
 import { Loader2 } from "lucide-react"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+import { SearchInput } from "@/components/ui/search-input"
 
 export function UserProducts() {
   const [products, setProducts] = useState<ProductOut[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const ITEMS_PER_PAGE = 10
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+      setPage(1) // Reset to page 1 on new search
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
   useEffect(() => {
     let ignore = false
 
     const loadProducts = async () => {
+      setIsLoading(true)
       try {
-        // Fetch products, maybe increase limit to show a good grid
-        const response = await productsApi.getProducts(1, 20)
+        const skip = (page - 1) * ITEMS_PER_PAGE
+        const response = await productsApi.getProducts(skip, ITEMS_PER_PAGE, debouncedSearch)
         if (!ignore) {
           // Only show active products to normal users
           const activeProducts = response.data.filter((p) => p.is_active)
           setProducts(activeProducts)
+          setTotalPages(response.pagination.totalPages || 1)
         }
       } catch (err) {
         if (!ignore) {
@@ -39,17 +64,25 @@ export function UserProducts() {
     return () => {
       ignore = true
     }
-  }, [])
+  }, [page, debouncedSearch])
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-primary">
-          All Products
-        </h1>
-        <p className="text-muted-foreground">
-          Browse our collection of high-quality study materials and guides.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pr-2">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">
+            All Products
+          </h1>
+          <p className="text-muted-foreground">
+            Browse our collection of high-quality study materials and guides.
+          </p>
+        </div>
+        <SearchInput
+          containerClassName="sm:w-64"
+          placeholder="Search products..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
 
       {error && (
@@ -71,11 +104,47 @@ export function UserProducts() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center pb-8">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        if (page > 1) setPage(page - 1)
+                      }}
+                      className={page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <div className="flex h-10 items-center px-4 text-sm font-medium">
+                      Page {page} of {totalPages}
+                    </div>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        if (page < totalPages) setPage(page + 1)
+                      }}
+                      className={page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
