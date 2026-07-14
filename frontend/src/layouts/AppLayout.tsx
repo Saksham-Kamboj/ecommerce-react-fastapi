@@ -9,16 +9,18 @@ import { ModeToggle } from "@/components/theme/mode-toggle"
 import { Separator } from "@/components/ui/separator"
 import { DynamicBreadcrumb } from "@/components/layout/DynamicBreadcrumb"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { ShoppingCart } from "lucide-react"
+import { ShoppingCart, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/contexts/CartContext"
+import { useWishlist } from "@/contexts/WishlistContext"
 import { CartSheet } from "@/components/cart/CartSheet"
 
 export function AppLayout() {
   const { cart, setIsCartOpen } = useCart()
+  const { items: wishlistItems } = useWishlist()
 
   const itemCount = cart?.items.length || 0
+  const wishlistCount = wishlistItems.length
 
   return (
     <SidebarProvider className="h-svh overflow-hidden">
@@ -30,34 +32,41 @@ export function AppLayout() {
             <Separator orientation="vertical" className="mr-2 h-4" />
             <DynamicBreadcrumb />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {/* Wishlist */}
             <Button
               variant="ghost"
               size="icon"
-              className="relative"
+              className="relative h-9 w-9 overflow-visible"
+              aria-label="Open wishlist"
+            >
+              <Heart className="h-[1.2rem] w-[1.2rem]" />
+              {wishlistCount > 0 && (
+                <span className="pointer-events-none absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+                  {wishlistCount}
+                </span>
+              )}
+            </Button>
+
+            {/* Cart */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative h-9 w-9 overflow-visible"
               onClick={() => setIsCartOpen(true)}
               aria-label="Open cart"
             >
-              <ShoppingCart className="h-5 w-5" />
+              <ShoppingCart className="h-[1.2rem] w-[1.2rem]" />
               {itemCount > 0 && (
-                <Badge
-                  className="pointer-events-none absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px]"
-                  variant="default"
-                >
+                <span className="pointer-events-none absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
                   {itemCount}
-                </Badge>
+                </span>
               )}
             </Button>
+
             <ModeToggle />
           </div>
         </header>
-        {/* 
-          ScrollArea ko kaam karne ke liye parent ki explicit height chahiye.
-          min-h-0 + flex-1 sirf tab kaam karta hai jab usse overflow-hidden
-          container ke andar wrap kiya jaaye — isliye yahan ek intermediate
-          div use kar rahe hain jo flex-1 se height lega aur overflow-hidden
-          se ScrollArea ke Root ko bounded karega.
-        */}
         <div className="min-h-0 flex-1 overflow-hidden">
           <ScrollArea className="h-full">
             <div className="flex flex-col gap-4 p-4 pb-8">
