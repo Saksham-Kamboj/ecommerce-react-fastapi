@@ -10,12 +10,17 @@ from app.schemas.response import ApiResponse, PaginatedApiResponse, paginate
 router = APIRouter()
 
 @router.get("/", response_model=PaginatedApiResponse[ProductOut])
-def list_products(skip: int = Query(0, ge=0), limit: int = Query(10, ge=1), db: Session = Depends(get_db)):
+def list_products(
+    skip: int = Query(0, ge=0), 
+    limit: int = Query(10, ge=1), 
+    search: str | None = Query(None),
+    db: Session = Depends(get_db)
+):
     """
     Retrieve all active products. Publicly accessible.
     """
-    total_items = db.query(product_crud.model).filter(product_crud.model.is_active == True).count()
-    products = product_crud.get_multi_active(db, skip=skip, limit=limit)
+    total_items = product_crud.count_active(db, search=search)
+    products = product_crud.get_multi_active(db, skip=skip, limit=limit, search=search)
     return paginate(
         items=products,
         total_items=total_items,

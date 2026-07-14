@@ -17,13 +17,25 @@ import { Label } from "@/components/ui/label"
 import type { ProductCreate, ProductUpdate, ProductOut } from "@/types/product"
 
 const formSchema = z.object({
-  name: z.string()
+  name: z
+    .string()
     .min(1, "Product name is required")
     .max(255)
     .regex(/^[a-zA-Z\s]*$/, "Product name must contain characters only"),
-  description: z.string().max(1000, "Description cannot exceed 1000 characters").optional().nullable(),
-  price: z.number().min(0, "Price cannot be negative").max(1000000, "Price is too high"),
-  stock_quantity: z.number().int().min(0, "Stock cannot be negative").max(100000, "Stock is too high"),
+  description: z
+    .string()
+    .max(1000, "Description cannot exceed 1000 characters")
+    .optional()
+    .nullable(),
+  price: z
+    .number()
+    .min(0, "Price cannot be negative")
+    .max(1000000, "Price is too high"),
+  stock_quantity: z
+    .number()
+    .int()
+    .min(0, "Stock cannot be negative")
+    .max(100000, "Stock is too high"),
   is_active: z.boolean(),
 })
 
@@ -78,7 +90,7 @@ export function ProductFormDialog({
   const handleSubmit = async (values: FormValues) => {
     try {
       const submitData = { ...values }
-      
+
       // Convert empty strings to null for description
       if (submitData.description === "") {
         submitData.description = null
@@ -95,7 +107,9 @@ export function ProductFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader className="border-b pb-4">
-          <DialogTitle>{isEditing ? "Edit Product" : "Create Product"}</DialogTitle>
+          <DialogTitle>
+            {isEditing ? "Edit Product" : "Create Product"}
+          </DialogTitle>
           <DialogDescription>
             {isEditing
               ? "Make changes to the product here. Click save when you're done."
@@ -189,7 +203,7 @@ export function ProductFormDialog({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 border-t pt-4 mt-6">
+          <div className="mt-6 flex justify-end gap-2 border-t pt-4">
             <Button
               type="button"
               variant="outline"

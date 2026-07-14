@@ -3,6 +3,7 @@ import { MoreHorizontal, Plus, Pencil, Trash2 } from "lucide-react"
 import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
+import { SearchInput } from "@/components/ui/search-input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,29 +27,45 @@ export default function ProductsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Pagination state
+  // Pagination & Search state
   const [page, setPage] = useState(1)
   const limit = 10
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+      setPage(1)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   // Dialog states
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<ProductOut | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<ProductOut | null>(
+    null
+  )
 
   useEffect(() => {
     let ignore = false
     const loadProducts = async () => {
+      setIsLoading(true)
       try {
         const skip = (page - 1) * limit
-        const res = await productsApi.getProducts(skip, limit)
+        const res = await productsApi.getProducts(skip, limit, debouncedSearch)
         if (!ignore) {
           setProducts(res.data)
           setPagination(res.pagination)
         }
       } catch (err) {
         if (!ignore) {
-          setError(err instanceof Error ? err.message : "Failed to fetch products")
+          setError(
+            err instanceof Error ? err.message : "Failed to fetch products"
+          )
         }
       } finally {
         if (!ignore) setIsLoading(false)
@@ -58,7 +75,7 @@ export default function ProductsPage() {
     return () => {
       ignore = true
     }
-  }, [page, limit, refreshTrigger])
+  }, [page, limit, refreshTrigger, debouncedSearch])
 
   const handleCreateProduct = () => {
     setSelectedProduct(null)
@@ -109,18 +126,18 @@ export default function ProductsPage() {
       className: "pl-6 min-w-[250px]",
       cell: (product) => (
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md border shadow-xs bg-muted/50">
+          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md border bg-muted/50 shadow-xs">
             <img
               src={`https://api.dicebear.com/7.x/initials/svg?seed=${product.name}&backgroundColor=f1f5f9,e2e8f0,cbd5e1&textColor=475569`}
               alt={product.name}
               className="h-full w-full object-cover"
             />
           </div>
-          <div className="flex flex-col max-w-[300px]">
-            <span className="leading-tight font-semibold text-foreground truncate">
+          <div className="flex max-w-[300px] flex-col">
+            <span className="truncate leading-tight font-semibold text-foreground">
               {product.name}
             </span>
-            <span className="mt-1 text-xs text-muted-foreground line-clamp-2">
+            <span className="mt-1 line-clamp-2 text-xs text-muted-foreground">
               {product.description || "No description provided."}
             </span>
           </div>
@@ -171,10 +188,14 @@ export default function ProductsPage() {
       cell: (product) => (
         <div className="flex flex-col">
           <span className="text-sm font-medium text-foreground">
-            {product.created_at ? format(new Date(product.created_at), "MMM d, yyyy") : "—"}
+            {product.created_at
+              ? format(new Date(product.created_at), "MMM d, yyyy")
+              : "—"}
           </span>
-          <span className="text-xs text-muted-foreground mt-0.5">
-            {product.created_at ? format(new Date(product.created_at), "hh:mm a") : "—"}
+          <span className="mt-0.5 text-xs text-muted-foreground">
+            {product.created_at
+              ? format(new Date(product.created_at), "hh:mm a")
+              : "—"}
           </span>
         </div>
       ),
@@ -183,7 +204,7 @@ export default function ProductsPage() {
       header: "Actions",
       className: "w-[100px] pr-6 text-right",
       cell: (product) => (
-        <div className="flex justify-end items-center gap-1">
+        <div className="flex items-center justify-end gap-1">
           <Button
             variant="outline"
             size="icon"
@@ -236,16 +257,27 @@ export default function ProductsPage() {
 
   return (
     <div className="flex-1 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Products</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Manage your store's inventory and product catalog here.
+            Manage your inventory and product details.
           </p>
         </div>
-        <Button onClick={handleCreateProduct} className="cursor-pointer shadow-xs">
-          <Plus className="mr-2 h-4 w-4" /> Add Product
-        </Button>
+        <div className="flex w-full items-center gap-3 sm:w-auto">
+          <SearchInput
+            containerClassName="sm:w-64"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Button
+            onClick={handleCreateProduct}
+            className="cursor-pointer whitespace-nowrap shadow-xs"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Add Product
+          </Button>
+        </div>
       </div>
 
       <DataTable

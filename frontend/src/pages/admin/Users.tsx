@@ -3,6 +3,7 @@ import { MoreHorizontal, Plus, Pencil, Trash2 } from "lucide-react"
 import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
+import { SearchInput } from "@/components/ui/search-input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,10 +28,21 @@ export function UsersPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Pagination state
+  // Pagination & Search state
   const [page, setPage] = useState(1)
   const limit = 10
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+      setPage(1) // Reset to first page on new search
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   // Dialog states
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -40,9 +52,10 @@ export function UsersPage() {
   useEffect(() => {
     let ignore = false
     const loadUsers = async () => {
+      setIsLoading(true)
       try {
         const skip = (page - 1) * limit
-        const res = await usersApi.getUsers(skip, limit)
+        const res = await usersApi.getUsers(skip, limit, debouncedSearch)
         if (!ignore) {
           setUsers(res.data)
           setPagination(res.pagination)
@@ -59,7 +72,7 @@ export function UsersPage() {
     return () => {
       ignore = true
     }
-  }, [page, limit, refreshTrigger])
+  }, [page, limit, refreshTrigger, debouncedSearch])
 
   const handleCreateUser = () => {
     setSelectedUser(null)
@@ -206,7 +219,7 @@ export function UsersPage() {
       header: "Actions",
       className: "w-[100px] pr-6 text-right",
       cell: (user) => (
-        <div className="flex justify-end items-center gap-1">
+        <div className="flex items-center justify-end gap-1">
           <Button
             variant="outline"
             size="icon"
@@ -259,16 +272,27 @@ export function UsersPage() {
 
   return (
     <div className="flex-1 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Users</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Manage your team members and their account permissions here.
           </p>
         </div>
-        <Button onClick={handleCreateUser} className="cursor-pointer shadow-xs">
-          <Plus className="mr-2 h-4 w-4" /> Add User
-        </Button>
+        <div className="flex w-full items-center gap-3 sm:w-auto">
+          <SearchInput
+            containerClassName="sm:w-64"
+            placeholder="Search users..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Button
+            onClick={handleCreateUser}
+            className="cursor-pointer whitespace-nowrap shadow-xs"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Add User
+          </Button>
+        </div>
       </div>
 
       <DataTable

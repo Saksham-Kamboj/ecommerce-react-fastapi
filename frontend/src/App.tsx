@@ -20,7 +20,12 @@ export function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
+      <Route
+        path="/"
+        element={
+          <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+        }
+      />
 
       {isAuthenticated ? (
         <Route path="/*" element={<ProtectedRouter />} />

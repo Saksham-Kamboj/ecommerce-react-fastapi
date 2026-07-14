@@ -1,4 +1,6 @@
+import uuid
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from app.core.security import get_password_hash, verify_password
 from app.crud.base import CRUDBase
@@ -9,6 +11,28 @@ from app.schemas.user import UserCreate, UserUpdate
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_email(self, db: Session, email: str) -> User | None:
         return db.query(User).filter(User.email == email).first()
+
+    def get_multi(self, db: Session, skip: int = 0, limit: int = 100, search: str | None = None) -> list[User]:
+        query = db.query(self.model)
+        if search:
+            query = query.filter(
+                or_(
+                    self.model.full_name.ilike(f"%{search}%"),
+                    self.model.email.ilike(f"%{search}%")
+                )
+            )
+        return query.offset(skip).limit(limit).all()
+
+    def count(self, db: Session, search: str | None = None) -> int:
+        query = db.query(self.model)
+        if search:
+            query = query.filter(
+                or_(
+                    self.model.full_name.ilike(f"%{search}%"),
+                    self.model.email.ilike(f"%{search}%")
+                )
+            )
+        return query.count()
 
     def create(self, db: Session, obj_in: UserCreate) -> User:
         db_obj = User(

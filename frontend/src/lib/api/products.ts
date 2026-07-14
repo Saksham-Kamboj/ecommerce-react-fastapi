@@ -5,14 +5,16 @@ import type { ProductOut, ProductCreate, ProductUpdate } from "@/types/product"
 export const productsApi = {
   getProducts: async (
     skip = 0,
-    limit = 10
+    limit = 10,
+    search?: string
   ): Promise<PaginatedApiResponse<ProductOut>> => {
-    const res = await apiClient<ProductOut[]>(
-      `/products/?skip=${skip}&limit=${limit}`,
-      {
-        method: "GET",
-      }
-    )
+    let url = `/products/?skip=${skip}&limit=${limit}`
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`
+    }
+    const res = await apiClient<ProductOut[]>(url, {
+      method: "GET",
+    })
     return res as unknown as PaginatedApiResponse<ProductOut>
   },
 

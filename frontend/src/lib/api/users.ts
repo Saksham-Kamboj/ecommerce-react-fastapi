@@ -5,14 +5,16 @@ import type { UserOut, UserCreate, UserUpdate } from "@/types/auth"
 export const usersApi = {
   getUsers: async (
     skip = 0,
-    limit = 10
+    limit = 10,
+    search?: string
   ): Promise<PaginatedApiResponse<UserOut>> => {
-    const res = await apiClient<UserOut[]>(
-      `/users/?skip=${skip}&limit=${limit}`,
-      {
-        method: "GET",
-      }
-    )
+    let url = `/users/?skip=${skip}&limit=${limit}`
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`
+    }
+    const res = await apiClient<UserOut[]>(url, {
+      method: "GET",
+    })
     return res as unknown as PaginatedApiResponse<UserOut>
   },
 
