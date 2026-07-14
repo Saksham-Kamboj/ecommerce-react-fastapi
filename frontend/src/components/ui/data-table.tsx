@@ -74,10 +74,10 @@ export function DataTable<T>({
     <div className="flex flex-col overflow-hidden rounded-md border bg-card shadow-xs">
       <ScrollArea className="max-h-[calc(100vh-250px)] w-full">
         <Table wrapperClassName="overflow-visible">
-          <TableHeader className="sticky top-0 z-10 bg-card shadow-xs">
-            <TableRow className="hover:bg-transparent">
+          <TableHeader className="sticky top-0 z-10 bg-card shadow-xs after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-border">
+            <TableRow className="hover:bg-transparent border-none">
               {showIndex && (
-                <TableHead className="w-[50px] pl-4 text-center font-semibold">
+                <TableHead className="w-[50px] pl-4 text-center font-semibold border-b">
                   #
                 </TableHead>
               )}
@@ -95,7 +95,7 @@ export function DataTable<T>({
                 return (
                   <TableHead 
                     key={index} 
-                    className={cn(col.className, col.sortable && "cursor-pointer select-none hover:bg-muted/50 transition-colors")}
+                    className={cn(col.className, col.sortable && "cursor-pointer select-none hover:bg-muted/50 transition-colors", "border-b")}
                     onClick={() => col.sortable && onSort && onSort(col.sortKey || (col.accessorKey as string))}
                     title={titleText}
                   >
