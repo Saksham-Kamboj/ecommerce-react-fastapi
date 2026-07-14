@@ -60,7 +60,13 @@ export default function ProductsPage() {
       setIsLoading(true)
       try {
         const skip = (page - 1) * limit
-        const res = await productsApi.getProducts(skip, limit, debouncedSearch, sortBy, sortOrder)
+        const res = await productsApi.getProducts(
+          skip,
+          limit,
+          debouncedSearch,
+          sortBy,
+          sortOrder
+        )
         if (!ignore) {
           setProducts(res.data)
           setPagination(res.pagination)
@@ -211,6 +217,26 @@ export default function ProductsPage() {
           <span className="mt-0.5 text-xs text-muted-foreground">
             {product.created_at
               ? format(new Date(product.created_at), "hh:mm a")
+              : "—"}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: "Updated At",
+      className: "hidden md:table-cell min-w-[140px]",
+      sortable: true,
+      sortKey: "updated_at",
+      cell: (product) => (
+        <div className="flex flex-col">
+          <span className="text-sm font-medium text-foreground">
+            {product.updated_at
+              ? format(new Date(product.updated_at), "MMM d, yyyy")
+              : "—"}
+          </span>
+          <span className="mt-0.5 text-xs text-muted-foreground">
+            {product.updated_at
+              ? format(new Date(product.updated_at), "hh:mm a")
               : "—"}
           </span>
         </div>
