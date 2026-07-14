@@ -15,9 +15,8 @@ import { CartSheet } from "@/components/cart/CartSheet"
 export function AppLayout() {
   const { cart, setIsCartOpen } = useCart()
 
-  // Calculate total number of items (sum of quantities)
-  const itemCount =
-    cart?.items.reduce((total, item) => total + item.quantity, 0) || 0
+  // Calculate number of distinct items in cart
+  const itemCount = cart?.items.length || 0
 
   return (
     <SidebarProvider className="h-svh overflow-hidden">

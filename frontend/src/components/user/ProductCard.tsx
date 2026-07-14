@@ -35,7 +35,10 @@ function getMockRating(id: string) {
 export function ProductCard({ product }: ProductCardProps) {
   const gradientClass = getGradientFromName(product.name)
   const { rating, reviews } = getMockRating(product.id)
-  const { addToCart } = useCart()
+  const { cart, addToCart } = useCart()
+
+  const cartItem = cart?.items.find((item) => item.product.id === product.id)
+  const isInCart = !!cartItem
 
   return (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md">
@@ -100,12 +103,13 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Footer Area */}
       <div className="p-2 pt-0">
         <Button
-          className="w-full"
+          className="w-full transition-all"
+          variant={isInCart ? "secondary" : "default"}
           disabled={product.stock_quantity === 0}
           onClick={() => addToCart(product.id, 1)}
         >
           <ShoppingCart className="mr-2 h-4 w-4" />
-          Add to Cart
+          {isInCart ? `Added (${cartItem.quantity}) - Add More` : "Add to Cart"}
         </Button>
       </div>
     </div>

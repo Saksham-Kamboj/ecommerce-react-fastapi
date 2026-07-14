@@ -63,7 +63,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       await cartApi.addItem({ product_id: productId, quantity })
       await refreshCart()
-      setIsCartOpen(true) // Open sidebar when item added
+      // setIsCartOpen(true) // Sidebar will no longer open automatically
     } catch (error) {
       console.error("Failed to add to cart:", error)
       alert("Failed to add to cart")

@@ -27,7 +27,7 @@ export function CartSheet() {
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
       <SheetContent className="flex w-full max-h-screen flex-col sm:max-w-md">
-        <SheetHeader className="border-b border-border p-2">
+        <SheetHeader className="border-b border-border p-3">
           <SheetTitle className="flex items-center gap-2 text-xl">
             <ShoppingCart className="h-5 w-5" />
             Your Cart {hasItems && `(${items.length})`}
@@ -44,13 +44,13 @@ export function CartSheet() {
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4">
                     {/* Placeholder for item image if needed in future */}
-                    <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted/50">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted/50">
                       <ShoppingCart className="h-8 w-8 text-muted-foreground/30" />
                     </div>
 
                     <div className="flex flex-1 flex-col justify-between">
                       <div className="flex items-start justify-between gap-2">
-                        <h4 className="line-clamp-2 text-sm font-medium">
+                        <h4 className="line-clamp-1 text-sm font-medium">
                           {item.product.name}
                         </h4>
                         <p className="text-sm font-semibold whitespace-nowrap">
@@ -107,7 +107,7 @@ export function CartSheet() {
               </div>
             </ScrollArea>
 
-            <div className="flex flex-col gap-2 border-t border-border p-4 pt-4">
+            <div className="flex flex-col gap-2 border-t border-border p-4 pt-2">
               <div className="flex items-center justify-between font-medium">
                 <span>Subtotal</span>
                 <span className="text-xl font-bold">₹{total.toFixed(2)}</span>
