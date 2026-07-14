@@ -1,5 +1,6 @@
 import uuid
 from sqlalchemy.orm import Session
+from sqlalchemy import asc
 from app.models.cart import Cart, CartItem
 from app.models.product import Product
 from app.schemas.cart import CartItemCreate, CartItemUpdate
@@ -16,7 +17,10 @@ class CRUDCart:
         return cart
 
     def get_cart_by_user(self, db: Session, user_id: uuid.UUID) -> Cart:
-        return self.get_or_create_cart(db, user_id)
+        cart = self.get_or_create_cart(db, user_id)
+        # Ensure items are always returned in insertion order (created_at asc)
+        cart.items.sort(key=lambda item: item.created_at)
+        return cart
 
     def add_item_to_cart(self, db: Session, cart_id: uuid.UUID, item_in: CartItemCreate) -> CartItem:
         # Check if product exists and has stock

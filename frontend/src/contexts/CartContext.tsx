@@ -5,7 +5,9 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useRef,
   useCallback,
+  useMemo,
 } from "react"
 import { cartApi } from "@/lib/api/cart"
 import type { CartOut } from "@/types/cart"
@@ -17,7 +19,7 @@ interface CartContextType {
   isCartOpen: boolean
   setIsCartOpen: (open: boolean) => void
   addToCart: (productId: string, quantity?: number) => Promise<void>
-  updateQuantity: (itemId: string, quantity: number) => Promise<void>
+  updateQuantity: (itemId: string, quantity: number) => void
   removeFromCart: (itemId: string) => Promise<void>
   clearCart: () => Promise<void>
   refreshCart: () => Promise<void>
@@ -25,11 +27,21 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | null>(null)
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+// Debounce delay in ms — API fires this long after the last click
+const DEBOUNCE_DELAY = 500
+
+export function CartProvider({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const [cart, setCart] = useState<CartOut | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const { isAuthenticated } = useAuth()
+
+  // Holds pending debounce timers per cart item id
+  const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>(
+    {}
+  )
 
   const refreshCart = useCallback(async () => {
     if (!isAuthenticated) {
@@ -56,30 +68,75 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addToCart = async (productId: string, quantity: number = 1) => {
     if (!isAuthenticated) {
-      // You could redirect to login here or show a toast
       alert("Please login to add items to cart")
       return
     }
     try {
       await cartApi.addItem({ product_id: productId, quantity })
       await refreshCart()
-      // setIsCartOpen(true) // Sidebar will no longer open automatically
     } catch (error) {
       console.error("Failed to add to cart:", error)
       alert("Failed to add to cart")
     }
   }
 
-  const updateQuantity = async (itemId: string, quantity: number) => {
-    try {
-      await cartApi.updateQuantity(itemId, { quantity })
-      await refreshCart()
-    } catch (error) {
-      console.error("Failed to update quantity:", error)
-    }
-  }
+  /**
+   * Optimistic update: immediately reflect the new quantity in the UI,
+   * then debounce the actual API call so rapid +/- clicks collapse into
+   * a single request fired DEBOUNCE_DELAY ms after the last click.
+   */
+  const updateQuantity = useCallback(
+    (itemId: string, quantity: number) => {
+      // 1. Optimistically update local cart state right away
+      setCart((prev) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          items: prev.items.map((item) =>
+            item.id === itemId ? { ...item, quantity } : item
+          ),
+          // Recalculate subtotal optimistically
+          total_price: Number.parseFloat(
+            prev.items
+              .map((item) =>
+                item.id === itemId
+                  ? item.product.price * quantity
+                  : item.product.price * item.quantity
+              )
+              .reduce((sum, val) => sum + val, 0)
+              .toFixed(2)
+          ),
+        }
+      })
+
+      // 2. Cancel any existing timer for this item
+      if (debounceTimers.current[itemId]) {
+        clearTimeout(debounceTimers.current[itemId])
+      }
+
+      // 3. Schedule the API call after the debounce delay
+      debounceTimers.current[itemId] = setTimeout(async () => {
+        delete debounceTimers.current[itemId]
+        try {
+          await cartApi.updateQuantity(itemId, { quantity })
+          // Sync with server after the debounced call completes
+          await refreshCart()
+        } catch (error) {
+          console.error("Failed to update quantity:", error)
+          // Roll back to server state on error
+          await refreshCart()
+        }
+      }, DEBOUNCE_DELAY)
+    },
+    [refreshCart]
+  )
 
   const removeFromCart = async (itemId: string) => {
+    // Cancel any pending debounce for this item before removing
+    if (debounceTimers.current[itemId]) {
+      clearTimeout(debounceTimers.current[itemId])
+      delete debounceTimers.current[itemId]
+    }
     try {
       await cartApi.removeItem(itemId)
       await refreshCart()
@@ -89,6 +146,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const clearCart = async () => {
+    // Cancel all pending debounces
+    Object.values(debounceTimers.current).forEach(clearTimeout)
+    debounceTimers.current = {}
     try {
       await cartApi.clearCart()
       await refreshCart()
@@ -97,17 +157,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const value = {
-    cart,
-    isLoading,
-    isCartOpen,
-    setIsCartOpen,
-    addToCart,
-    updateQuantity,
-    removeFromCart,
-    clearCart,
-    refreshCart,
-  }
+  const value = useMemo(
+    () => ({
+      cart,
+      isLoading,
+      isCartOpen,
+      setIsCartOpen,
+      addToCart,
+      updateQuantity,
+      removeFromCart,
+      clearCart,
+      refreshCart,
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }),
+    [cart, isLoading, isCartOpen, updateQuantity, refreshCart]
+  )
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }

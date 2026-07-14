@@ -17,7 +17,7 @@ class Cart(Base):
 
     # Relationships
     user = relationship("User", back_populates="cart")
-    items = relationship("CartItem", back_populates="cart", cascade="all, delete-orphan")
+    items = relationship("CartItem", back_populates="cart", cascade="all, delete-orphan", order_by="CartItem.created_at")
 
 
 class CartItem(Base):
