@@ -60,7 +60,7 @@ export function DataTable<T>({
   }
   return (
     <div className="flex flex-col overflow-hidden rounded-md border bg-card shadow-xs">
-      <ScrollArea className="relative h-[calc(100vh-250px)] w-full">
+      <ScrollArea className="max-h-[calc(100vh-250px)] w-full">
         <Table wrapperClassName="overflow-visible">
           <TableHeader className="sticky top-0 z-10 bg-card shadow-xs">
             <TableRow className="hover:bg-transparent">
@@ -95,7 +95,7 @@ export function DataTable<T>({
                   colSpan={columns.length}
                   className="h-32 text-center text-destructive"
                 >
-                  {error}
+                  <p>{error}</p>
                 </TableCell>
               </TableRow>
             ) : data.length === 0 ? (
@@ -104,7 +104,7 @@ export function DataTable<T>({
                   colSpan={columns.length}
                   className="h-32 text-center text-muted-foreground"
                 >
-                  {emptyMessage}
+                  <p>{emptyMessage}</p>
                 </TableCell>
               </TableRow>
             ) : (
