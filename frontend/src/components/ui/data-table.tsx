@@ -72,7 +72,7 @@ export function DataTable<T>({
   }
   return (
     <div className="flex flex-col overflow-hidden rounded-md border bg-card shadow-xs">
-      <ScrollArea className="max-h-[calc(100vh-250px)] w-full">
+      <ScrollArea className="w-full">
         <Table wrapperClassName="overflow-visible">
           <TableHeader className="sticky top-0 z-10 bg-card shadow-xs after:absolute after:right-0 after:bottom-0 after:left-0 after:h-px after:bg-border">
             <TableRow className="border-none hover:bg-transparent">
