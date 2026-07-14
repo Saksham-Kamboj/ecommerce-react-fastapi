@@ -24,7 +24,7 @@ import {
   UserCircleIcon,
 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
-import { useNavigate, Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 export function NavUser({
   user,
@@ -42,6 +42,10 @@ export function NavUser({
   const handleLogout = () => {
     logout()
     navigate("/login")
+  }
+
+  const handleGoToProfile = () => {
+    navigate("/profile")
   }
 
   // Get initials for avatar fallback (e.g., "John Doe" -> "JD")
@@ -103,11 +107,12 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link to="/profile">
-                  <UserCircleIcon className="mr-2 h-4 w-4" />
-                  My Profile
-                </Link>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={handleGoToProfile}
+              >
+                <UserCircleIcon className="mr-2 h-4 w-4" />
+                My Profile
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

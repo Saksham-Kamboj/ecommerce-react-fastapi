@@ -3,6 +3,8 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
+  useMemo,
   type ReactNode,
 } from "react"
 import { authApi } from "@/lib/api/auth"
@@ -15,11 +17,12 @@ interface AuthContextType {
   isLoading: boolean
   login: (token: string) => void
   logout: () => void
+  updateUser: (updated: UserOut) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [token, setToken] = useState<string | null>(() => {
     return localStorage.getItem("token")
   })
@@ -40,7 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(response.data)
       } catch (err) {
         console.error("Failed to fetch user profile:", err)
-        // If token is invalid, clear it
         localStorage.removeItem("token")
         setToken(null)
         setUser(null)
@@ -52,31 +54,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadUser()
   }, [token])
 
-  const login = (newToken: string) => {
+  const login = useCallback((newToken: string) => {
     localStorage.setItem("token", newToken)
     setToken(newToken)
-  }
+  }, [])
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem("token")
     setToken(null)
     setUser(null)
-  }
+  }, [])
 
-  return (
-    <AuthContext.Provider
-      value={{
-        token,
-        user,
-        isAuthenticated: !!token && !!user,
-        isLoading,
-        login,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const updateUser = useCallback((updated: UserOut) => {
+    setUser(updated)
+  }, [])
+
+  const value = useMemo(
+    () => ({
+      token,
+      user,
+      isAuthenticated: !!token && !!user,
+      isLoading,
+      login,
+      logout,
+      updateUser,
+    }),
+    [token, user, isLoading, login, logout, updateUser]
   )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

@@ -1,7 +1,7 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, date
 
-from sqlalchemy import Boolean, DateTime, String, func, Uuid
+from sqlalchemy import Boolean, DateTime, Date, String, Text, func, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -19,6 +19,20 @@ class User(Base):
     access_token: Mapped[str] = mapped_column(String, nullable=True)
     otp_code: Mapped[str] = mapped_column(String(6), nullable=True)
     otp_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Profile fields
+    phone: Mapped[str] = mapped_column(String(20), nullable=True)
+    date_of_birth: Mapped[date] = mapped_column(Date, nullable=True)
+    bio: Mapped[str] = mapped_column(Text, nullable=True)
+
+    # Address fields
+    address_line1: Mapped[str] = mapped_column(String(255), nullable=True)
+    address_line2: Mapped[str] = mapped_column(String(255), nullable=True)
+    city: Mapped[str] = mapped_column(String(100), nullable=True)
+    state: Mapped[str] = mapped_column(String(100), nullable=True)
+    postal_code: Mapped[str] = mapped_column(String(20), nullable=True)
+    country: Mapped[str] = mapped_column(String(100), nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
