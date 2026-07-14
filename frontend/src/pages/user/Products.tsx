@@ -21,6 +21,7 @@ export function UserProducts() {
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
   const ITEMS_PER_PAGE = 10
 
   // Debounce search query
@@ -39,12 +40,17 @@ export function UserProducts() {
       setIsLoading(true)
       try {
         const skip = (page - 1) * ITEMS_PER_PAGE
-        const response = await productsApi.getProducts(skip, ITEMS_PER_PAGE, debouncedSearch)
+        const response = await productsApi.getProducts(
+          skip,
+          ITEMS_PER_PAGE,
+          debouncedSearch
+        )
         if (!ignore) {
           // Only show active products to normal users
           const activeProducts = response.data.filter((p) => p.is_active)
           setProducts(activeProducts)
           setTotalPages(response.pagination.totalPages || 1)
+          setTotalItems(response.pagination.totalItems || 0)
         }
       } catch (err) {
         if (!ignore) {
@@ -68,7 +74,7 @@ export function UserProducts() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pr-2">
+      <div className="flex flex-col justify-between gap-4 pr-2 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-primary">
             All Products
@@ -77,12 +83,29 @@ export function UserProducts() {
             Browse our collection of high-quality study materials and guides.
           </p>
         </div>
-        <SearchInput
-          containerClassName="sm:w-64"
-          placeholder="Search products..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        <div className="flex flex-col items-end gap-2">
+          <SearchInput
+            containerClassName="sm:w-64"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {!isLoading && !error && products.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              Showing{" "}
+              <span className="font-medium text-foreground">
+                {(page - 1) * ITEMS_PER_PAGE + 1}
+              </span>{" "}
+              to{" "}
+              <span className="font-medium text-foreground">
+                {Math.min(page * ITEMS_PER_PAGE, totalItems)}
+              </span>{" "}
+              of{" "}
+              <span className="font-medium text-foreground">{totalItems}</span>{" "}
+              products
+            </p>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -92,18 +115,22 @@ export function UserProducts() {
         </div>
       )}
 
-      {isLoading ? (
+      {isLoading && (
         <div className="flex min-h-[400px] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      ) : !error && products.length === 0 ? (
+      )}
+
+      {!isLoading && !error && products.length === 0 && (
         <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border border-dashed text-center">
           <h2 className="mb-2 text-xl font-semibold">No products found</h2>
           <p className="text-muted-foreground">
             Check back later for new arrivals.
           </p>
         </div>
-      ) : (
+      )}
+
+      {!isLoading && !error && products.length > 0 && (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {products.map((product) => (
@@ -112,9 +139,24 @@ export function UserProducts() {
           </div>
 
           {totalPages > 1 && (
-            <div className="mt-8 flex justify-center pb-8">
+            <div className="flex w-full items-center justify-center">
+              <p className="w-full text-sm text-muted-foreground">
+                Showing{" "}
+                <span className="font-medium text-foreground">
+                  {(page - 1) * ITEMS_PER_PAGE + 1}
+                </span>{" "}
+                to{" "}
+                <span className="font-medium text-foreground">
+                  {Math.min(page * ITEMS_PER_PAGE, totalItems)}
+                </span>{" "}
+                of{" "}
+                <span className="font-medium text-foreground">
+                  {totalItems}
+                </span>{" "}
+                products
+              </p>
               <Pagination>
-                <PaginationContent>
+                <PaginationContent className="flex w-full items-center justify-end">
                   <PaginationItem>
                     <PaginationPrevious
                       href="#"
@@ -122,7 +164,11 @@ export function UserProducts() {
                         e.preventDefault()
                         if (page > 1) setPage(page - 1)
                       }}
-                      className={page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      className={
+                        page <= 1
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
                     />
                   </PaginationItem>
                   <PaginationItem>
@@ -137,7 +183,11 @@ export function UserProducts() {
                         e.preventDefault()
                         if (page < totalPages) setPage(page + 1)
                       }}
-                      className={page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      className={
+                        page >= totalPages
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
                     />
                   </PaginationItem>
                 </PaginationContent>

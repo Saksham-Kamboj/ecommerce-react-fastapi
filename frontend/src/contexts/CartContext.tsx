@@ -66,19 +66,22 @@ export function CartProvider({
     refreshCart()
   }, [refreshCart])
 
-  const addToCart = async (productId: string, quantity: number = 1) => {
-    if (!isAuthenticated) {
-      alert("Please login to add items to cart")
-      return
-    }
-    try {
-      await cartApi.addItem({ product_id: productId, quantity })
-      await refreshCart()
-    } catch (error) {
-      console.error("Failed to add to cart:", error)
-      alert("Failed to add to cart")
-    }
-  }
+  const addToCart = useCallback(
+    async (productId: string, quantity: number = 1) => {
+      if (!isAuthenticated) {
+        alert("Please login to add items to cart")
+        return
+      }
+      try {
+        await cartApi.addItem({ product_id: productId, quantity })
+        await refreshCart()
+      } catch (error) {
+        console.error("Failed to add to cart:", error)
+        alert("Failed to add to cart")
+      }
+    },
+    [isAuthenticated, refreshCart]
+  )
 
   /**
    * Optimistic update: immediately reflect the new quantity in the UI,
@@ -131,21 +134,24 @@ export function CartProvider({
     [refreshCart]
   )
 
-  const removeFromCart = async (itemId: string) => {
-    // Cancel any pending debounce for this item before removing
-    if (debounceTimers.current[itemId]) {
-      clearTimeout(debounceTimers.current[itemId])
-      delete debounceTimers.current[itemId]
-    }
-    try {
-      await cartApi.removeItem(itemId)
-      await refreshCart()
-    } catch (error) {
-      console.error("Failed to remove item:", error)
-    }
-  }
+  const removeFromCart = useCallback(
+    async (itemId: string) => {
+      // Cancel any pending debounce for this item before removing
+      if (debounceTimers.current[itemId]) {
+        clearTimeout(debounceTimers.current[itemId])
+        delete debounceTimers.current[itemId]
+      }
+      try {
+        await cartApi.removeItem(itemId)
+        await refreshCart()
+      } catch (error) {
+        console.error("Failed to remove item:", error)
+      }
+    },
+    [refreshCart]
+  )
 
-  const clearCart = async () => {
+  const clearCart = useCallback(async () => {
     // Cancel all pending debounces
     Object.values(debounceTimers.current).forEach(clearTimeout)
     debounceTimers.current = {}
@@ -155,7 +161,7 @@ export function CartProvider({
     } catch (error) {
       console.error("Failed to clear cart:", error)
     }
-  }
+  }, [refreshCart])
 
   const value = useMemo(
     () => ({
@@ -168,9 +174,17 @@ export function CartProvider({
       removeFromCart,
       clearCart,
       refreshCart,
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }),
-    [cart, isLoading, isCartOpen, updateQuantity, refreshCart]
+    [
+      cart,
+      isLoading,
+      isCartOpen,
+      addToCart,
+      updateQuantity,
+      removeFromCart,
+      clearCart,
+      refreshCart,
+    ]
   )
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>

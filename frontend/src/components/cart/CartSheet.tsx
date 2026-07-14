@@ -26,7 +26,7 @@ export function CartSheet() {
 
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
-      <SheetContent className="flex w-full max-h-screen flex-col sm:max-w-md">
+      <SheetContent className="flex max-h-screen w-full flex-col sm:max-w-md">
         <SheetHeader className="border-b border-border p-3">
           <SheetTitle className="flex items-center gap-2 text-xl">
             <ShoppingCart className="h-5 w-5" />
@@ -38,8 +38,8 @@ export function CartSheet() {
         </SheetHeader>
 
         {hasItems ? (
-          <div className="flex flex-col flex-1 min-h-0">
-            <ScrollArea className="flex-1 min-h-0 px-4">
+          <div className="flex min-h-0 flex-1 flex-col">
+            <ScrollArea className="min-h-0 flex-1 px-4">
               <div className="flex flex-col gap-6 py-4">
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4">
