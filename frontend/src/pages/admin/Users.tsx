@@ -35,6 +35,10 @@ export function UsersPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
+  // Sort state
+  const [sortBy, setSortBy] = useState("created_at")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -55,7 +59,7 @@ export function UsersPage() {
       setIsLoading(true)
       try {
         const skip = (page - 1) * limit
-        const res = await usersApi.getUsers(skip, limit, debouncedSearch)
+        const res = await usersApi.getUsers(skip, limit, debouncedSearch, sortBy, sortOrder)
         if (!ignore) {
           setUsers(res.data)
           setPagination(res.pagination)
@@ -72,7 +76,7 @@ export function UsersPage() {
     return () => {
       ignore = true
     }
-  }, [page, limit, refreshTrigger, debouncedSearch])
+  }, [page, limit, refreshTrigger, debouncedSearch, sortBy, sortOrder])
 
   const handleCreateUser = () => {
     setSelectedUser(null)
@@ -115,6 +119,16 @@ export function UsersPage() {
           (err instanceof Error ? err.message : "Unknown error")
       )
     }
+  }
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setSortBy(column)
+      setSortOrder("desc")
+    }
+    setPage(1) // Reset page on sort
   }
 
   // Helper to generate initials for avatar
@@ -196,6 +210,8 @@ export function UsersPage() {
     {
       header: "Joined",
       className: "hidden md:table-cell",
+      sortable: true,
+      sortKey: "created_at",
       cell: (user) => (
         <span className="text-sm text-muted-foreground">
           {user.created_at
@@ -207,6 +223,8 @@ export function UsersPage() {
     {
       header: "Updated",
       className: "hidden md:table-cell",
+      sortable: true,
+      sortKey: "updated_at",
       cell: (user) => (
         <span className="text-sm text-muted-foreground">
           {user.updated_at
@@ -304,6 +322,9 @@ export function UsersPage() {
         pagination={pagination}
         onPageChange={handlePageChange}
         showIndex={true}
+        sortColumn={sortBy}
+        sortOrder={sortOrder}
+        onSort={handleSort}
       />
 
       <UserFormDialog

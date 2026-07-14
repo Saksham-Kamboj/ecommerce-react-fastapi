@@ -34,6 +34,10 @@ export default function ProductsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
+  // Sort state
+  const [sortBy, setSortBy] = useState("created_at")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -56,7 +60,7 @@ export default function ProductsPage() {
       setIsLoading(true)
       try {
         const skip = (page - 1) * limit
-        const res = await productsApi.getProducts(skip, limit, debouncedSearch)
+        const res = await productsApi.getProducts(skip, limit, debouncedSearch, sortBy, sortOrder)
         if (!ignore) {
           setProducts(res.data)
           setPagination(res.pagination)
@@ -75,7 +79,7 @@ export default function ProductsPage() {
     return () => {
       ignore = true
     }
-  }, [page, limit, refreshTrigger, debouncedSearch])
+  }, [page, limit, refreshTrigger, debouncedSearch, sortBy, sortOrder])
 
   const handleCreateProduct = () => {
     setSelectedProduct(null)
@@ -118,6 +122,16 @@ export default function ProductsPage() {
           (err instanceof Error ? err.message : "Unknown error")
       )
     }
+  }
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setSortBy(column)
+      setSortOrder("desc")
+    }
+    setPage(1) // Reset page on sort
   }
 
   const productColumns: ColumnDef<ProductOut>[] = [
@@ -185,6 +199,8 @@ export default function ProductsPage() {
     {
       header: "Created At",
       className: "hidden md:table-cell min-w-[140px]",
+      sortable: true,
+      sortKey: "created_at",
       cell: (product) => (
         <div className="flex flex-col">
           <span className="text-sm font-medium text-foreground">
@@ -289,6 +305,9 @@ export default function ProductsPage() {
         pagination={pagination}
         onPageChange={handlePageChange}
         showIndex={false} // Match screenshot, no index shown
+        sortColumn={sortBy}
+        sortOrder={sortOrder}
+        onSort={handleSort}
       />
 
       <ProductFormDialog

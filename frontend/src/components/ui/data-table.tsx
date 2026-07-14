@@ -20,11 +20,15 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import type { Pagination as PaginationType } from "@/types/api"
 import { cn } from "@/lib/utils"
 
+import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react"
+
 export interface ColumnDef<T> {
   header: string | React.ReactNode
   accessorKey?: keyof T
   cell?: (row: T) => React.ReactNode
   className?: string
+  sortable?: boolean
+  sortKey?: string
 }
 
 interface DataTableProps<T> {
@@ -38,6 +42,11 @@ interface DataTableProps<T> {
   // Pagination Props
   pagination?: PaginationType | null
   onPageChange?: (page: number) => void
+
+  // Sorting Props
+  sortColumn?: string
+  sortOrder?: "asc" | "desc"
+  onSort?: (column: string) => void
 }
 
 export function DataTable<T>({
@@ -49,6 +58,9 @@ export function DataTable<T>({
   showIndex = false,
   pagination,
   onPageChange,
+  sortColumn,
+  sortOrder,
+  onSort,
 }: DataTableProps<T>) {
   const getRowIndex = (rowIndex: number) => {
     if (pagination) {
@@ -69,11 +81,36 @@ export function DataTable<T>({
                   #
                 </TableHead>
               )}
-              {columns.map((col, index) => (
-                <TableHead key={index} className={col.className}>
-                  {col.header}
-                </TableHead>
-              ))}
+              {columns.map((col, index) => {
+                const isCurrentSortColumn = sortColumn === (col.sortKey || col.accessorKey);
+                let titleText: string | undefined;
+                if (col.sortable) {
+                  if (isCurrentSortColumn) {
+                    titleText = sortOrder === "asc" ? "Click to sort descending" : "Click to sort ascending";
+                  } else {
+                    titleText = "Click to sort ascending";
+                  }
+                }
+
+                return (
+                  <TableHead 
+                    key={index} 
+                    className={cn(col.className, col.sortable && "cursor-pointer select-none hover:bg-muted/50 transition-colors")}
+                    onClick={() => col.sortable && onSort && onSort(col.sortKey || (col.accessorKey as string))}
+                    title={titleText}
+                  >
+                    <div className="flex items-center gap-2">
+                      {col.header}
+                      {col.sortable && isCurrentSortColumn && (
+                        sortOrder === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                      )}
+                      {col.sortable && !isCurrentSortColumn && (
+                        <ChevronsUpDown className="h-4 w-4 opacity-30" />
+                      )}
+                    </div>
+                  </TableHead>
+                );
+              })}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -137,8 +174,12 @@ export function DataTable<T>({
 
       {/* Pagination Section */}
       {pagination && pagination.totalPages > 1 && onPageChange && (
-        <div className="border-t px-4 py-4">
-          <Pagination>
+        <div className="flex flex-col sm:flex-row items-center justify-between border-t px-4 py-4 gap-4 sm:gap-0">
+          <div className="text-sm text-muted-foreground whitespace-nowrap">
+            Showing {(pagination.currentPage - 1) * pagination.itemsPerPage + 1} to{" "}
+            {Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} of {pagination.totalItems} entries
+          </div>
+          <Pagination className="mx-0 w-auto">
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious

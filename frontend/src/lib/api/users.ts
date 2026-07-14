@@ -6,11 +6,19 @@ export const usersApi = {
   getUsers: async (
     skip = 0,
     limit = 10,
-    search?: string
+    search?: string,
+    sortBy?: string,
+    sortOrder?: string
   ): Promise<PaginatedApiResponse<UserOut>> => {
     let url = `/users/?skip=${skip}&limit=${limit}`
     if (search) {
       url += `&search=${encodeURIComponent(search)}`
+    }
+    if (sortBy) {
+      url += `&sort_by=${encodeURIComponent(sortBy)}`
+    }
+    if (sortOrder) {
+      url += `&sort_order=${encodeURIComponent(sortOrder)}`
     }
     const res = await apiClient<UserOut[]>(url, {
       method: "GET",

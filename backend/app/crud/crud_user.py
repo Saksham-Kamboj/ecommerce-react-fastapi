@@ -12,7 +12,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_email(self, db: Session, email: str) -> User | None:
         return db.query(User).filter(User.email == email).first()
 
-    def get_multi(self, db: Session, skip: int = 0, limit: int = 100, search: str | None = None) -> list[User]:
+    def get_multi(self, db: Session, skip: int = 0, limit: int = 100, search: str | None = None, sort_by: str = "created_at", sort_order: str = "desc") -> list[User]:
         query = db.query(self.model)
         if search:
             query = query.filter(
@@ -21,6 +21,14 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
                     self.model.email.ilike(f"%{search}%")
                 )
             )
+            
+        if sort_by in ["created_at", "updated_at"]:
+            sort_column = getattr(self.model, sort_by)
+            if sort_order == "desc":
+                query = query.order_by(sort_column.desc())
+            else:
+                query = query.order_by(sort_column.asc())
+                
         return query.offset(skip).limit(limit).all()
 
     def count(self, db: Session, search: str | None = None) -> int:

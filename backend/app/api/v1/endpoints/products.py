@@ -14,13 +14,15 @@ def list_products(
     skip: int = Query(0, ge=0), 
     limit: int = Query(10, ge=1), 
     search: str | None = Query(None),
+    sort_by: str = Query("created_at"),
+    sort_order: str = Query("desc"),
     db: Session = Depends(get_db)
 ):
     """
     Retrieve all active products. Publicly accessible.
     """
     total_items = product_crud.count_active(db, search=search)
-    products = product_crud.get_multi_active(db, skip=skip, limit=limit, search=search)
+    products = product_crud.get_multi_active(db, skip=skip, limit=limit, search=search, sort_by=sort_by, sort_order=sort_order)
     return paginate(
         items=products,
         total_items=total_items,

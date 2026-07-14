@@ -29,11 +29,13 @@ def list_users(
     skip: int = Query(0, ge=0), 
     limit: int = Query(10, ge=1), 
     search: str | None = Query(None),
+    sort_by: str = Query("created_at"),
+    sort_order: str = Query("desc"),
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_active_admin)
 ):
     total_items = user_crud.count(db, search=search)
-    users = user_crud.get_multi(db, skip=skip, limit=limit, search=search)
+    users = user_crud.get_multi(db, skip=skip, limit=limit, search=search, sort_by=sort_by, sort_order=sort_order)
     return paginate(
         items=users,
         total_items=total_items,

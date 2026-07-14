@@ -6,11 +6,19 @@ export const productsApi = {
   getProducts: async (
     skip = 0,
     limit = 10,
-    search?: string
+    search?: string,
+    sortBy?: string,
+    sortOrder?: string
   ): Promise<PaginatedApiResponse<ProductOut>> => {
     let url = `/products/?skip=${skip}&limit=${limit}`
     if (search) {
       url += `&search=${encodeURIComponent(search)}`
+    }
+    if (sortBy) {
+      url += `&sort_by=${encodeURIComponent(sortBy)}`
+    }
+    if (sortOrder) {
+      url += `&sort_order=${encodeURIComponent(sortOrder)}`
     }
     const res = await apiClient<ProductOut[]>(url, {
       method: "GET",
