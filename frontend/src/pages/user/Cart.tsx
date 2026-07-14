@@ -67,8 +67,8 @@ export function UserCart() {
           {/* Items list */}
           <div className="flex flex-col gap-3 lg:col-span-2">
             {items.map((item) => (
-              <Card key={item.id} className="overflow-hidden">
-                <CardContent className="flex items-center gap-4 p-4">
+              <Card key={item.id} className="overflow-hidden p-0">
+                <CardContent className="flex items-center gap-4 p-2">
                   {/* Product visual */}
                   <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted/50">
                     <ShoppingCart className="h-7 w-7 text-muted-foreground/30" />
