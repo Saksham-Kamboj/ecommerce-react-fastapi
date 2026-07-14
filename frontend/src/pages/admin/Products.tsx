@@ -132,7 +132,7 @@ export default function ProductsPage() {
       className: "w-[120px]",
       cell: (product) => (
         <span className="font-medium text-foreground">
-          ${product.price.toFixed(2)}
+          ₹{product.price.toFixed(2)}
         </span>
       ),
     },
