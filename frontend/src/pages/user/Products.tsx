@@ -74,7 +74,7 @@ export function UserProducts() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col justify-between gap-4 pr-2 sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 pr-2 sm:flex-row sm:items-end">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-primary">
             All Products
@@ -90,21 +90,6 @@ export function UserProducts() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          {!isLoading && !error && products.length > 0 && (
-            <p className="text-sm text-muted-foreground">
-              Showing{" "}
-              <span className="font-medium text-foreground">
-                {(page - 1) * ITEMS_PER_PAGE + 1}
-              </span>{" "}
-              to{" "}
-              <span className="font-medium text-foreground">
-                {Math.min(page * ITEMS_PER_PAGE, totalItems)}
-              </span>{" "}
-              of{" "}
-              <span className="font-medium text-foreground">{totalItems}</span>{" "}
-              products
-            </p>
-          )}
         </div>
       </div>
 
