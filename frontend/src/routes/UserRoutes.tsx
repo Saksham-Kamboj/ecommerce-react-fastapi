@@ -2,6 +2,9 @@ import { Routes, Route, Navigate } from "react-router-dom"
 import { AppLayout } from "@/layouts/AppLayout"
 import { UserProfile } from "@/pages/user/Profile"
 import { UserProducts } from "@/pages/user/Products"
+import { UserWishlist } from "@/pages/user/Wishlist"
+import { UserCart } from "@/pages/user/Cart"
+import { UserOrders } from "@/pages/user/Orders"
 
 export function UserRoutes() {
   return (
@@ -9,6 +12,9 @@ export function UserRoutes() {
       <Route element={<AppLayout />}>
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/products" element={<UserProducts />} />
+        <Route path="/wishlist" element={<UserWishlist />} />
+        <Route path="/cart" element={<UserCart />} />
+        <Route path="/orders" element={<UserOrders />} />
         <Route path="*" element={<Navigate to="/profile" replace />} />
       </Route>
     </Routes>

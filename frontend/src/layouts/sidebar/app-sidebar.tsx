@@ -2,6 +2,8 @@
 
 import * as React from "react"
 import { useAuth } from "@/contexts/AuthContext"
+import { useCart } from "@/contexts/CartContext"
+import { useWishlist } from "@/contexts/WishlistContext"
 import { appConfig } from "@/config/app"
 
 import { NavMain } from "./nav-main"
@@ -23,11 +25,14 @@ import {
   UsersIcon,
   ShoppingBag,
   LayoutDashboardIcon,
+  HeartIcon,
+  ShoppingCartIcon,
+  PackageIcon,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
-// Hardcode navigation for now, but in a real app this could be dynamic based on role
-const navCommon = [
+// Shared admin nav items
+const navAdmin = [
   {
     title: "Users",
     url: "/users",
@@ -39,6 +44,35 @@ const navCommon = [
     title: "Products",
     url: "/products",
     icon: <ShoppingBag />,
+    isActive: false,
+    requireRole: "superadmin",
+  },
+]
+
+// User-only nav items
+const userNavItems = [
+  {
+    title: "Products",
+    url: "/products",
+    icon: <ShoppingBag />,
+    isActive: false,
+  },
+  {
+    title: "Wishlist",
+    url: "/wishlist",
+    icon: <HeartIcon />,
+    isActive: false,
+  },
+  {
+    title: "Cart",
+    url: "/cart",
+    icon: <ShoppingCartIcon />,
+    isActive: false,
+  },
+  {
+    title: "Orders",
+    url: "/orders",
+    icon: <PackageIcon />,
     isActive: false,
   },
 ]
@@ -57,7 +91,11 @@ const navSecondary = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth()
+  const { cart } = useCart()
+  const { items: wishlistItems } = useWishlist()
 
+  const cartCount = cart?.items.length ?? 0
+  const wishlistCount = wishlistItems.length
   const isAdmin = user?.role === "superadmin"
 
   // First nav item differs by role
@@ -75,8 +113,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         isActive: true,
       }
 
-  // Build full nav list and filter by role
-  const filteredNavMain = [firstNavItem, ...navCommon].filter((item) => {
+  // Admin sees: Dashboard, Users, Products
+  // User sees: Profile, Products, Wishlist, Cart, Orders
+  const getBadge = (url: string): number | undefined => {
+    if (url === "/cart") return cartCount > 0 ? cartCount : undefined
+    if (url === "/wishlist")
+      return wishlistCount > 0 ? wishlistCount : undefined
+    return undefined
+  }
+
+  const roleItems = isAdmin
+    ? navAdmin
+    : userNavItems.map((item) => ({ ...item, badge: getBadge(item.url) }))
+  const filteredNavMain = [firstNavItem, ...roleItems].filter((item) => {
     if (
       "requireRole" in item &&
       item.requireRole &&
@@ -88,7 +137,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   })
 
   // Format the user object for NavUser
-  const navUser = {
+  const navUserData = {
     name: user?.full_name || user?.email?.split("@")[0] || "User",
     email: user?.email || "",
     avatar: "", // Can add an avatar URL if available in the backend later
@@ -124,7 +173,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={navUser} />
+        <NavUser user={navUserData} />
       </SidebarFooter>
     </Sidebar>
   )

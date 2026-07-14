@@ -19,18 +19,19 @@ import { Link, useLocation } from "react-router-dom"
 
 export function NavMain({
   items,
-}: {
+}: Readonly<{
   items: {
     title: string
     url: string
     icon: React.ReactNode
     isActive?: boolean
+    badge?: number
     items?: {
       title: string
       url: string
     }[]
   }[]
-}) {
+}>) {
   const location = useLocation()
 
   return (
@@ -56,6 +57,11 @@ export function NavMain({
               >
                 {item.icon}
                 <span>{item.title}</span>
+                {item.badge != null && item.badge > 0 && (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+                    {item.badge > 99 ? "99+" : item.badge}
+                  </span>
+                )}
               </SidebarMenuButton>
               {item.items?.length ? (
                 <>
