@@ -23,7 +23,7 @@ export function App() {
       <Route
         path="/"
         element={
-          <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+          <Navigate to={isAuthenticated ? "/profile" : "/login"} replace />
         }
       />
 

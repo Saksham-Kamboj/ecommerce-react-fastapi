@@ -19,7 +19,7 @@ import {
 import {
   LifeBuoyIcon,
   SendIcon,
-  LayoutDashboardIcon,
+  UserCircleIcon,
   UsersIcon,
   ShoppingBag,
 } from "lucide-react"
@@ -28,9 +28,9 @@ import { Link } from "react-router-dom"
 // Hardcode navigation for now, but in a real app this could be dynamic based on role
 const navMain = [
   {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: <LayoutDashboardIcon />,
+    title: "Profile",
+    url: "/profile",
+    icon: <UserCircleIcon />,
     isActive: true,
   },
   {
@@ -46,26 +46,6 @@ const navMain = [
     icon: <ShoppingBag />,
     isActive: false,
   },
-  // {
-  //   title: "Playground",
-  //   url: "#",
-  //   icon: <TerminalSquareIcon />,
-  //   isActive: false,
-  //   items: [
-  //     {
-  //       title: "History",
-  //       url: "#",
-  //     },
-  //     {
-  //       title: "Starred",
-  //       url: "#",
-  //     },
-  //     {
-  //       title: "Settings",
-  //       url: "#",
-  //     },
-  //   ],
-  // },
 ]
 const navSecondary = [
   {

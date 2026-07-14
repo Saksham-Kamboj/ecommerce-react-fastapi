@@ -21,19 +21,20 @@ import {
   SparklesIcon,
   BellIcon,
   LogOutIcon,
+  UserCircleIcon,
 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 
 export function NavUser({
   user,
-}: {
+}: Readonly<{
   user: {
     name: string
     email: string
     avatar: string
   }
-}) {
+}>) {
   const { isMobile } = useSidebar()
   const { logout } = useAuth()
   const navigate = useNavigate()
@@ -99,6 +100,15 @@ export function NavUser({
                   </div>
                 </div>
               </DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem className="cursor-pointer" asChild>
+                <Link to="/profile">
+                  <UserCircleIcon className="mr-2 h-4 w-4" />
+                  My Profile
+                </Link>
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
