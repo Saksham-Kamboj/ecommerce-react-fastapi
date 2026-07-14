@@ -1,18 +1,18 @@
 import { Routes, Route, Navigate } from "react-router-dom"
-import { RoleRoute } from "@/components/auth/RoleRoute"
 import { AppLayout } from "@/layouts/AppLayout"
 import { AdminDashboard } from "@/pages/admin/Dashboard"
+import { UsersPage } from "@/pages/admin/Users"
+import ProductsPage from "@/pages/admin/Products"
 
 export function AdminRoutes() {
   return (
     <Routes>
-      <Route element={<RoleRoute allowedRoles={["superadmin"]} />}>
-        <Route element={<AppLayout />}>
-          <Route path="dashboard" element={<AdminDashboard />} />
-          {/* Add more admin routes here */}
-        </Route>
+      <Route element={<AppLayout />}>
+        <Route path="/dashboard" element={<AdminDashboard />} />
+        <Route path="/users" element={<UsersPage />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
-      <Route path="*" element={<Navigate to="dashboard" replace />} />
     </Routes>
   )
 }
