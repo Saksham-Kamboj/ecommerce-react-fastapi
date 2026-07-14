@@ -1,4 +1,5 @@
 import { useCart } from "@/contexts/CartContext"
+import { useWishlist } from "@/contexts/WishlistContext"
 import { Heart, ShoppingCart, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { ProductOut } from "@/types/product"
@@ -19,26 +20,28 @@ function getGradientFromName(name: string) {
   ]
   const charSum = name
     .split("")
-    .reduce((sum, char) => sum + char.charCodeAt(0), 0)
+    .reduce((sum, char) => sum + (char.codePointAt(0) ?? 0), 0)
   return colors[charSum % colors.length]
 }
 
 // Mock rating generation
 function getMockRating(id: string) {
   // deterministic pseudo-random rating between 4.0 and 5.0 based on ID
-  const num = parseInt(id.replace(/-/g, "").substring(0, 8), 16)
+  const num = Number.parseInt(id.replaceAll("-", "").substring(0, 8), 16)
   const rating = 4.0 + (num % 11) / 10 // 4.0 to 5.0
   const reviews = 20 + (num % 200) // 20 to 219
   return { rating: rating.toFixed(1), reviews }
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product }: Readonly<ProductCardProps>) {
   const gradientClass = getGradientFromName(product.name)
   const { rating, reviews } = getMockRating(product.id)
   const { cart, addToCart } = useCart()
+  const { isWishlisted, toggle } = useWishlist()
 
   const cartItem = cart?.items.find((item) => item.product.id === product.id)
   const isInCart = !!cartItem
+  const wishlisted = isWishlisted(product.id)
 
   return (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md">
@@ -60,10 +63,18 @@ export function ProductCard({ product }: ProductCardProps) {
         <Button
           variant="secondary"
           size="icon"
-          className="absolute top-3 right-3 h-8 w-8 rounded-full bg-background/80 text-muted-foreground opacity-0 shadow-sm backdrop-blur transition-all group-hover:opacity-100 hover:text-red-500"
+          onClick={() => toggle(product.id)}
+          className={cn(
+            "absolute top-3 right-3 h-8 w-8 rounded-full bg-background/80 shadow-sm backdrop-blur transition-all group-hover:opacity-100",
+            wishlisted
+              ? "text-red-500 opacity-100 hover:text-red-600"
+              : "text-muted-foreground opacity-0 hover:text-red-500"
+          )}
         >
-          <Heart className="h-4 w-4" />
-          <span className="sr-only">Add to wishlist</span>
+          <Heart className={cn("h-4 w-4", wishlisted && "fill-red-500")} />
+          <span className="sr-only">
+            {wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          </span>
         </Button>
       </div>
 

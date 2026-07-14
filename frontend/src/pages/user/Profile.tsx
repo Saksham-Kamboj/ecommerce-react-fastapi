@@ -2,8 +2,10 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useAuth } from "@/contexts/AuthContext"
 import { useCart } from "@/contexts/CartContext"
+import { useWishlist } from "@/contexts/WishlistContext"
 import { profileApi } from "@/lib/api/profile"
 import type { UserUpdateSelf, ChangePasswordRequest } from "@/types/auth"
+import type { WishlistItemOut } from "@/types/wishlist"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -31,9 +33,9 @@ import {
   UserIcon,
   HeartIcon,
   CheckCircle2Icon,
+  Trash2Icon,
 } from "lucide-react"
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
 function getInitials(name: string) {
   return name
     .split(" ")
@@ -51,7 +53,6 @@ function formatDate(iso: string) {
   })
 }
 
-// ── Stat Card ──────────────────────────────────────────────────────────────────
 function StatCard({
   icon: Icon,
   label,
@@ -79,7 +80,6 @@ function StatCard({
   )
 }
 
-// ── Field Row ──────────────────────────────────────────────────────────────────
 function FieldRow({
   label,
   value,
@@ -92,7 +92,6 @@ function FieldRow({
   )
 }
 
-// ── Success Alert ──────────────────────────────────────────────────────────────
 function SuccessAlert({ message }: Readonly<{ message: string }>) {
   return (
     <div className="flex items-center gap-2 rounded-md bg-green-500/10 px-3 py-2 text-sm text-green-600 dark:text-green-400">
@@ -102,7 +101,6 @@ function SuccessAlert({ message }: Readonly<{ message: string }>) {
   )
 }
 
-// ── Error Alert ────────────────────────────────────────────────────────────────
 function ErrorAlert({ message }: Readonly<{ message: string }>) {
   return (
     <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -115,6 +113,7 @@ function ErrorAlert({ message }: Readonly<{ message: string }>) {
 export function UserProfile() {
   const { user, updateUser } = useAuth()
   const { cart } = useCart()
+  const { items: wishlistItems, toggle: toggleWishlist } = useWishlist()
 
   if (!user) return null
 
@@ -125,7 +124,6 @@ export function UserProfile() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* ── Heading ── */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-primary">
           My Profile
@@ -135,7 +133,6 @@ export function UserProfile() {
         </p>
       </div>
 
-      {/* ── Hero ── */}
       <Card>
         <CardContent className="flex flex-col items-center gap-4 p-6 sm:flex-row sm:items-start">
           <Avatar className="h-20 w-20">
@@ -169,7 +166,6 @@ export function UserProfile() {
         </CardContent>
       </Card>
 
-      {/* ── Stats ── */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard
           icon={PackageIcon}
@@ -190,8 +186,12 @@ export function UserProfile() {
         <StatCard
           icon={HeartIcon}
           label="Wishlist"
-          value="0"
-          sub="No items saved"
+          value={String(wishlistItems.length)}
+          sub={
+            wishlistItems.length > 0
+              ? `${wishlistItems.length} saved`
+              : "No items saved"
+          }
         />
         <StatCard
           icon={MapPinIcon}
@@ -201,27 +201,42 @@ export function UserProfile() {
         />
       </div>
 
-      {/* ── Tabs ── */}
       <Tabs defaultValue="account">
         <TabsList className="mb-2 w-full justify-start gap-1 p-1">
           <TabsTrigger value="account" className="flex items-center gap-1.5">
-            <UserIcon className="h-3.5 w-3.5" /> Account
+            <UserIcon className="h-3.5 w-3.5" />
+            Account
           </TabsTrigger>
           <TabsTrigger value="address" className="flex items-center gap-1.5">
-            <MapPinIcon className="h-3.5 w-3.5" /> Address
+            <MapPinIcon className="h-3.5 w-3.5" />
+            Address
+          </TabsTrigger>
+          <TabsTrigger value="wishlist" className="flex items-center gap-1.5">
+            <HeartIcon className="h-3.5 w-3.5" />
+            Wishlist
+            {wishlistItems.length > 0 && (
+              <Badge
+                variant="secondary"
+                className="ml-0.5 h-4 px-1 text-[10px]"
+              >
+                {wishlistItems.length}
+              </Badge>
+            )}
           </TabsTrigger>
           <TabsTrigger value="cart" className="flex items-center gap-1.5">
-            <ShoppingCartIcon className="h-3.5 w-3.5" /> Cart
+            <ShoppingCartIcon className="h-3.5 w-3.5" />
+            Cart
           </TabsTrigger>
           <TabsTrigger value="security" className="flex items-center gap-1.5">
-            <KeyRoundIcon className="h-3.5 w-3.5" /> Security
+            <KeyRoundIcon className="h-3.5 w-3.5" />
+            Security
           </TabsTrigger>
           <TabsTrigger value="payment" className="flex items-center gap-1.5">
-            <CreditCardIcon className="h-3.5 w-3.5" /> Payment
+            <CreditCardIcon className="h-3.5 w-3.5" />
+            Payment
           </TabsTrigger>
         </TabsList>
 
-        {/* ── Account Tab ── */}
         <TabsContent value="account">
           <div className="grid gap-4 lg:grid-cols-2">
             <AccountViewCard user={user} />
@@ -229,7 +244,6 @@ export function UserProfile() {
           </div>
         </TabsContent>
 
-        {/* ── Address Tab ── */}
         <TabsContent value="address">
           <div className="grid gap-4 lg:grid-cols-2">
             <AddressViewCard user={user} />
@@ -237,7 +251,10 @@ export function UserProfile() {
           </div>
         </TabsContent>
 
-        {/* ── Cart Tab ── */}
+        <TabsContent value="wishlist">
+          <WishlistCard items={wishlistItems} onRemove={toggleWishlist} />
+        </TabsContent>
+
         <TabsContent value="cart">
           <CartSummaryCard
             cart={cart}
@@ -246,17 +263,16 @@ export function UserProfile() {
           />
         </TabsContent>
 
-        {/* ── Security Tab ── */}
         <TabsContent value="security">
           <ChangePasswordCard />
         </TabsContent>
 
-        {/* ── Payment Tab ── */}
         <TabsContent value="payment">
           <Card className="border-dashed opacity-70">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <CreditCardIcon className="h-4 w-4" /> Payment Methods
+                <CreditCardIcon className="h-4 w-4" />
+                Payment Methods
               </CardTitle>
               <CardDescription>
                 Save cards and UPI for faster checkout.
@@ -318,7 +334,6 @@ function AccountEditCard({
   const [isSaving, setIsSaving] = useState(false)
   const [success, setSuccess] = useState("")
   const [error, setError] = useState("")
-
   const {
     register,
     handleSubmit,
@@ -331,7 +346,6 @@ function AccountEditCard({
       bio: user.bio ?? "",
     },
   })
-
   const onSubmit = async (data: UserUpdateSelf) => {
     setIsSaving(true)
     setSuccess("")
@@ -346,7 +360,6 @@ function AccountEditCard({
       setIsSaving(false)
     }
   }
-
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -376,7 +389,8 @@ function AccountEditCard({
               htmlFor="date_of_birth"
               className="flex items-center gap-1.5"
             >
-              <CalendarIcon className="h-3.5 w-3.5" /> Date of Birth
+              <CalendarIcon className="h-3.5 w-3.5" />
+              Date of Birth
             </Label>
             <Input
               id="date_of_birth"
@@ -393,10 +407,8 @@ function AccountEditCard({
               {...register("bio")}
             />
           </div>
-
           {success && <SuccessAlert message={success} />}
           {error && <ErrorAlert message={error} />}
-
           <Button
             type="submit"
             disabled={isSaving || !isDirty}
@@ -462,7 +474,6 @@ function AddressEditCard({
   const [isSaving, setIsSaving] = useState(false)
   const [success, setSuccess] = useState("")
   const [error, setError] = useState("")
-
   const {
     register,
     handleSubmit,
@@ -477,7 +488,6 @@ function AddressEditCard({
       country: user.country ?? "",
     },
   })
-
   const onSubmit = async (data: UserUpdateSelf) => {
     setIsSaving(true)
     setSuccess("")
@@ -492,7 +502,6 @@ function AddressEditCard({
       setIsSaving(false)
     }
   }
-
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -549,10 +558,8 @@ function AddressEditCard({
               />
             </div>
           </div>
-
           {success && <SuccessAlert message={success} />}
           {error && <ErrorAlert message={error} />}
-
           <Button
             type="submit"
             disabled={isSaving || !isDirty}
@@ -562,6 +569,78 @@ function AddressEditCard({
             Save Address
           </Button>
         </form>
+      </CardContent>
+    </Card>
+  )
+}
+
+// ── Wishlist Card ──────────────────────────────────────────────────────────────
+function WishlistCard({
+  items,
+  onRemove,
+}: Readonly<{
+  items: WishlistItemOut[]
+  onRemove: (productId: string) => Promise<void>
+}>) {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-base">My Wishlist</CardTitle>
+            <CardDescription>
+              Products you have saved for later.
+            </CardDescription>
+          </div>
+          {items.length > 0 && (
+            <Badge variant="secondary">{items.length} items</Badge>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="px-6 pb-5">
+        {items.length === 0 ? (
+          <div className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
+            <HeartIcon className="h-8 w-8 text-muted-foreground/40" />
+            <p className="text-sm font-medium">Your wishlist is empty</p>
+            <p className="text-xs text-muted-foreground">
+              Click the heart icon on any product to save it.
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-1">
+            {items.map((item) => (
+              <div key={item.id}>
+                <div className="flex items-center justify-between py-2.5">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
+                      {item.product.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      ₹{item.product.price.toFixed(2)} ·{" "}
+                      {item.product.stock_quantity > 0 ? (
+                        <span className="text-emerald-500">
+                          {item.product.stock_quantity} in stock
+                        </span>
+                      ) : (
+                        <span className="text-destructive">Out of stock</span>
+                      )}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="ml-3 h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                    onClick={() => onRemove(item.product_id)}
+                  >
+                    <Trash2Icon className="h-4 w-4" />
+                    <span className="sr-only">Remove from wishlist</span>
+                  </Button>
+                </div>
+                <Separator />
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   )
@@ -577,6 +656,7 @@ function CartSummaryCard({
   cartItemCount: number
   cartTotal: number
 }>) {
+  const { removeFromCart } = useCart()
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -601,7 +681,7 @@ function CartSummaryCard({
           </div>
         ) : (
           <div className="flex flex-col gap-1">
-            {cart?.items.slice(0, 6).map((item) => (
+            {cart?.items.map((item) => (
               <div key={item.id}>
                 <div className="flex items-center justify-between py-2.5">
                   <div className="min-w-0 flex-1">
@@ -612,18 +692,24 @@ function CartSummaryCard({
                       Qty: {item.quantity} × ₹{item.product.price.toFixed(2)}
                     </p>
                   </div>
-                  <p className="ml-4 shrink-0 text-sm font-semibold">
-                    ₹{(item.product.price * item.quantity).toFixed(2)}
-                  </p>
+                  <div className="ml-4 flex shrink-0 items-center gap-3">
+                    <p className="text-sm font-semibold">
+                      ₹{(item.product.price * item.quantity).toFixed(2)}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeFromCart(item.id)}
+                    >
+                      <Trash2Icon className="h-4 w-4" />
+                      <span className="sr-only">Remove from cart</span>
+                    </Button>
+                  </div>
                 </div>
                 <Separator />
               </div>
             ))}
-            {cartItemCount > 6 && (
-              <p className="pt-1 text-center text-xs text-muted-foreground">
-                +{cartItemCount - 6} more items
-              </p>
-            )}
             <div className="flex items-center justify-between pt-3">
               <span className="text-sm font-medium">Subtotal</span>
               <span className="text-base font-bold text-primary">
@@ -642,14 +728,12 @@ function ChangePasswordCard() {
   const [isSaving, setIsSaving] = useState(false)
   const [success, setSuccess] = useState("")
   const [error, setError] = useState("")
-
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<ChangePasswordRequest>()
-
   const onSubmit = async (data: ChangePasswordRequest) => {
     setIsSaving(true)
     setSuccess("")
@@ -666,13 +750,13 @@ function ChangePasswordCard() {
       setIsSaving(false)
     }
   }
-
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
-            <KeyRoundIcon className="h-4 w-4" /> Change Password
+            <KeyRoundIcon className="h-4 w-4" />
+            Change Password
           </CardTitle>
           <CardDescription>
             Enter your current password and choose a new one.
@@ -716,10 +800,8 @@ function ChangePasswordCard() {
                 </p>
               )}
             </div>
-
             {success && <SuccessAlert message={success} />}
             {error && <ErrorAlert message={error} />}
-
             <Button
               type="submit"
               disabled={isSaving}
@@ -733,8 +815,6 @@ function ChangePasswordCard() {
           </form>
         </CardContent>
       </Card>
-
-      {/* 2FA — coming soon */}
       <Card className="border-dashed opacity-70">
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Two-Factor Authentication</CardTitle>

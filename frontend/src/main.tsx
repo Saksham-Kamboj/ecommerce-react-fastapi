@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme/theme-provider"
 import { BrowserRouter } from "react-router-dom"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { CartProvider } from "@/contexts/CartContext"
+import { WishlistProvider } from "@/contexts/WishlistContext"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 createRoot(document.getElementById("root")!).render(
@@ -16,7 +17,9 @@ createRoot(document.getElementById("root")!).render(
         <BrowserRouter>
           <AuthProvider>
             <CartProvider>
-              <App />
+              <WishlistProvider>
+                <App />
+              </WishlistProvider>
             </CartProvider>
           </AuthProvider>
         </BrowserRouter>
