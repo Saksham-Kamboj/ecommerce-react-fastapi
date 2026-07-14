@@ -203,7 +203,7 @@ export function UserProfile() {
 
       {/* ── Tabs ── */}
       <Tabs defaultValue="account">
-        <TabsList className="mb-2 flex h-auto w-full flex-wrap gap-1 sm:h-10">
+        <TabsList className="mb-2 w-full justify-start gap-1 p-1">
           <TabsTrigger value="account" className="flex items-center gap-1.5">
             <UserIcon className="h-3.5 w-3.5" /> Account
           </TabsTrigger>
