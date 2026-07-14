@@ -9,6 +9,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -106,9 +107,11 @@ export function UserFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader className="border-b pb-4">
-          <DialogTitle>{isEditing ? "Edit User" : "Create User"}</DialogTitle>
+      <DialogContent className="gap-0 p-0 sm:max-w-[425px]">
+        <DialogHeader className="border-b p-4">
+          <DialogTitle className="text-base">
+            {isEditing ? "Edit User" : "Create User"}
+          </DialogTitle>
           <DialogDescription>
             {isEditing
               ? "Make changes to the user profile here. Click save when you're done."
@@ -117,8 +120,9 @@ export function UserFormDialog({
         </DialogHeader>
 
         <form
+          id="user-form"
           onSubmit={form.handleSubmit(handleSubmit)}
-          className="space-y-4 pt-2"
+          className="space-y-4 p-4"
         >
           <div className="space-y-2">
             <Label htmlFor="full_name">Full Name</Label>
@@ -216,20 +220,23 @@ export function UserFormDialog({
               </p>
             </div>
           </div>
-
-          <div className="mt-6 flex justify-end gap-2 border-t pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? "Saving..." : "Save User"}
-            </Button>
-          </div>
         </form>
+        <DialogFooter className="border-t bg-muted/20 p-4 sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="user-form"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting ? "Saving..." : "Save User"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

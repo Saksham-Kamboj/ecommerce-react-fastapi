@@ -23,7 +23,7 @@ export function ProductDeleteDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader className="border-b pb-4">
+        <DialogHeader>
           <DialogTitle>Are you absolutely sure?</DialogTitle>
           <DialogDescription className="pt-2">
             This action cannot be undone. This will permanently delete the

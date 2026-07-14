@@ -9,6 +9,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -105,9 +106,9 @@ export function ProductFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader className="border-b pb-4">
-          <DialogTitle>
+      <DialogContent className="gap-0 p-0 sm:max-w-[425px]">
+        <DialogHeader className="border-b p-4">
+          <DialogTitle className="text-base">
             {isEditing ? "Edit Product" : "Create Product"}
           </DialogTitle>
           <DialogDescription>
@@ -118,8 +119,9 @@ export function ProductFormDialog({
         </DialogHeader>
 
         <form
+          id="product-form"
           onSubmit={form.handleSubmit(handleSubmit)}
-          className="space-y-4 pt-2"
+          className="space-y-4 p-4"
         >
           <div className="space-y-2">
             <Label htmlFor="name">Product Name</Label>
@@ -203,19 +205,23 @@ export function ProductFormDialog({
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end gap-2 border-t pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? "Saving..." : "Save Product"}
-            </Button>
-          </div>
         </form>
+        <DialogFooter className="border-t bg-muted/20 p-4 sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="product-form"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting ? "Saving..." : "Save Product"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
