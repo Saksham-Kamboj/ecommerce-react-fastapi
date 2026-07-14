@@ -25,10 +25,14 @@ import type { UserCreate, UserUpdate, UserOut } from "@/types/auth"
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address"),
-  full_name: z.string().min(2, "Full name must be at least 2 characters"),
+  full_name: z.string()
+    .min(2, "Full name must be at least 2 characters")
+    .max(100, "Full name cannot exceed 100 characters")
+    .regex(/^[a-zA-Z\s]*$/, "Full name must contain characters only"),
   password: z
     .string()
     .min(6, "Password must be at least 6 characters")
+    .max(50, "Password cannot exceed 50 characters")
     .optional()
     .or(z.literal("")),
   role: z.enum(["superadmin", "user"]),

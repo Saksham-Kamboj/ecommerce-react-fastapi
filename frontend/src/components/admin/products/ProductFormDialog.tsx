@@ -21,9 +21,9 @@ const formSchema = z.object({
     .min(1, "Product name is required")
     .max(255)
     .regex(/^[a-zA-Z\s]*$/, "Product name must contain characters only"),
-  description: z.string().optional().nullable(),
-  price: z.number().min(0, "Price cannot be negative"),
-  stock_quantity: z.number().int().min(0, "Stock cannot be negative"),
+  description: z.string().max(1000, "Description cannot exceed 1000 characters").optional().nullable(),
+  price: z.number().min(0, "Price cannot be negative").max(1000000, "Price is too high"),
+  stock_quantity: z.number().int().min(0, "Stock cannot be negative").max(100000, "Stock is too high"),
   is_active: z.boolean(),
 })
 
