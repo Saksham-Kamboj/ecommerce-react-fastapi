@@ -38,11 +38,11 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md">
       {/* "Image" Area */}
-      <div className="relative aspect-square w-full overflow-hidden bg-muted p-4">
+      <div className="relative aspect-square w-full overflow-hidden bg-muted p-2">
         {/* Book Cover Mockup */}
         <div
           className={cn(
-            "flex h-full w-full items-center justify-center rounded-sm bg-gradient-to-br p-6 text-center text-white shadow-inner transition-transform duration-300 group-hover:scale-105",
+            "flex h-full w-full items-center justify-center rounded-sm bg-linear-to-br p-6 text-center text-white shadow-inner transition-transform duration-300 group-hover:scale-102",
             gradientClass
           )}
         >
@@ -63,16 +63,16 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Content Area */}
-      <div className="flex flex-1 flex-col p-4">
-        <h3 className="line-clamp-2 min-h-[2.5rem] leading-tight font-semibold tracking-tight">
+      <div className="flex flex-1 flex-col gap-1 p-2">
+        <h3 className="line-clamp-2 leading-tight font-semibold tracking-tight">
           {product.name}
         </h3>
 
-        <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+        <p className="line-clamp-2 text-sm text-muted-foreground">
           {product.description || "No description available."}
         </p>
 
-        <div className="mt-auto pt-4">
+        <div className="">
           <div className="flex items-center justify-between">
             <div className="text-lg font-bold">₹{product.price.toFixed(2)}</div>
 
@@ -96,7 +96,7 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Footer Area */}
-      <div className="p-4 pt-0">
+      <div className="p-2 pt-0">
         <Button className="w-full" disabled={product.stock_quantity === 0}>
           <ShoppingCart className="mr-2 h-4 w-4" />
           Add to Cart
