@@ -213,7 +213,6 @@ export function ProductFormDialog({
               </p>
             </div>
           </div>
-
         </form>
         <DialogFooter className="border-t bg-muted/20 p-4 sm:justify-end">
           <Button

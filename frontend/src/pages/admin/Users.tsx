@@ -59,7 +59,13 @@ export function UsersPage() {
       setIsLoading(true)
       try {
         const skip = (page - 1) * limit
-        const res = await usersApi.getUsers(skip, limit, debouncedSearch, sortBy, sortOrder)
+        const res = await usersApi.getUsers(
+          skip,
+          limit,
+          debouncedSearch,
+          sortBy,
+          sortOrder
+        )
         if (!ignore) {
           setUsers(res.data)
           setPagination(res.pagination)

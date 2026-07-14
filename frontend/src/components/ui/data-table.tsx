@@ -74,42 +74,59 @@ export function DataTable<T>({
     <div className="flex flex-col overflow-hidden rounded-md border bg-card shadow-xs">
       <ScrollArea className="max-h-[calc(100vh-250px)] w-full">
         <Table wrapperClassName="overflow-visible">
-          <TableHeader className="sticky top-0 z-10 bg-card shadow-xs after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-border">
-            <TableRow className="hover:bg-transparent border-none">
+          <TableHeader className="sticky top-0 z-10 bg-card shadow-xs after:absolute after:right-0 after:bottom-0 after:left-0 after:h-px after:bg-border">
+            <TableRow className="border-none hover:bg-transparent">
               {showIndex && (
-                <TableHead className="w-[50px] pl-4 text-center font-semibold border-b">
+                <TableHead className="w-[50px] border-b pl-4 text-center font-semibold">
                   #
                 </TableHead>
               )}
               {columns.map((col, index) => {
-                const isCurrentSortColumn = sortColumn === (col.sortKey || col.accessorKey);
-                let titleText: string | undefined;
+                const isCurrentSortColumn =
+                  sortColumn === (col.sortKey || col.accessorKey)
+                let titleText: string | undefined
                 if (col.sortable) {
                   if (isCurrentSortColumn) {
-                    titleText = sortOrder === "asc" ? "Click to sort descending" : "Click to sort ascending";
+                    titleText =
+                      sortOrder === "asc"
+                        ? "Click to sort descending"
+                        : "Click to sort ascending"
                   } else {
-                    titleText = "Click to sort ascending";
+                    titleText = "Click to sort ascending"
                   }
                 }
 
                 return (
-                  <TableHead 
-                    key={index} 
-                    className={cn(col.className, col.sortable && "cursor-pointer select-none hover:bg-muted/50 transition-colors", "border-b")}
-                    onClick={() => col.sortable && onSort && onSort(col.sortKey || (col.accessorKey as string))}
+                  <TableHead
+                    key={index}
+                    className={cn(
+                      col.className,
+                      col.sortable &&
+                        "cursor-pointer transition-colors select-none hover:bg-muted/50",
+                      "border-b"
+                    )}
+                    onClick={() =>
+                      col.sortable &&
+                      onSort &&
+                      onSort(col.sortKey || (col.accessorKey as string))
+                    }
                     title={titleText}
                   >
                     <div className="flex items-center gap-2">
                       {col.header}
-                      {col.sortable && isCurrentSortColumn && (
-                        sortOrder === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
+                      {col.sortable &&
+                        isCurrentSortColumn &&
+                        (sortOrder === "asc" ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        ))}
                       {col.sortable && !isCurrentSortColumn && (
                         <ChevronsUpDown className="h-4 w-4 opacity-30" />
                       )}
                     </div>
                   </TableHead>
-                );
+                )
               })}
             </TableRow>
           </TableHeader>
@@ -174,10 +191,15 @@ export function DataTable<T>({
 
       {/* Pagination Section */}
       {pagination && pagination.totalPages > 1 && onPageChange && (
-        <div className="flex flex-col sm:flex-row items-center justify-between border-t px-4 py-4 gap-4 sm:gap-0">
-          <div className="text-sm text-muted-foreground whitespace-nowrap">
-            Showing {(pagination.currentPage - 1) * pagination.itemsPerPage + 1} to{" "}
-            {Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} of {pagination.totalItems} entries
+        <div className="flex flex-col items-center justify-between gap-4 border-t px-4 py-4 sm:flex-row sm:gap-0">
+          <div className="text-sm whitespace-nowrap text-muted-foreground">
+            Showing {(pagination.currentPage - 1) * pagination.itemsPerPage + 1}{" "}
+            to{" "}
+            {Math.min(
+              pagination.currentPage * pagination.itemsPerPage,
+              pagination.totalItems
+            )}{" "}
+            of {pagination.totalItems} entries
           </div>
           <Pagination className="mx-0 w-auto">
             <PaginationContent>

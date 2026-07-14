@@ -45,7 +45,6 @@ const navMain = [
     url: "/products",
     icon: <ShoppingBag />,
     isActive: false,
-    requireRole: "superadmin",
   },
   // {
   //   title: "Playground",
