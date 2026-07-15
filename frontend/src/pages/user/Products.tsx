@@ -80,7 +80,7 @@ export function UserProducts() {
             All Products
           </h1>
           <p className="text-muted-foreground">
-            Browse our collection of high-quality study materials and guides.
+            Browse our collection of available products.
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
