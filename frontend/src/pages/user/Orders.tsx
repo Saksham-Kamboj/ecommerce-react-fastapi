@@ -140,7 +140,7 @@ export function UserOrders() {
           {orders.map((order) => (
             <Card
               key={order.id}
-              className="cursor-pointer transition-shadow hover:shadow-md"
+              className="cursor-pointer transition-shadow hover:shadow-md p-0"
               onClick={() => navigate(`/orders/${order.id}`)}
             >
               <CardContent className="flex items-center justify-between gap-4 p-5">

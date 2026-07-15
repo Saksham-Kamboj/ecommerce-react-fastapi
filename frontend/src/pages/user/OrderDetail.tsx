@@ -177,14 +177,7 @@ export function OrderDetailPage() {
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/orders")}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+        <div className="flex w-full items-center justify-between gap-3">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold tracking-tight text-primary">
@@ -196,27 +189,33 @@ export function OrderDetailPage() {
               Placed on {formatDate(order.created_at)}
             </p>
           </div>
-        </div>
-        {order.status === "pending" && (
-          <Button
-            variant="outline"
-            className="shrink-0 text-destructive hover:text-destructive"
-            onClick={handleCancel}
-            disabled={isCancelling}
-          >
-            {isCancelling ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Cancelling...
-              </>
-            ) : (
-              <>
-                <XCircle className="mr-2 h-4 w-4" />
-                Cancel Order
-              </>
+          <div className="flex items-center gap-4">
+            {order.status === "pending" && (
+              <Button
+                variant="outline"
+                className="shrink-0 text-destructive hover:text-destructive"
+                onClick={handleCancel}
+                disabled={isCancelling}
+              >
+                {isCancelling ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Cancelling...
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Cancel Order
+                  </>
+                )}
+              </Button>
             )}
-          </Button>
-        )}
+            <Button variant="outline" onClick={() => navigate("/orders")}>
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Just placed success banner */}
