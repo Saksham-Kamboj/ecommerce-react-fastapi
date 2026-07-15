@@ -37,6 +37,7 @@ This document tracks everything built so far, all decisions made, known issues f
 - Full admin CRUD for products with pagination, search, sort
 - Cart: get, add item, update quantity (with stock check), remove item, clear
 - Wishlist: get all, add (idempotent), remove
+- Orders: create from cart, list user's orders, order detail, cancel pending order, admin list all, admin update status
 
 #### CRUD Fixes
 
@@ -64,9 +65,12 @@ This document tracks everything built so far, all decisions made, known issues f
 User routes:
   /profile    → UserProfile
   /products   → UserProducts
+  /products/:id → ProductDetailPage
   /wishlist   → UserWishlist
   /cart       → UserCart
-  /orders     → UserOrders (static placeholder)
+  /checkout   → CheckoutPage
+  /orders     → UserOrders
+  /orders/:id → OrderDetailPage
 
 Admin routes:
   /dashboard  → AdminDashboard
@@ -204,6 +208,38 @@ Admin routes:
 
 ---
 
+### Phase 6 — Orders & Product Detail
+
+#### Orders System
+
+**Backend:**
+
+- `Order` and `OrderItem` models added with status, total amount, shipping address snapshot, order notes, price snapshot, and timestamps
+- Alembic migration added: `create_orders_system`
+- `POST /orders/` creates an order from the current cart, validates stock, snapshots prices/address, decrements stock, and clears cart
+- `GET /orders/` returns paginated current-user order history
+- `GET /orders/{order_id}` returns order detail with ownership/admin access checks
+- `POST /orders/{order_id}/cancel` cancels pending orders and restores stock
+- Admin endpoints added for listing all orders and updating order status
+
+**Frontend:**
+
+- `CheckoutPage` added with shipping address snapshot, notes, order summary, and place-order flow
+- `UserOrders` page now loads real paginated order data
+- `OrderDetailPage` added with status badge, progress, order items, shipping address, notes, and cancel action
+- `ordersApi` client and `Order` TypeScript types added
+- User routes added for `/checkout`, `/orders`, and `/orders/:orderId`
+
+#### Product Detail Page
+
+- Route `/products/:productId` added
+- `ProductDetailPage` loads `GET /products/{id}` data
+- Product detail page includes large visual area, product name, mock rating, description, price, stock badge, wishlist toggle, and cart controls
+- Quantity `+ / -` controls update existing cart items directly through debounced cart context updates
+- "Update Cart" button removed; existing cart quantity updates happen from the quantity controls
+
+---
+
 ## Known Technical Decisions
 
 | Decision                           | Reason                                     |
@@ -216,6 +252,8 @@ Admin routes:
 | Cart items ordered by `created_at` | Prevents items jumping on quantity update  |
 | First user = superadmin            | Simplifies initial setup                   |
 | Plain `<span>` for header badges   | Badge component padding makes it too large |
+| Order prices snapshotted           | Product price changes should not alter old orders |
+| Shipping address snapshotted       | Orders keep delivery details as placed     |
 
 ---
 
@@ -235,43 +273,7 @@ Admin routes:
 
 ## Pending Features (Prioritized)
 
-### 🔴 Priority 1 — Orders System
-
-The most critical missing feature. Required before payment integration.
-
-**Backend needed:**
-
-- `Order` model — id, user_id, status (pending/confirmed/shipped/delivered/cancelled), total_amount, shipping_address (snapshot), created_at, updated_at
-- `OrderItem` model — id, order_id, product_id, quantity, unit_price (price snapshot at purchase time)
-- `POST /orders` — create order from current cart, decrement stock, clear cart
-- `GET /orders` — list user's orders with pagination
-- `GET /orders/{id}` — order detail
-- `POST /orders/{id}/cancel` — cancel if still pending
-- `PATCH /orders/{id}/status` — admin only (confirm → ship → deliver)
-
-**Frontend needed:**
-
-- Orders page — real data replacing static placeholder
-- Order detail page — `/orders/:id`
-- Order history with status badges
-- Admin order management
-
-**Important:** Price must be snapshotted at order time (not linked live to product price).
-
----
-
-### 🔴 Priority 2 — Product Detail Page
-
-**Backend:** `GET /products/{id}` already exists  
-**Frontend needed:**
-
-- Route `/products/:id`
-- Full product page — large image area, description, price, stock, add to cart, wishlist
-- Breadcrumb: Products > Product Name
-
----
-
-### 🟡 Priority 3 — Product Images
+### 🟡 Priority 1 — Product Images
 
 **Backend needed:**
 
@@ -286,7 +288,7 @@ The most critical missing feature. Required before payment integration.
 
 ---
 
-### 🟡 Priority 4 — Admin Dashboard Metrics
+### 🟡 Priority 2 — Admin Dashboard Metrics
 
 **Backend needed:**
 
@@ -299,7 +301,7 @@ The most critical missing feature. Required before payment integration.
 
 ---
 
-### 🟡 Priority 5 — Product Categories & Filters
+### 🟡 Priority 3 — Product Categories & Filters
 
 **Backend needed:**
 
@@ -314,9 +316,9 @@ The most critical missing feature. Required before payment integration.
 
 ---
 
-### 🟢 Priority 6 — Payment Integration (Razorpay)
+### 🟢 Priority 4 — Payment Integration (Razorpay)
 
-**Requires:** Orders system must be complete first
+**Requires:** Orders system is complete
 
 **Flow:**
 
@@ -342,7 +344,7 @@ The most critical missing feature. Required before payment integration.
 
 ---
 
-### 🟢 Priority 7 — Logout API Endpoint
+### 🟢 Priority 5 — Logout API Endpoint
 
 **Backend needed:**
 
@@ -354,7 +356,7 @@ The most critical missing feature. Required before payment integration.
 
 ---
 
-### 🟢 Priority 8 — DB Constraints & Data Integrity
+### 🟢 Priority 6 — DB Constraints & Data Integrity
 
 - Add `UniqueConstraint("user_id", "product_id")` to `wishlist_items` table
 - Add migration for the constraint
@@ -387,6 +389,7 @@ The most critical missing feature. Required before payment integration.
 | add_updated_at               | updated_at fields                |
 | add_profile_fields_to_user   | phone, DOB, bio, address fields  |
 | add_wishlist_items_table     | WishlistItem table               |
+| create_orders_system         | Order and OrderItem tables       |
 
 ---
 
