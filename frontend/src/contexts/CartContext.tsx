@@ -57,7 +57,11 @@ export function CartProvider({
   }, [isAuthenticated])
 
   useEffect(() => {
-    refreshCart()
+    const timeoutId = window.setTimeout(() => {
+      refreshCart()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
   }, [refreshCart])
 
   /**

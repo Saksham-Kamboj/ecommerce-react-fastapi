@@ -68,12 +68,6 @@ export function ProductDetailPage() {
     }
   }, [productId])
 
-  // Sync qty with current cart quantity when cart loads/changes
-  useEffect(() => {
-    const cartItem = cart?.items.find((i) => i.product.id === productId)
-    if (cartItem) setQty(cartItem.quantity)
-  }, [cart, productId])
-
   if (isLoading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
@@ -100,9 +94,10 @@ export function ProductDetailPage() {
   const isInCart = !!cartItem
   const maxQty = product.stock_quantity
   const inStock = product.stock_quantity > 0
+  const selectedQty = cartItem?.quantity ?? qty
 
   const handleCartAction = () => {
-    addToCart(product.id, qty)
+    addToCart(product.id, selectedQty)
   }
 
   const handleQtyChange = (nextQty: number) => {
@@ -200,20 +195,20 @@ export function ProductDetailPage() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 rounded-sm"
-                  onClick={() => handleQtyChange(qty - 1)}
-                  disabled={qty <= 1}
+                  onClick={() => handleQtyChange(selectedQty - 1)}
+                  disabled={selectedQty <= 1}
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
                 <span className="w-8 text-center text-sm font-semibold">
-                  {qty}
+                  {selectedQty}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 rounded-sm"
-                  onClick={() => handleQtyChange(qty + 1)}
-                  disabled={qty >= maxQty}
+                  onClick={() => handleQtyChange(selectedQty + 1)}
+                  disabled={selectedQty >= maxQty}
                 >
                   <Plus className="h-3 w-3" />
                 </Button>
@@ -233,7 +228,7 @@ export function ProductDetailPage() {
                 onClick={handleCartAction}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                {inStock ? `Add ${qty} to Cart` : "Out of Stock"}
+                {inStock ? `Add ${selectedQty} to Cart` : "Out of Stock"}
               </Button>
             )}
 
