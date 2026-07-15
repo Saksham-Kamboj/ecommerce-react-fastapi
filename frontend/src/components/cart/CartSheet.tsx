@@ -1,4 +1,5 @@
 import { useCart } from "@/contexts/CartContext"
+import { useNavigate } from "react-router-dom"
 import {
   Sheet,
   SheetContent,
@@ -19,6 +20,7 @@ export function CartSheet() {
     removeFromCart,
     clearCart,
   } = useCart()
+  const navigate = useNavigate()
 
   const items = cart?.items || []
   const hasItems = items.length > 0
@@ -126,7 +128,10 @@ export function CartSheet() {
                 </Button>
                 <Button
                   className="flex-1"
-                  onClick={() => alert("Checkout flow coming soon!")}
+                  onClick={() => {
+                    setIsCartOpen(false)
+                    navigate("/checkout")
+                  }}
                 >
                   Checkout
                 </Button>

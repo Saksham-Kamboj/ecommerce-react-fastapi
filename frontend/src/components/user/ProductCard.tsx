@@ -1,5 +1,6 @@
 import { useCart } from "@/contexts/CartContext"
 import { useWishlist } from "@/contexts/WishlistContext"
+import { Link } from "react-router-dom"
 import { Heart, ShoppingCart, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { ProductOut } from "@/types/product"
@@ -45,7 +46,7 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
 
   return (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md">
-      {/* "Image" Area */}
+      {/* "Image" Area — click to open detail */}
       <div className="relative aspect-square w-full overflow-hidden bg-muted p-2">
         {/* Book Cover Mockup */}
         <div
@@ -80,9 +81,11 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
 
       {/* Content Area */}
       <div className="flex flex-1 flex-col gap-1 p-2">
-        <h3 className="line-clamp-2 leading-tight font-semibold tracking-tight">
-          {product.name}
-        </h3>
+        <Link to={`/products/${product.id}`}>
+          <h3 className="line-clamp-2 cursor-pointer leading-tight font-semibold tracking-tight hover:text-primary hover:underline">
+            {product.name}
+          </h3>
+        </Link>
 
         <p className="line-clamp-2 text-sm text-muted-foreground">
           {product.description || "No description available."}

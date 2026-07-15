@@ -1,0 +1,267 @@
+import { useState, useEffect } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import { productsApi } from "@/lib/api/products"
+import { useCart } from "@/contexts/CartContext"
+import { useWishlist } from "@/contexts/WishlistContext"
+import type { ProductOut } from "@/types/product"
+
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Heart, Loader2, Minus, Plus, ShoppingCart, Star } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+const GRADIENT_COLORS = [
+  "from-blue-500 to-indigo-600",
+  "from-emerald-400 to-teal-600",
+  "from-orange-400 to-rose-500",
+  "from-purple-500 to-fuchsia-600",
+  "from-cyan-500 to-blue-600",
+]
+
+function getGradient(name: string): string {
+  const sum = name
+    .split("")
+    .reduce((acc, char) => acc + (char.codePointAt(0) ?? 0), 0)
+  return GRADIENT_COLORS[sum % GRADIENT_COLORS.length]
+}
+
+function getMockRating(id: string): { rating: string; reviews: number } {
+  const num = Number.parseInt(id.replaceAll("-", "").substring(0, 8), 16)
+  return {
+    rating: (4.0 + (num % 11) / 10).toFixed(1),
+    reviews: 20 + (num % 200),
+  }
+}
+
+export function ProductDetailPage() {
+  const { productId } = useParams<{ productId: string }>()
+  const navigate = useNavigate()
+  const { cart, addToCart, updateQuantity } = useCart()
+  const { isWishlisted, toggle } = useWishlist()
+
+  const [product, setProduct] = useState<ProductOut | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [qty, setQty] = useState(1)
+
+  // Load product
+  useEffect(() => {
+    if (!productId) return
+    let cancelled = false
+    productsApi
+      .getProduct(productId)
+      .then((res) => {
+        if (!cancelled) {
+          setProduct(res.data)
+          setIsLoading(false)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError("Product not found")
+          setIsLoading(false)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [productId])
+
+  // Sync qty with current cart quantity when cart loads/changes
+  useEffect(() => {
+    const cartItem = cart?.items.find((i) => i.product.id === productId)
+    if (cartItem) setQty(cartItem.quantity)
+  }, [cart, productId])
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (error || !product) {
+    return (
+      <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 text-center">
+        <p className="text-destructive">{error || "Product not found"}</p>
+        <Button variant="outline" onClick={() => navigate("/products")}>
+          Back to Products
+        </Button>
+      </div>
+    )
+  }
+
+  const gradient = getGradient(product.name)
+  const { rating, reviews } = getMockRating(product.id)
+  const wishlisted = isWishlisted(product.id)
+  const cartItem = cart?.items.find((i) => i.product.id === product.id)
+  const isInCart = !!cartItem
+  const maxQty = product.stock_quantity
+  const inStock = product.stock_quantity > 0
+
+  const getButtonLabel = () => {
+    if (!inStock) return "Out of Stock"
+    if (isInCart) return `Update Cart (${qty})`
+    return `Add ${qty} to Cart`
+  }
+
+  const handleCartAction = () => {
+    if (isInCart && cartItem) {
+      updateQuantity(cartItem.id, qty)
+    } else {
+      addToCart(product.id, qty)
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        {/* ── Left: visual ── */}
+        <div className="flex flex-col gap-4">
+          <div
+            className={cn(
+              "flex aspect-4/3 w-full items-center justify-center rounded-2xl bg-linear-to-br p-12 text-center text-white shadow-lg",
+              gradient
+            )}
+          >
+            <span className="font-serif text-3xl font-bold tracking-tight drop-shadow-lg">
+              {product.name}
+            </span>
+          </div>
+
+          {/* Rating */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={cn(
+                    "h-5 w-5",
+                    star <= Math.round(Number(rating))
+                      ? "fill-amber-400 text-amber-400"
+                      : "fill-muted text-muted"
+                  )}
+                />
+              ))}
+            </div>
+            <span className="text-sm font-semibold">{rating}</span>
+            <span className="text-sm text-muted-foreground">
+              ({reviews} reviews)
+            </span>
+          </div>
+        </div>
+
+        {/* ── Right: info ── */}
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              {product.name}
+            </h1>
+            <div className="flex items-center gap-2">
+              {inStock ? (
+                <Badge
+                  variant="outline"
+                  className="border-emerald-400 text-emerald-600 dark:text-emerald-400"
+                >
+                  {product.stock_quantity} in stock
+                </Badge>
+              ) : (
+                <Badge variant="destructive">Out of stock</Badge>
+              )}
+              {isInCart && (
+                <Badge variant="secondary">{cartItem.quantity} in cart</Badge>
+              )}
+            </div>
+          </div>
+
+          <div className="text-4xl font-bold text-primary">
+            ₹{product.price.toFixed(2)}
+          </div>
+
+          <Separator />
+
+          {product.description && (
+            <div className="flex flex-col gap-2">
+              <h3 className="font-semibold">About this product</h3>
+              <p className="leading-relaxed text-muted-foreground">
+                {product.description}
+              </p>
+            </div>
+          )}
+
+          <Separator />
+
+          {/* Quantity */}
+          {inStock && (
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium">Quantity</span>
+              <div className="flex items-center gap-2 rounded-md border p-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-sm"
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  disabled={qty <= 1}
+                >
+                  <Minus className="h-3 w-3" />
+                </Button>
+                <span className="w-8 text-center text-sm font-semibold">
+                  {qty}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-sm"
+                  onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                  disabled={qty >= maxQty}
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                Max {maxQty}
+              </span>
+            </div>
+          )}
+
+          {/* Buttons */}
+          <div className="flex gap-3">
+            <Button
+              className="flex-1"
+              size="lg"
+              variant={isInCart ? "secondary" : "default"}
+              disabled={!inStock}
+              onClick={handleCartAction}
+            >
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              {getButtonLabel()}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className={cn(
+                "w-14 shrink-0",
+                wishlisted && "border-red-300 text-red-500 hover:text-red-600"
+              )}
+              onClick={() => toggle(product.id)}
+            >
+              <Heart className={cn("h-5 w-5", wishlisted && "fill-red-500")} />
+              <span className="sr-only">
+                {wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              </span>
+            </Button>
+          </div>
+
+          {isInCart && (
+            <Button size="lg" onClick={() => navigate("/cart")}>
+              View Cart & Checkout
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

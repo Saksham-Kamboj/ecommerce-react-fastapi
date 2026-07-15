@@ -1,15 +1,14 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-refresh/only-export-components */
 import React, {
   createContext,
   useContext,
   useState,
   useEffect,
-  useRef,
   useCallback,
   useMemo,
 } from "react"
 import { cartApi } from "@/lib/api/cart"
+import { useDebounce } from "@/hooks/useDebounce"
 import type { CartOut } from "@/types/cart"
 import { useAuth } from "./AuthContext"
 
@@ -18,7 +17,7 @@ interface CartContextType {
   isLoading: boolean
   isCartOpen: boolean
   setIsCartOpen: (open: boolean) => void
-  addToCart: (productId: string, quantity?: number) => Promise<void>
+  addToCart: (productId: string, quantity?: number) => void
   updateQuantity: (itemId: string, quantity: number) => void
   removeFromCart: (itemId: string) => Promise<void>
   clearCart: () => Promise<void>
@@ -27,7 +26,6 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | null>(null)
 
-// Debounce delay in ms — API fires this long after the last click
 const DEBOUNCE_DELAY = 500
 
 export function CartProvider({
@@ -38,10 +36,8 @@ export function CartProvider({
   const [isCartOpen, setIsCartOpen] = useState(false)
   const { isAuthenticated } = useAuth()
 
-  // Holds pending debounce timers per cart item id
-  const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>(
-    {}
-  )
+  // Shared debounce hook — one timer per key (itemId or productId)
+  const { debounce, cancel, cancelAll } = useDebounce(DEBOUNCE_DELAY)
 
   const refreshCart = useCallback(async () => {
     if (!isAuthenticated) {
@@ -49,13 +45,11 @@ export function CartProvider({
       setIsLoading(false)
       return
     }
-
     try {
       setIsLoading(true)
       const response = await cartApi.getCart()
       setCart(response.data)
-    } catch (error) {
-      console.error("Failed to fetch cart:", error)
+    } catch {
       setCart(null)
     } finally {
       setIsLoading(false)
@@ -66,31 +60,62 @@ export function CartProvider({
     refreshCart()
   }, [refreshCart])
 
+  /**
+   * addToCart — debounced per productId.
+   * Optimistically increments quantity in local state; API fires after DEBOUNCE_DELAY.
+   */
   const addToCart = useCallback(
-    async (productId: string, quantity: number = 1) => {
+    (productId: string, quantity: number = 1) => {
       if (!isAuthenticated) {
         alert("Please login to add items to cart")
         return
       }
-      try {
-        await cartApi.addItem({ product_id: productId, quantity })
-        await refreshCart()
-      } catch (error) {
-        console.error("Failed to add to cart:", error)
-        alert("Failed to add to cart")
-      }
+
+      // Optimistic update — increment existing item or add placeholder
+      setCart((prev) => {
+        if (!prev) return prev
+        const existing = prev.items.find((i) => i.product.id === productId)
+        if (existing) {
+          const newQty = existing.quantity + quantity
+          return {
+            ...prev,
+            items: prev.items.map((i) =>
+              i.product.id === productId ? { ...i, quantity: newQty } : i
+            ),
+            total_price: Number.parseFloat(
+              prev.items
+                .map((i) =>
+                  i.product.id === productId
+                    ? i.product.price * newQty
+                    : i.product.price * i.quantity
+                )
+                .reduce((sum, val) => sum + val, 0)
+                .toFixed(2)
+            ),
+          }
+        }
+        return prev // new item — let server response handle it
+      })
+
+      debounce(`add-${productId}`, async () => {
+        try {
+          await cartApi.addItem({ product_id: productId, quantity })
+          await refreshCart()
+        } catch {
+          alert("Failed to add to cart")
+          await refreshCart()
+        }
+      })
     },
-    [isAuthenticated, refreshCart]
+    [isAuthenticated, debounce, refreshCart]
   )
 
   /**
-   * Optimistic update: immediately reflect the new quantity in the UI,
-   * then debounce the actual API call so rapid +/- clicks collapse into
-   * a single request fired DEBOUNCE_DELAY ms after the last click.
+   * updateQuantity — debounced per itemId.
+   * Optimistically updates quantity and subtotal in local state.
    */
   const updateQuantity = useCallback(
     (itemId: string, quantity: number) => {
-      // 1. Optimistically update local cart state right away
       setCart((prev) => {
         if (!prev) return prev
         return {
@@ -98,7 +123,6 @@ export function CartProvider({
           items: prev.items.map((item) =>
             item.id === itemId ? { ...item, quantity } : item
           ),
-          // Recalculate subtotal optimistically
           total_price: Number.parseFloat(
             prev.items
               .map((item) =>
@@ -112,56 +136,41 @@ export function CartProvider({
         }
       })
 
-      // 2. Cancel any existing timer for this item
-      if (debounceTimers.current[itemId]) {
-        clearTimeout(debounceTimers.current[itemId])
-      }
-
-      // 3. Schedule the API call after the debounce delay
-      debounceTimers.current[itemId] = setTimeout(async () => {
-        delete debounceTimers.current[itemId]
+      debounce(`update-${itemId}`, async () => {
         try {
           await cartApi.updateQuantity(itemId, { quantity })
-          // Sync with server after the debounced call completes
           await refreshCart()
-        } catch (error) {
-          console.error("Failed to update quantity:", error)
-          // Roll back to server state on error
+        } catch {
           await refreshCart()
         }
-      }, DEBOUNCE_DELAY)
+      })
     },
-    [refreshCart]
+    [debounce, refreshCart]
   )
 
   const removeFromCart = useCallback(
     async (itemId: string) => {
-      // Cancel any pending debounce for this item before removing
-      if (debounceTimers.current[itemId]) {
-        clearTimeout(debounceTimers.current[itemId])
-        delete debounceTimers.current[itemId]
-      }
+      cancel(`update-${itemId}`)
+      cancel(`add-${itemId}`)
       try {
         await cartApi.removeItem(itemId)
         await refreshCart()
-      } catch (error) {
-        console.error("Failed to remove item:", error)
+      } catch {
+        // ignore
       }
     },
-    [refreshCart]
+    [cancel, refreshCart]
   )
 
   const clearCart = useCallback(async () => {
-    // Cancel all pending debounces
-    Object.values(debounceTimers.current).forEach(clearTimeout)
-    debounceTimers.current = {}
+    cancelAll()
     try {
       await cartApi.clearCart()
       await refreshCart()
-    } catch (error) {
-      console.error("Failed to clear cart:", error)
+    } catch {
+      // ignore
     }
-  }, [refreshCart])
+  }, [cancelAll, refreshCart])
 
   const value = useMemo(
     () => ({
