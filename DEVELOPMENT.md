@@ -471,3 +471,185 @@ pnpm format      # Prettier format
 cd backend
 # No linter configured yet — can add ruff or flake8
 ```
+
+---
+
+## Code Quality Standard — SonarQube / SonarLint
+
+SonarLint is active in the IDE. All code written must be **Sonar-friendly** — zero warnings, zero code smells. SonarLint flags issues in real-time; unresolved smells add technical debt and make the codebase harder to maintain.
+
+---
+
+### Python (Backend) — Sonar Rules to Follow
+
+| Rule                    | Bad ❌                   | Good ✅                           |
+| ----------------------- | ------------------------ | --------------------------------- |
+| Cognitive complexity    | Deep nested if/for/try   | Extract to small functions        |
+| Magic numbers           | `if limit > 10:`         | `MAX_LIMIT = 10`                  |
+| Unused imports          | `import os` (never used) | Remove it                         |
+| Bare except             | `except:`                | `except ValueError:`              |
+| Mutable default args    | `def fn(items=[])`       | `def fn(items=None)`              |
+| Too many parameters     | `def fn(a,b,c,d,e,f,g)`  | Group into dataclass/schema       |
+| Hardcoded credentials   | `password = "abc123"`    | Use env vars                      |
+| Missing type hints      | `def get_user(id):`      | `def get_user(id: UUID) -> User:` |
+| `print()` in production | `print("debug")`         | Use `logging` module              |
+
+```python
+# ❌ Sonar will flag this
+def process(a, b, c, d, e, f):
+    try:
+        if a > 0:
+            if b > 0:
+                if c > 0:
+                    return a + b + c
+    except:
+        pass
+
+# ✅ Sonar-friendly
+MAX_ITEMS = 100
+
+def _all_positive(*values: int) -> bool:
+    return all(v > 0 for v in values)
+
+def process(a: int, b: int, c: int) -> int | None:
+    try:
+        if _all_positive(a, b, c):
+            return a + b + c
+        return None
+    except ValueError as e:
+        logger.error("Invalid input: %s", e)
+        return None
+```
+
+---
+
+### TypeScript / React (Frontend) — Sonar Rules to Follow
+
+| Rule                       | Bad ❌                     | Good ✅                              |
+| -------------------------- | -------------------------- | ------------------------------------ |
+| Cognitive complexity       | Deeply nested ternaries    | Extract to functions or maps         |
+| `any` type                 | `const data: any`          | Proper type or `unknown`             |
+| Empty catch block          | `catch {}`                 | `catch (err) { console.error(err) }` |
+| Dead code                  | Unreachable after `return` | Remove it                            |
+| Duplicate string literals  | Same string 3+ times       | Extract to constant                  |
+| Non-null assertion overuse | `user!.email` everywhere   | Proper null checks with `??`         |
+| Console statements         | `console.log("debug")`     | Remove before commit                 |
+| Unused variables           | `const x = 5` (never used) | Remove                               |
+| Functions too long         | 100+ line function         | Break into smaller functions         |
+
+```tsx
+// ❌ Sonar will flag this — nested ternary
+const getLabel = (type: string) =>
+  type === "admin" ? "Administrator" : type === "user" ? "Customer" : "Unknown";
+
+// ✅ Sonar-friendly — use a map
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Administrator",
+  user: "Customer",
+};
+function getRoleLabel(type: string): string {
+  return ROLE_LABELS[type] ?? "Unknown";
+}
+```
+
+```tsx
+// ❌ Sonar will flag this
+function UserCard({ user }: { user: any }) {
+  try {
+    return <div>{user!.name}</div>;
+  } catch {}
+}
+
+// ✅ Sonar-friendly
+interface UserCardProps {
+  user: { name: string | null; email: string };
+}
+function UserCard({ user }: Readonly<UserCardProps>) {
+  return <div>{user.name ?? user.email}</div>;
+}
+```
+
+---
+
+### Early Return Pattern (Reduces Nesting & Cognitive Complexity)
+
+```python
+# ❌ Arrow anti-pattern — Sonar flags high complexity
+def update_user(user_id, data):
+    if user_id:
+        user = db.get(user_id)
+        if user:
+            if user.is_active:
+                user.name = data.name
+                return user
+
+# ✅ Early return — flat, readable, Sonar-clean
+def update_user(user_id: UUID, data: UserUpdate) -> User:
+    if not user_id:
+        raise ValueError("user_id required")
+    user = db.get(user_id)
+    if not user:
+        raise HTTPException(404, "User not found")
+    if not user.is_active:
+        raise HTTPException(400, "User is inactive")
+    user.name = data.name
+    return user
+```
+
+```tsx
+// ❌ Nested — Sonar flags
+function ProfilePage() {
+  if (isLoading) {
+    return <Spinner />;
+  } else {
+    if (user) {
+      if (user.is_active) {
+        return <Profile user={user} />;
+      } else {
+        return <InactiveMessage />;
+      }
+    }
+  }
+}
+
+// ✅ Early returns — Sonar-clean
+function ProfilePage() {
+  if (isLoading) return <Spinner />;
+  if (!user) return <NotFound />;
+  if (!user.is_active) return <InactiveMessage />;
+  return <Profile user={user} />;
+}
+```
+
+---
+
+### General Rules (Both Languages)
+
+```
+✅ One responsibility per function — does one thing
+✅ Function length ≤ 30 lines ideally, hard max ~50
+✅ File length — split files >300 lines into modules
+✅ No hardcoded strings repeated 3+ times — extract to constants
+✅ No commented-out code in commits
+✅ Descriptive variable names — no single letters except loop counters (i, j)
+✅ All TODO comments must have context or a resolution plan
+✅ Avoid deep nesting (max 3 levels) — use early returns
+✅ Exported functions/classes should be self-explanatory by name
+```
+
+---
+
+### Checklist Before Every Commit
+
+```
+[ ] pnpm lint passes with zero errors (frontend)
+[ ] pnpm build passes (frontend)
+[ ] No console.log / print() left in code
+[ ] No unused imports or variables
+[ ] No nested ternaries — use functions or maps
+[ ] No `any` types in TypeScript
+[ ] No bare except in Python
+[ ] All new functions have type hints (Python) / TypeScript types (TS)
+[ ] SonarLint shows zero NEW issues in changed files
+[ ] Early returns used instead of deep nesting
+```
