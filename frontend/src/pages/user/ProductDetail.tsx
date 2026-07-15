@@ -114,16 +114,26 @@ export function ProductDetailPage() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* ── Left: visual ── */}
         <div className="flex flex-col gap-4">
-          <div
-            className={cn(
-              "flex aspect-3/2 w-full items-center justify-center rounded-2xl bg-linear-to-br p-12 text-center text-white shadow-lg",
-              gradient
-            )}
-          >
-            <span className="font-serif text-3xl font-bold tracking-tight drop-shadow-lg">
-              {product.name}
-            </span>
-          </div>
+          {product.image_url ? (
+            <div className="aspect-3/2 w-full overflow-hidden rounded-2xl border bg-muted shadow-lg">
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "flex aspect-3/2 w-full items-center justify-center rounded-2xl bg-linear-to-br p-12 text-center text-white shadow-lg",
+                gradient
+              )}
+            >
+              <span className="font-serif text-3xl font-bold tracking-tight drop-shadow-lg">
+                {product.name}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* ── Right: info ── */}

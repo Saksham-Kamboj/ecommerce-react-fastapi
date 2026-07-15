@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState, type ChangeEvent } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -46,7 +46,10 @@ interface ProductFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   product?: ProductOut | null
-  onSubmit: (data: ProductCreate | ProductUpdate) => Promise<void>
+  onSubmit: (
+    data: ProductCreate | ProductUpdate,
+    imageFile?: File | null
+  ) => Promise<void>
 }
 
 export function ProductFormDialog({
@@ -56,6 +59,9 @@ export function ProductFormDialog({
   onSubmit,
 }: ProductFormDialogProps) {
   const isEditing = !!product
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
+  const previewUrl = imagePreviewUrl ?? product?.image_url ?? null
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -88,6 +94,30 @@ export function ProductFormDialog({
     }
   }, [open, product, form])
 
+  const resetImageSelection = () => {
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl)
+    }
+    setImageFile(null)
+    setImagePreviewUrl(null)
+  }
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      resetImageSelection()
+    }
+    onOpenChange(nextOpen)
+  }
+
+  const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl)
+    }
+    setImageFile(file)
+    setImagePreviewUrl(file ? URL.createObjectURL(file) : null)
+  }
+
   const handleSubmit = async (values: FormValues) => {
     try {
       form.clearErrors("root")
@@ -98,8 +128,9 @@ export function ProductFormDialog({
         submitData.description = null
       }
 
-      await onSubmit(submitData)
+      await onSubmit(submitData, imageFile)
       form.reset()
+      resetImageSelection()
     } catch (err) {
       form.setError("root", {
         type: "manual",
@@ -109,7 +140,7 @@ export function ProductFormDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="gap-0 p-0 sm:max-w-[425px]">
         <DialogHeader className="border-b p-4">
           <DialogTitle className="text-base">
@@ -136,7 +167,7 @@ export function ProductFormDialog({
             <Label htmlFor="name">Product Name</Label>
             <Input
               id="name"
-              placeholder="e.g. Advanced Calculus"
+              placeholder="e.g. Wireless Headphones"
               {...form.register("name")}
             />
             {form.formState.errors.name && (
@@ -150,7 +181,7 @@ export function ProductFormDialog({
             <Label htmlFor="description">Description</Label>
             <Input
               id="description"
-              placeholder="Comprehensive study material..."
+              placeholder="Product description..."
               {...form.register("description")}
             />
             {form.formState.errors.description && (
@@ -158,6 +189,34 @@ export function ProductFormDialog({
                 {form.formState.errors.description.message}
               </p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="product_image">Product Image</Label>
+            <div className="flex items-center gap-3">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted/50">
+                {previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    alt="Product preview"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="px-2 text-center text-xs text-muted-foreground">
+                    No image
+                  </span>
+                )}
+              </div>
+              <Input
+                id="product_image"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={handleImageChange}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              JPG, PNG, or WebP. Max 2MB.
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -218,7 +277,7 @@ export function ProductFormDialog({
           <Button
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
           >
             Cancel
           </Button>

@@ -7,6 +7,7 @@ class ProductBase(BaseModel):
     description: str | None = None
     price: float = Field(..., ge=0.0)
     stock_quantity: int = Field(0, ge=0)
+    image_url: str | None = None
     is_active: bool = True
 
 class ProductCreate(ProductBase):
@@ -17,6 +18,7 @@ class ProductUpdate(BaseModel):
     description: str | None = None
     price: float | None = Field(None, ge=0.0)
     stock_quantity: int | None = Field(None, ge=0)
+    image_url: str | None = None
     is_active: bool | None = None
 
 class ProductOut(ProductBase):

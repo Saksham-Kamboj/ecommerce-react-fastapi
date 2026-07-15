@@ -46,19 +46,26 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
 
   return (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md">
-      {/* "Image" Area — click to open detail */}
+      {/* Product visual area */}
       <div className="relative aspect-square w-full overflow-hidden bg-muted p-2">
-        {/* Book Cover Mockup */}
-        <div
-          className={cn(
-            "flex h-full w-full items-center justify-center rounded-sm bg-linear-to-br p-6 text-center text-white shadow-inner transition-transform duration-300 group-hover:scale-102",
-            gradientClass
-          )}
-        >
-          <span className="line-clamp-4 font-serif text-xl font-bold tracking-tight drop-shadow-md">
-            {product.name}
-          </span>
-        </div>
+        {product.image_url ? (
+          <img
+            src={product.image_url}
+            alt={product.name}
+            className="h-full w-full rounded-sm object-cover shadow-inner transition-transform duration-300 group-hover:scale-102"
+          />
+        ) : (
+          <div
+            className={cn(
+              "flex h-full w-full items-center justify-center rounded-sm bg-linear-to-br p-6 text-center text-white shadow-inner transition-transform duration-300 group-hover:scale-102",
+              gradientClass
+            )}
+          >
+            <span className="line-clamp-4 font-serif text-xl font-bold tracking-tight drop-shadow-md">
+              {product.name}
+            </span>
+          </div>
+        )}
 
         {/* Wishlist Button */}
         <Button

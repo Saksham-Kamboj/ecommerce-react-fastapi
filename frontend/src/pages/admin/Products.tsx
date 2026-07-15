@@ -102,11 +102,20 @@ export default function ProductsPage() {
     setIsDeleteOpen(true)
   }
 
-  const handleFormSubmit = async (data: ProductCreate | ProductUpdate) => {
+  const handleFormSubmit = async (
+    data: ProductCreate | ProductUpdate,
+    imageFile?: File | null
+  ) => {
+    let savedProduct: ProductOut
     if (selectedProduct) {
-      await productsApi.updateProduct(selectedProduct.id, data)
+      const res = await productsApi.updateProduct(selectedProduct.id, data)
+      savedProduct = res.data
     } else {
-      await productsApi.createProduct(data as ProductCreate)
+      const res = await productsApi.createProduct(data as ProductCreate)
+      savedProduct = res.data
+    }
+    if (imageFile) {
+      await productsApi.uploadProductImage(savedProduct.id, imageFile)
     }
     setIsFormOpen(false)
     setIsLoading(true)
@@ -148,7 +157,10 @@ export default function ProductsPage() {
         <div className="flex items-center gap-3">
           <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md border bg-muted/50 shadow-xs">
             <img
-              src={`https://api.dicebear.com/7.x/initials/svg?seed=${product.name}&backgroundColor=f1f5f9,e2e8f0,cbd5e1&textColor=475569`}
+              src={
+                product.image_url ||
+                `https://api.dicebear.com/7.x/initials/svg?seed=${product.name}&backgroundColor=f1f5f9,e2e8f0,cbd5e1&textColor=475569`
+              }
               alt={product.name}
               className="h-full w-full object-cover"
             />

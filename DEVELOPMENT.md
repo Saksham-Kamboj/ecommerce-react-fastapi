@@ -11,7 +11,7 @@ This document tracks everything built so far, all decisions made, known issues f
 #### Database Models
 
 - `User` — id (UUID), email, full_name, hashed_password, is_active, role, access_token, otp fields, phone, date_of_birth, bio, address fields (line1, line2, city, state, postal_code, country), created_at, updated_at
-- `Product` — id (UUID), name, description, price, stock_quantity, is_active, created_at, updated_at
+- `Product` — id (UUID), name, description, price, stock_quantity, image_url, is_active, created_at, updated_at
 - `Cart` — id, user_id (FK), created_at, updated_at
 - `CartItem` — id, cart_id (FK), product_id (FK), quantity, created_at, updated_at
 - `WishlistItem` — id, user_id (FK), product_id (FK), created_at
@@ -137,7 +137,7 @@ Admin routes:
 
 - Paginated grid with search (debounced 500ms)
 - "Showing X to Y of Z products" count
-- `ProductCard` — gradient book cover, mock ratings, stock display, add to cart, wishlist toggle
+- `ProductCard` — product image when available, gradient fallback, mock ratings, stock display, add to cart, wishlist toggle
 
 ---
 
@@ -240,6 +240,26 @@ Admin routes:
 
 ---
 
+### Phase 7 — Product Images
+
+**Backend:**
+
+- Added nullable `image_url` field to `Product`
+- Added Alembic migration: `add_product_image_url`
+- Mounted `/uploads` as a static file directory
+- Added `POST /products/{product_id}/upload-image` endpoint restricted to `superadmin`
+- Upload validation allows JPG, PNG, and WebP images up to 2MB
+
+**Frontend:**
+
+- Added image upload field with preview in admin product form
+- Create/edit product flow uploads the selected image after product save
+- Admin product table shows uploaded product image, with initials fallback
+- `ProductCard` and `ProductDetailPage` show uploaded product image, with gradient fallback
+- Vite dev proxy forwards `/uploads` to the backend
+
+---
+
 ## Known Technical Decisions
 
 | Decision                           | Reason                                     |
@@ -272,23 +292,7 @@ Admin routes:
 ---
 
 ## Pending Features (Prioritized)
-
-### 🟡 Priority 1 — Product Images
-
-**Backend needed:**
-
-- Add `image_url: str | None` to `Product` model
-- Migration
-- Optional: `POST /products/{id}/upload-image` endpoint
-
-**Frontend needed:**
-
-- Show actual image in `ProductCard` if available, fallback to gradient
-- Image upload field in admin product form
-
----
-
-### 🟡 Priority 2 — Admin Dashboard Metrics
+### 🟡 Priority 1 — Admin Dashboard Metrics
 
 **Backend needed:**
 
@@ -301,7 +305,7 @@ Admin routes:
 
 ---
 
-### 🟡 Priority 3 — Product Categories & Filters
+### 🟡 Priority 2 — Product Categories & Filters
 
 **Backend needed:**
 
@@ -316,7 +320,7 @@ Admin routes:
 
 ---
 
-### 🟢 Priority 4 — Payment Integration (Razorpay)
+### 🟢 Priority 3 — Payment Integration (Razorpay)
 
 **Requires:** Orders system is complete
 
@@ -344,7 +348,7 @@ Admin routes:
 
 ---
 
-### 🟢 Priority 5 — Logout API Endpoint
+### 🟢 Priority 4 — Logout API Endpoint
 
 **Backend needed:**
 
@@ -356,7 +360,7 @@ Admin routes:
 
 ---
 
-### 🟢 Priority 6 — DB Constraints & Data Integrity
+### 🟢 Priority 5 — DB Constraints & Data Integrity
 
 - Add `UniqueConstraint("user_id", "product_id")` to `wishlist_items` table
 - Add migration for the constraint

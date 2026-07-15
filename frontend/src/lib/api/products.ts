@@ -56,4 +56,16 @@ export const productsApi = {
       method: "DELETE",
     })
   },
+
+  uploadProductImage: async (
+    productId: string,
+    image: File
+  ): Promise<ApiResponse<ProductOut>> => {
+    const formData = new FormData()
+    formData.append("image", image)
+    return apiClient<ProductOut>(`/products/${productId}/upload-image`, {
+      method: "POST",
+      data: formData,
+    })
+  },
 }

@@ -3,6 +3,7 @@ export interface ProductBase {
   description: string | null
   price: number
   stock_quantity: number
+  image_url?: string | null
   is_active: boolean
 }
 
@@ -13,6 +14,7 @@ export interface ProductUpdate {
   description?: string | null
   price?: number | null
   stock_quantity?: number | null
+  image_url?: string | null
   is_active?: boolean | null
 }
 

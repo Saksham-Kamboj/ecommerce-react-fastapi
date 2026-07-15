@@ -1,5 +1,7 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_current_active_admin
@@ -8,6 +10,34 @@ from app.schemas.product import ProductCreate, ProductOut, ProductUpdate
 from app.schemas.response import ApiResponse, PaginatedApiResponse, paginate
 
 router = APIRouter()
+
+UPLOAD_DIR = Path("uploads/products")
+MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024
+ALLOWED_IMAGE_TYPES = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+}
+
+
+def _validate_image(file: UploadFile) -> str:
+    extension = ALLOWED_IMAGE_TYPES.get(file.content_type or "")
+    if not extension:
+        raise HTTPException(status_code=400, detail="Only JPG, PNG, and WebP images are allowed")
+    return extension
+
+
+async def _save_product_image(file: UploadFile, product_id: uuid.UUID) -> str:
+    extension = _validate_image(file)
+    content = await file.read()
+    if len(content) > MAX_IMAGE_SIZE_BYTES:
+        raise HTTPException(status_code=400, detail="Image must be 2MB or smaller")
+
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    filename = f"{product_id}-{uuid.uuid4().hex}{extension}"
+    image_path = UPLOAD_DIR / filename
+    image_path.write_bytes(content)
+    return f"/uploads/products/{filename}"
 
 @router.get("/", response_model=PaginatedApiResponse[ProductOut])
 def list_products(
@@ -59,6 +89,27 @@ def update_product(product_id: uuid.UUID, product_in: ProductUpdate, db: Session
         raise HTTPException(status_code=404, detail="Product not found")
     updated_product = product_crud.update(db, db_obj=db_product, obj_in=product_in)
     return ApiResponse(message="Product updated successfully", data=updated_product)
+
+@router.post("/{product_id}/upload-image", response_model=ApiResponse[ProductOut])
+async def upload_product_image(
+    product_id: uuid.UUID,
+    image: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_active_admin),
+):
+    """
+    Upload or replace a product image. Superadmin only.
+    """
+    db_product = product_crud.get(db, id=product_id)
+    if not db_product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    image_url = await _save_product_image(image, product_id)
+    db_product.image_url = image_url
+    db.add(db_product)
+    db.commit()
+    db.refresh(db_product)
+    return ApiResponse(message="Product image uploaded successfully", data=db_product)
 
 @router.delete("/{product_id}", response_model=ApiResponse[None])
 def delete_product(product_id: uuid.UUID, db: Session = Depends(get_db), current_user = Depends(get_current_active_admin)):
