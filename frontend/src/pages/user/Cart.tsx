@@ -182,7 +182,7 @@ export function UserCart() {
 
                 <Button
                   className="w-full"
-                  onClick={() => alert("Checkout flow coming soon!")}
+                  onClick={() => navigate("/checkout")}
                 >
                   Proceed to Checkout
                   <ArrowRight className="ml-2 h-4 w-4" />

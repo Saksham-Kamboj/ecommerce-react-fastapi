@@ -14,6 +14,7 @@ from app.models.user import User  # noqa: E402
 from app.models.product import Product  # noqa: E402
 from app.models.cart import Cart, CartItem  # noqa: E402
 from app.models.wishlist import WishlistItem  # noqa: E402
+from app.models.order import Order, OrderItem  # noqa: E402
 
 # this is the Alembic Config object, which provides access to values within the .ini file
 config = context.config
