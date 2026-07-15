@@ -101,17 +101,16 @@ export function ProductDetailPage() {
   const maxQty = product.stock_quantity
   const inStock = product.stock_quantity > 0
 
-  const getButtonLabel = () => {
-    if (!inStock) return "Out of Stock"
-    if (isInCart) return `Update Cart (${qty})`
-    return `Add ${qty} to Cart`
+  const handleCartAction = () => {
+    addToCart(product.id, qty)
   }
 
-  const handleCartAction = () => {
-    if (isInCart && cartItem) {
-      updateQuantity(cartItem.id, qty)
-    } else {
-      addToCart(product.id, qty)
+  const handleQtyChange = (nextQty: number) => {
+    const quantity = Math.min(maxQty, Math.max(1, nextQty))
+    setQty(quantity)
+
+    if (cartItem) {
+      updateQuantity(cartItem.id, quantity)
     }
   }
 
@@ -122,33 +121,12 @@ export function ProductDetailPage() {
         <div className="flex flex-col gap-4">
           <div
             className={cn(
-              "flex aspect-4/3 w-full items-center justify-center rounded-2xl bg-linear-to-br p-12 text-center text-white shadow-lg",
+              "flex aspect-3/2 w-full items-center justify-center rounded-2xl bg-linear-to-br p-12 text-center text-white shadow-lg",
               gradient
             )}
           >
             <span className="font-serif text-3xl font-bold tracking-tight drop-shadow-lg">
               {product.name}
-            </span>
-          </div>
-
-          {/* Rating */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={cn(
-                    "h-5 w-5",
-                    star <= Math.round(Number(rating))
-                      ? "fill-amber-400 text-amber-400"
-                      : "fill-muted text-muted"
-                  )}
-                />
-              ))}
-            </div>
-            <span className="text-sm font-semibold">{rating}</span>
-            <span className="text-sm text-muted-foreground">
-              ({reviews} reviews)
             </span>
           </div>
         </div>
@@ -173,6 +151,26 @@ export function ProductDetailPage() {
               {isInCart && (
                 <Badge variant="secondary">{cartItem.quantity} in cart</Badge>
               )}
+              {/* Rating */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={cn(
+                        "h-5 w-5",
+                        star <= Math.round(Number(rating))
+                          ? "fill-amber-400 text-amber-400"
+                          : "fill-muted text-muted"
+                      )}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-semibold">{rating}</span>
+                <span className="text-sm text-muted-foreground">
+                  ({reviews} reviews)
+                </span>
+              </div>
             </div>
           </div>
 
@@ -202,7 +200,7 @@ export function ProductDetailPage() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 rounded-sm"
-                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  onClick={() => handleQtyChange(qty - 1)}
                   disabled={qty <= 1}
                 >
                   <Minus className="h-3 w-3" />
@@ -214,7 +212,7 @@ export function ProductDetailPage() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 rounded-sm"
-                  onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                  onClick={() => handleQtyChange(qty + 1)}
                   disabled={qty >= maxQty}
                 >
                   <Plus className="h-3 w-3" />
@@ -228,20 +226,25 @@ export function ProductDetailPage() {
 
           {/* Buttons */}
           <div className="flex gap-3">
-            <Button
-              className="flex-1"
-              size="lg"
-              variant={isInCart ? "secondary" : "default"}
-              disabled={!inStock}
-              onClick={handleCartAction}
-            >
-              <ShoppingCart className="mr-2 h-5 w-5" />
-              {getButtonLabel()}
-            </Button>
+            {!isInCart && (
+              <Button
+                className="flex-1"
+                disabled={!inStock}
+                onClick={handleCartAction}
+              >
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                {inStock ? `Add ${qty} to Cart` : "Out of Stock"}
+              </Button>
+            )}
+
+            {isInCart && (
+              <Button className="flex-1" onClick={() => navigate("/cart")}>
+                View Cart & Checkout
+              </Button>
+            )}
 
             <Button
               variant="outline"
-              size="lg"
               className={cn(
                 "w-14 shrink-0",
                 wishlisted && "border-red-300 text-red-500 hover:text-red-600"
@@ -254,12 +257,6 @@ export function ProductDetailPage() {
               </span>
             </Button>
           </div>
-
-          {isInCart && (
-            <Button size="lg" onClick={() => navigate("/cart")}>
-              View Cart & Checkout
-            </Button>
-          )}
         </div>
       </div>
     </div>
