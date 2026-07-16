@@ -94,21 +94,23 @@ export function UserProducts() {
           Our Collection
         </h1>
         <p className="text-lg text-muted-foreground">
-          Discover our carefully curated selection of premium products designed just for you.
+          Discover our carefully curated selection of premium products designed
+          just for you.
         </p>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-xl bg-card p-2 border shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-2 overflow-x-auto pb-1 sm:pb-0 hide-scrollbar">
+      <div className="flex flex-col gap-4 rounded-xl border bg-card p-2 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="hide-scrollbar flex flex-wrap gap-2 overflow-x-auto pb-1 sm:pb-0">
           <button
             onClick={() => {
               setSelectedCategory(null)
               setPage(1)
             }}
-            className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition-all duration-200 ${selectedCategory === null
-              ? "border-primary bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
-              : "border-transparent bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-              }`}
+            className={`rounded-full border px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+              selectedCategory === null
+                ? "border-primary bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+                : "border-transparent bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+            }`}
           >
             All
           </button>
@@ -119,10 +121,11 @@ export function UserProducts() {
                 setSelectedCategory(cat.id)
                 setPage(1)
               }}
-              className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition-all duration-200 ${selectedCategory === cat.id
-                ? "border-primary bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
-                : "border-transparent bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-                }`}
+              className={`rounded-full border px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                selectedCategory === cat.id
+                  ? "border-primary bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+                  : "border-transparent bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+              }`}
             >
               {cat.name}
             </button>

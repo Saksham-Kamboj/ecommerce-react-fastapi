@@ -18,33 +18,33 @@ import {
 } from "lucide-react"
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
-{
-  pending: {
-    label: "Pending",
-    className:
-      "border-amber-400 bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400",
-  },
-  confirmed: {
-    label: "Confirmed",
-    className:
-      "border-blue-400 bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400",
-  },
-  shipped: {
-    label: "Shipped",
-    className:
-      "border-purple-400 bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400",
-  },
-  delivered: {
-    label: "Delivered",
-    className:
-      "border-emerald-400 bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400",
-  },
-  cancelled: {
-    label: "Cancelled",
-    className:
-      "border-rose-400 bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400",
-  },
-}
+  {
+    pending: {
+      label: "Pending",
+      className:
+        "border-amber-400 bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400",
+    },
+    confirmed: {
+      label: "Confirmed",
+      className:
+        "border-blue-400 bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400",
+    },
+    shipped: {
+      label: "Shipped",
+      className:
+        "border-purple-400 bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400",
+    },
+    delivered: {
+      label: "Delivered",
+      className:
+        "border-emerald-400 bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400",
+    },
+    cancelled: {
+      label: "Cancelled",
+      className:
+        "border-rose-400 bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400",
+    },
+  }
 
 function StatusBadge({ status }: Readonly<{ status: OrderStatus }>) {
   const config = STATUS_CONFIG[status] ?? { label: status, className: "" }
@@ -202,7 +202,9 @@ export default function AdminOrderDetailPage() {
       {/* Admin Action Panel */}
       <Card className="border-primary/20 bg-primary/5">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base text-primary">Admin Actions</CardTitle>
+          <CardTitle className="text-base text-primary">
+            Admin Actions
+          </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3 px-6 pb-6">
           <Button
@@ -226,10 +228,17 @@ export default function AdminOrderDetailPage() {
           >
             Mark as Delivered
           </Button>
-          <Separator orientation="vertical" className="mx-2 h-10 hidden sm:block" />
+          <Separator
+            orientation="vertical"
+            className="mx-2 hidden h-10 sm:block"
+          />
           <Button
             onClick={() => handleUpdateStatus("cancelled")}
-            disabled={isUpdating || order.status === "cancelled" || order.status === "delivered"}
+            disabled={
+              isUpdating ||
+              order.status === "cancelled" ||
+              order.status === "delivered"
+            }
             variant="destructive"
             className="sm:ml-auto"
           >
@@ -264,12 +273,15 @@ export default function AdminOrderDetailPage() {
               <div key={item.id}>
                 <div className="flex items-center justify-between py-2.5">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <Link to={`/products/${item.product.id}`} className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white hover:opacity-80 transition-opacity">
+                    <Link
+                      to={`/products/${item.product.id}`}
+                      className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white transition-opacity hover:opacity-80"
+                    >
                       {item.product.image_url ? (
                         <img
                           src={item.product.image_url}
                           alt={item.product.name}
-                          className="h-full w-full object-contain mix-blend-multiply p-1"
+                          className="h-full w-full object-contain p-1 mix-blend-multiply"
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-muted/50">
@@ -278,7 +290,10 @@ export default function AdminOrderDetailPage() {
                       )}
                     </Link>
                     <div className="min-w-0">
-                      <Link to={`/products/${item.product.id}`} className="block truncate text-sm font-medium hover:text-primary hover:underline transition-colors">
+                      <Link
+                        to={`/products/${item.product.id}`}
+                        className="block truncate text-sm font-medium transition-colors hover:text-primary hover:underline"
+                      >
                         {item.product.name}
                       </Link>
                       <p className="text-xs text-muted-foreground">
@@ -313,17 +328,19 @@ export default function AdminOrderDetailPage() {
           <CardContent className="px-6 pb-5 text-sm">
             <dl className="grid grid-cols-[100px_1fr] gap-x-2 gap-y-3">
               <dt className="text-muted-foreground">Name</dt>
-              <dd className="font-medium text-right">{order.shipping_name}</dd>
+              <dd className="text-right font-medium">{order.shipping_name}</dd>
 
               {order.shipping_phone && (
                 <>
                   <dt className="text-muted-foreground">Phone</dt>
-                  <dd className="font-medium text-right">{order.shipping_phone}</dd>
+                  <dd className="text-right font-medium">
+                    {order.shipping_phone}
+                  </dd>
                 </>
               )}
 
               <dt className="text-muted-foreground">Address</dt>
-              <dd className="font-medium text-right">
+              <dd className="text-right font-medium">
                 {order.shipping_address_line1}
                 {order.shipping_address_line2 && (
                   <>
@@ -334,15 +351,19 @@ export default function AdminOrderDetailPage() {
               </dd>
 
               <dt className="text-muted-foreground">Location</dt>
-              <dd className="font-medium text-right">
+              <dd className="text-right font-medium">
                 {order.shipping_city}, {order.shipping_state}
               </dd>
 
               <dt className="text-muted-foreground">PIN Code</dt>
-              <dd className="font-medium text-right">{order.shipping_postal_code}</dd>
+              <dd className="text-right font-medium">
+                {order.shipping_postal_code}
+              </dd>
 
               <dt className="text-muted-foreground">Country</dt>
-              <dd className="font-medium text-right">{order.shipping_country}</dd>
+              <dd className="text-right font-medium">
+                {order.shipping_country}
+              </dd>
 
               {order.notes && (
                 <>
@@ -350,7 +371,7 @@ export default function AdminOrderDetailPage() {
                     <Separator />
                   </div>
                   <dt className="text-muted-foreground">Notes</dt>
-                  <dd className="font-medium text-right">{order.notes}</dd>
+                  <dd className="text-right font-medium">{order.notes}</dd>
                 </>
               )}
             </dl>

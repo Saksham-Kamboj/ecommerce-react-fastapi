@@ -243,12 +243,15 @@ export function OrderDetailPage() {
               <div key={item.id}>
                 <div className="flex items-center justify-between py-2.5">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <Link to={`/products/${item.product.id}`} className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white hover:opacity-80 transition-opacity">
+                    <Link
+                      to={`/products/${item.product.id}`}
+                      className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white transition-opacity hover:opacity-80"
+                    >
                       {item.product.image_url ? (
                         <img
                           src={item.product.image_url}
                           alt={item.product.name}
-                          className="h-full w-full object-contain mix-blend-multiply p-1"
+                          className="h-full w-full object-contain p-1 mix-blend-multiply"
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-muted/50">
@@ -257,7 +260,10 @@ export function OrderDetailPage() {
                       )}
                     </Link>
                     <div className="min-w-0">
-                      <Link to={`/products/${item.product.id}`} className="block truncate text-sm font-medium hover:text-primary hover:underline transition-colors">
+                      <Link
+                        to={`/products/${item.product.id}`}
+                        className="block truncate text-sm font-medium transition-colors hover:text-primary hover:underline"
+                      >
                         {item.product.name}
                       </Link>
                       <p className="text-xs text-muted-foreground">
@@ -292,17 +298,19 @@ export function OrderDetailPage() {
           <CardContent className="px-6 pb-5 text-sm">
             <dl className="grid grid-cols-[100px_1fr] gap-x-2 gap-y-3">
               <dt className="text-muted-foreground">Name</dt>
-              <dd className="font-medium text-right">{order.shipping_name}</dd>
+              <dd className="text-right font-medium">{order.shipping_name}</dd>
 
               {order.shipping_phone && (
                 <>
                   <dt className="text-muted-foreground">Phone</dt>
-                  <dd className="font-medium text-right">{order.shipping_phone}</dd>
+                  <dd className="text-right font-medium">
+                    {order.shipping_phone}
+                  </dd>
                 </>
               )}
 
               <dt className="text-muted-foreground">Address</dt>
-              <dd className="font-medium text-right">
+              <dd className="text-right font-medium">
                 {order.shipping_address_line1}
                 {order.shipping_address_line2 && (
                   <>
@@ -313,15 +321,19 @@ export function OrderDetailPage() {
               </dd>
 
               <dt className="text-muted-foreground">Location</dt>
-              <dd className="font-medium text-right">
+              <dd className="text-right font-medium">
                 {order.shipping_city}, {order.shipping_state}
               </dd>
 
               <dt className="text-muted-foreground">PIN Code</dt>
-              <dd className="font-medium text-right">{order.shipping_postal_code}</dd>
+              <dd className="text-right font-medium">
+                {order.shipping_postal_code}
+              </dd>
 
               <dt className="text-muted-foreground">Country</dt>
-              <dd className="font-medium text-right">{order.shipping_country}</dd>
+              <dd className="text-right font-medium">
+                {order.shipping_country}
+              </dd>
 
               {order.notes && (
                 <>
@@ -329,7 +341,7 @@ export function OrderDetailPage() {
                     <Separator />
                   </div>
                   <dt className="text-muted-foreground">Notes</dt>
-                  <dd className="font-medium text-right">{order.notes}</dd>
+                  <dd className="text-right font-medium">{order.notes}</dd>
                 </>
               )}
             </dl>

@@ -27,10 +27,7 @@ import type { CategoryOut } from "@/types/category"
 import type { ProductCreate, ProductUpdate, ProductOut } from "@/types/product"
 
 const formSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Product name is required")
-    .max(255),
+  name: z.string().min(1, "Product name is required").max(255),
   description: z
     .string()
     .max(1000, "Description cannot exceed 1000 characters")

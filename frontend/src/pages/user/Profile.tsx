@@ -606,7 +606,7 @@ function WishlistCard({
                         <img
                           src={item.product.image_url}
                           alt={item.product.name}
-                          className="h-full w-full object-contain mix-blend-multiply p-1"
+                          className="h-full w-full object-contain p-1 mix-blend-multiply"
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-muted/50">
@@ -707,13 +707,13 @@ function CartSummaryCard({
           <div className="flex flex-col gap-1">
             {cart?.items.map((item) => (
               <div key={item.id}>
-                <div className="flex items-center justify-between py-2.5 gap-3">
+                <div className="flex items-center justify-between gap-3 py-2.5">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white">
                     {item.product.image_url ? (
                       <img
                         src={item.product.image_url}
                         alt={item.product.name}
-                        className="h-full w-full object-contain mix-blend-multiply p-1"
+                        className="h-full w-full object-contain p-1 mix-blend-multiply"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-muted/50">

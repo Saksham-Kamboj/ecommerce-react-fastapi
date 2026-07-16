@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { productsApi } from "@/lib/api/products"
+import { reviewsApi } from "@/lib/api/reviews"
 import type { ProductOut } from "@/types/product"
+import type { ReviewOut } from "@/types/review"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Package } from "lucide-react"
+import { Loader2, Package, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ProductReviews } from "@/components/user/ProductReviews"
 
 const GRADIENT_COLORS = [
   "from-blue-500 to-indigo-600",
@@ -55,6 +58,25 @@ export function AdminProductDetailPage() {
     }
   }, [productId])
 
+  const [reviews, setReviews] = useState<ReviewOut[]>([])
+
+  // Load reviews
+  useEffect(() => {
+    if (!productId) return
+    let cancelled = false
+    reviewsApi
+      .getProductReviews(productId, 0, 100)
+      .then((res) => {
+        if (!cancelled) {
+          setReviews(res.data)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [productId])
+
   const [relatedProducts, setRelatedProducts] = useState<ProductOut[]>([])
 
   // Load related products
@@ -65,7 +87,9 @@ export function AdminProductDetailPage() {
       .getProducts(0, 10, undefined, undefined, undefined, product.category_id)
       .then((res) => {
         if (!cancelled) {
-          setRelatedProducts(res.data.filter((p) => p.id !== product.id).slice(0, 5))
+          setRelatedProducts(
+            res.data.filter((p) => p.id !== product.id).slice(0, 5)
+          )
         }
       })
       .catch(() => {})
@@ -94,6 +118,13 @@ export function AdminProductDetailPage() {
   }
 
   const gradient = getGradient(product.name)
+  const rating =
+    reviews.length > 0
+      ? (
+          reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+        ).toFixed(1)
+      : "0.0"
+  const reviewsCount = reviews.length
 
   return (
     <div className="flex flex-col gap-6">
@@ -143,6 +174,26 @@ export function AdminProductDetailPage() {
                 <Package className="h-3.5 w-3.5" />
                 {product.stock_quantity} in stock
               </Badge>
+              {/* Rating */}
+              <div className="ml-2 flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={cn(
+                        "h-4 w-4",
+                        star <= Math.round(Number(rating))
+                          ? "fill-amber-400 text-amber-400"
+                          : "fill-muted text-muted"
+                      )}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-semibold">{rating}</span>
+                <span className="text-sm text-muted-foreground">
+                  ({reviewsCount} reviews)
+                </span>
+              </div>
             </div>
           </div>
 
@@ -167,7 +218,9 @@ export function AdminProductDetailPage() {
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
               <p>
                 <strong>Category:</strong>{" "}
-                <span className="font-medium text-foreground">{product.category.name}</span>
+                <span className="font-medium text-foreground">
+                  {product.category.name}
+                </span>
               </p>
             </div>
           )}
@@ -184,7 +237,7 @@ export function AdminProductDetailPage() {
             {relatedProducts.map((rp) => (
               <div
                 key={rp.id}
-                className="group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md cursor-pointer"
+                className="group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md"
                 onClick={() => navigate(`/products/${rp.id}`)}
               >
                 <div className="relative aspect-square w-full overflow-hidden bg-white p-2">
@@ -213,6 +266,15 @@ export function AdminProductDetailPage() {
           </div>
         </div>
       )}
+
+      <div className="mt-8">
+        <Separator className="mb-8" />
+        <ProductReviews
+          productId={product.id}
+          reviews={reviews}
+          onReviewsChange={setReviews}
+        />
+      </div>
     </div>
   )
 }

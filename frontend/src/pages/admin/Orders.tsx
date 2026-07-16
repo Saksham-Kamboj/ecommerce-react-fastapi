@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react"
-import { Eye } from "lucide-react"
 import { format } from "date-fns"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable, type ColumnDef } from "@/components/ui/data-table"
 import { ordersApi } from "@/lib/api/orders"
@@ -51,7 +49,6 @@ export default function AdminOrdersPage() {
   const [pagination, setPagination] = useState<PaginationType | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const navigate = useNavigate()
 
   // Pagination & Filter state
   const [page, setPage] = useState(1)
@@ -93,7 +90,7 @@ export default function AdminOrdersPage() {
       cell: (order) => (
         <Link
           to={`/orders/${order.id}`}
-          className="font-mono text-sm font-medium text-foreground uppercase hover:underline hover:text-primary"
+          className="font-mono text-sm font-medium text-foreground uppercase hover:text-primary hover:underline"
         >
           {order.id.slice(0, 8)}
         </Link>

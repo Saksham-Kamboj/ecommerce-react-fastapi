@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { productsApi } from "@/lib/api/products"
+import { reviewsApi } from "@/lib/api/reviews"
 import { useCart } from "@/contexts/CartContext"
 import { useWishlist } from "@/contexts/WishlistContext"
 import type { ProductOut } from "@/types/product"
@@ -11,6 +12,8 @@ import { Separator } from "@/components/ui/separator"
 import { Heart, Loader2, Minus, Plus, ShoppingCart, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductCard } from "@/components/user/ProductCard"
+import { ProductReviews } from "@/components/user/ProductReviews"
+import type { ReviewOut } from "@/types/review"
 
 const GRADIENT_COLORS = [
   "from-blue-500 to-indigo-600",
@@ -25,14 +28,6 @@ function getGradient(name: string): string {
     .split("")
     .reduce((acc, char) => acc + (char.codePointAt(0) ?? 0), 0)
   return GRADIENT_COLORS[sum % GRADIENT_COLORS.length]
-}
-
-function getMockRating(id: string): { rating: string; reviews: number } {
-  const num = Number.parseInt(id.replaceAll("-", "").substring(0, 8), 16)
-  return {
-    rating: (4.0 + (num % 11) / 10).toFixed(1),
-    reviews: 20 + (num % 200),
-  }
 }
 
 export function ProductDetailPage() {
@@ -69,6 +64,25 @@ export function ProductDetailPage() {
     }
   }, [productId])
 
+  const [reviews, setReviews] = useState<ReviewOut[]>([])
+
+  // Load reviews
+  useEffect(() => {
+    if (!productId) return
+    let cancelled = false
+    reviewsApi
+      .getProductReviews(productId, 0, 100)
+      .then((res) => {
+        if (!cancelled) {
+          setReviews(res.data)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [productId])
+
   const [relatedProducts, setRelatedProducts] = useState<ProductOut[]>([])
 
   // Load related products
@@ -79,7 +93,9 @@ export function ProductDetailPage() {
       .getProducts(0, 10, undefined, undefined, undefined, product.category_id)
       .then((res) => {
         if (!cancelled) {
-          setRelatedProducts(res.data.filter((p) => p.id !== product.id).slice(0, 5))
+          setRelatedProducts(
+            res.data.filter((p) => p.id !== product.id).slice(0, 5)
+          )
         }
       })
       .catch(() => {})
@@ -108,7 +124,14 @@ export function ProductDetailPage() {
   }
 
   const gradient = getGradient(product.name)
-  const { rating, reviews } = getMockRating(product.id)
+  const rating =
+    reviews.length > 0
+      ? (
+          reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+        ).toFixed(1)
+      : "0.0"
+  const reviewsCount = reviews.length
+
   const wishlisted = isWishlisted(product.id)
   const cartItem = cart?.items.find((i) => i.product.id === product.id)
   const isInCart = !!cartItem
@@ -135,7 +158,7 @@ export function ProductDetailPage() {
         {/* ── Left: visual ── */}
         <div className="flex flex-col gap-4">
           {product.image_url ? (
-            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border bg-white shadow-lg flex items-center justify-center p-4">
+            <div className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl border bg-white p-4 shadow-lg">
               <img
                 src={product.image_url}
                 alt={product.name}
@@ -193,7 +216,7 @@ export function ProductDetailPage() {
                 </div>
                 <span className="text-sm font-semibold">{rating}</span>
                 <span className="text-sm text-muted-foreground">
-                  ({reviews} reviews)
+                  ({reviewsCount} reviews)
                 </span>
               </div>
             </div>
@@ -215,10 +238,12 @@ export function ProductDetailPage() {
           )}
 
           {product.category && (
-            <div className="flex flex-col gap-2 text-sm text-muted-foreground mt-2">
+            <div className="mt-2 flex flex-col gap-2 text-sm text-muted-foreground">
               <p>
                 <strong>Category:</strong>{" "}
-                <span className="font-medium text-foreground">{product.category.name}</span>
+                <span className="font-medium text-foreground">
+                  {product.category.name}
+                </span>
               </p>
             </div>
           )}
@@ -307,6 +332,15 @@ export function ProductDetailPage() {
           </div>
         </div>
       )}
+
+      <div className="mt-8">
+        <Separator className="mb-8" />
+        <ProductReviews
+          productId={product.id}
+          reviews={reviews}
+          onReviewsChange={setReviews}
+        />
+      </div>
     </div>
   )
 }

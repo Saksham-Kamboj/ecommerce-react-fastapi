@@ -15,7 +15,10 @@ export function AdminRoutes() {
         <Route path="/dashboard" element={<AdminDashboard />} />
         <Route path="/users" element={<UsersPage />} />
         <Route path="/products" element={<ProductsPage />} />
-        <Route path="/products/:productId" element={<AdminProductDetailPage />} />
+        <Route
+          path="/products/:productId"
+          element={<AdminProductDetailPage />}
+        />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/orders" element={<AdminOrdersPage />} />
         <Route path="/orders/:orderId" element={<AdminOrderDetailPage />} />
