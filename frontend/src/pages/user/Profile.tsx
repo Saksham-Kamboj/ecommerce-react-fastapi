@@ -590,6 +590,8 @@ function WishlistCard({
   items: WishlistItemOut[]
   onRemove: (productId: string) => Promise<void>
 }>) {
+  const { cart, addToCart, updateQuantity } = useCart()
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -616,37 +618,63 @@ function WishlistCard({
           </div>
         ) : (
           <div className="flex flex-col gap-1">
-            {items.map((item) => (
-              <div key={item.id}>
-                <div className="flex items-center justify-between py-2.5">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
-                      {item.product.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      ₹{item.product.price.toFixed(2)} ·{" "}
-                      {item.product.stock_quantity > 0 ? (
-                        <span className="text-emerald-500">
-                          {item.product.stock_quantity} in stock
-                        </span>
-                      ) : (
-                        <span className="text-destructive">Out of stock</span>
-                      )}
-                    </p>
+            {items.map((item) => {
+              const cartItem = cart?.items.find(
+                (c) => c.product.id === item.product_id
+              )
+              const isInCart = !!cartItem
+              return (
+                <div key={item.id}>
+                  <div className="flex items-center justify-between gap-3 py-2.5">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        {item.product.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        ₹{item.product.price.toFixed(2)} ·{" "}
+                        {item.product.stock_quantity > 0 ? (
+                          <span className="text-emerald-500">
+                            {item.product.stock_quantity} in stock
+                          </span>
+                        ) : (
+                          <span className="text-destructive">Out of stock</span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Button
+                        variant={isInCart ? "secondary" : "outline"}
+                        size="sm"
+                        className="h-7 gap-1 px-2 text-xs"
+                        disabled={item.product.stock_quantity === 0}
+                        onClick={() => {
+                          if (isInCart && cartItem) {
+                            updateQuantity(cartItem.id, cartItem.quantity + 1)
+                          } else {
+                            addToCart(item.product_id, 1)
+                          }
+                        }}
+                      >
+                        <ShoppingCartIcon className="h-3 w-3" />
+                        {isInCart
+                          ? `Add More (${cartItem.quantity})`
+                          : "Add to Cart"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => onRemove(item.product_id)}
+                      >
+                        <Trash2Icon className="h-4 w-4" />
+                        <span className="sr-only">Remove from wishlist</span>
+                      </Button>
+                    </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="ml-3 h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                    onClick={() => onRemove(item.product_id)}
-                  >
-                    <Trash2Icon className="h-4 w-4" />
-                    <span className="sr-only">Remove from wishlist</span>
-                  </Button>
+                  <Separator />
                 </div>
-                <Separator />
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </CardContent>
