@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { toast } from "sonner"
 import { productsApi } from "@/lib/api/products"
 import type { ProductOut } from "@/types/product"
 import { ProductCard } from "@/components/user/ProductCard"
@@ -15,8 +16,6 @@ import { SearchInput } from "@/components/ui/search-input"
 export function UserProducts() {
   const [products, setProducts] = useState<ProductOut[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [page, setPage] = useState(1)
@@ -54,7 +53,7 @@ export function UserProducts() {
         }
       } catch (err) {
         if (!ignore) {
-          setError(
+          toast.error(
             err instanceof Error ? err.message : "Failed to load products"
           )
         }
@@ -93,12 +92,6 @@ export function UserProducts() {
         </div>
       </div>
 
-      {error && (
-        <div className="rounded-md bg-destructive/15 p-4 text-destructive">
-          <p className="font-medium">Error loading products</p>
-          <p className="text-sm">{error}</p>
-        </div>
-      )}
 
       {isLoading && (
         <div className="flex min-h-[400px] items-center justify-center">
@@ -106,7 +99,7 @@ export function UserProducts() {
         </div>
       )}
 
-      {!isLoading && !error && products.length === 0 && (
+      {!isLoading && products.length === 0 && (
         <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border border-dashed text-center">
           <h2 className="mb-2 text-xl font-semibold">No products found</h2>
           <p className="text-muted-foreground">
@@ -115,7 +108,7 @@ export function UserProducts() {
         </div>
       )}
 
-      {!isLoading && !error && products.length > 0 && (
+      {!isLoading && products.length > 0 && (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {products.map((product) => (

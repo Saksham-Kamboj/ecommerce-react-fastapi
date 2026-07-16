@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 import { useAuth } from "@/contexts/AuthContext"
 import { useCart } from "@/contexts/CartContext"
 import { useWishlist } from "@/contexts/WishlistContext"
@@ -32,7 +33,6 @@ import {
   ShoppingCartIcon,
   UserIcon,
   HeartIcon,
-  CheckCircle2Icon,
   Trash2Icon,
 } from "lucide-react"
 
@@ -88,23 +88,6 @@ function FieldRow({
     <div className="py-2">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-0.5 text-sm font-medium">{value || "—"}</p>
-    </div>
-  )
-}
-
-function SuccessAlert({ message }: Readonly<{ message: string }>) {
-  return (
-    <div className="flex items-center gap-2 rounded-md bg-green-500/10 px-3 py-2 text-sm text-green-600 dark:text-green-400">
-      <CheckCircle2Icon className="h-4 w-4 shrink-0" />
-      {message}
-    </div>
-  )
-}
-
-function ErrorAlert({ message }: Readonly<{ message: string }>) {
-  return (
-    <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-      {message}
     </div>
   )
 }
@@ -340,8 +323,6 @@ function AccountEditCard({
   updateUser: (u: NonNullable<ReturnType<typeof useAuth>["user"]>) => void
 }>) {
   const [isSaving, setIsSaving] = useState(false)
-  const [success, setSuccess] = useState("")
-  const [error, setError] = useState("")
   const {
     register,
     handleSubmit,
@@ -356,14 +337,14 @@ function AccountEditCard({
   })
   const onSubmit = async (data: UserUpdateSelf) => {
     setIsSaving(true)
-    setSuccess("")
-    setError("")
     try {
       const res = await profileApi.updateMe(data)
       updateUser(res.data)
-      setSuccess("Profile updated successfully.")
+      toast.success(res.message)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update profile.")
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update profile."
+      )
     } finally {
       setIsSaving(false)
     }
@@ -415,8 +396,6 @@ function AccountEditCard({
               {...register("bio")}
             />
           </div>
-          {success && <SuccessAlert message={success} />}
-          {error && <ErrorAlert message={error} />}
           <Button
             type="submit"
             disabled={isSaving || !isDirty}
@@ -480,8 +459,6 @@ function AddressEditCard({
   updateUser: (u: NonNullable<ReturnType<typeof useAuth>["user"]>) => void
 }>) {
   const [isSaving, setIsSaving] = useState(false)
-  const [success, setSuccess] = useState("")
-  const [error, setError] = useState("")
   const {
     register,
     handleSubmit,
@@ -498,14 +475,14 @@ function AddressEditCard({
   })
   const onSubmit = async (data: UserUpdateSelf) => {
     setIsSaving(true)
-    setSuccess("")
-    setError("")
     try {
       const res = await profileApi.updateMe(data)
       updateUser(res.data)
-      setSuccess("Address updated successfully.")
+      toast.success(res.message)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update address.")
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update address."
+      )
     } finally {
       setIsSaving(false)
     }
@@ -566,8 +543,6 @@ function AddressEditCard({
               />
             </div>
           </div>
-          {success && <SuccessAlert message={success} />}
-          {error && <ErrorAlert message={error} />}
           <Button
             type="submit"
             disabled={isSaving || !isDirty}
@@ -762,8 +737,6 @@ function CartSummaryCard({
 // ── Change Password ────────────────────────────────────────────────────────────
 function ChangePasswordCard() {
   const [isSaving, setIsSaving] = useState(false)
-  const [success, setSuccess] = useState("")
-  const [error, setError] = useState("")
   const {
     register,
     handleSubmit,
@@ -772,14 +745,12 @@ function ChangePasswordCard() {
   } = useForm<ChangePasswordRequest>()
   const onSubmit = async (data: ChangePasswordRequest) => {
     setIsSaving(true)
-    setSuccess("")
-    setError("")
     try {
-      await profileApi.changePassword(data)
-      setSuccess("Password changed successfully.")
+      const res = await profileApi.changePassword(data)
+      toast.success(res.message)
       reset()
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof Error ? err.message : "Failed to change password."
       )
     } finally {
@@ -836,8 +807,6 @@ function ChangePasswordCard() {
                 </p>
               )}
             </div>
-            {success && <SuccessAlert message={success} />}
-            {error && <ErrorAlert message={error} />}
             <Button
               type="submit"
               disabled={isSaving}

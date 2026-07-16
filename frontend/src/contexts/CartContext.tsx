@@ -7,6 +7,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react"
+import { toast } from "sonner"
 import { cartApi } from "@/lib/api/cart"
 import { useDebounce } from "@/hooks/useDebounce"
 import type { CartOut } from "@/types/cart"
@@ -71,7 +72,7 @@ export function CartProvider({
   const addToCart = useCallback(
     (productId: string, quantity: number = 1) => {
       if (!isAuthenticated) {
-        alert("Please login to add items to cart")
+        toast.error("Please login to add items to cart")
         return
       }
 

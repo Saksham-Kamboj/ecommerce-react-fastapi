@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
-import { useParams, useNavigate, useLocation } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 import { ordersApi } from "@/lib/api/orders"
 import type { OrderOut, OrderStatus } from "@/types/order"
 
@@ -18,33 +19,33 @@ import {
 } from "lucide-react"
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
-  {
-    pending: {
-      label: "Pending",
-      className:
-        "border-amber-400 bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400",
-    },
-    confirmed: {
-      label: "Confirmed",
-      className:
-        "border-blue-400 bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400",
-    },
-    shipped: {
-      label: "Shipped",
-      className:
-        "border-purple-400 bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400",
-    },
-    delivered: {
-      label: "Delivered",
-      className:
-        "border-emerald-400 bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400",
-    },
-    cancelled: {
-      label: "Cancelled",
-      className:
-        "border-rose-400 bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400",
-    },
-  }
+{
+  pending: {
+    label: "Pending",
+    className:
+      "border-amber-400 bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400",
+  },
+  confirmed: {
+    label: "Confirmed",
+    className:
+      "border-blue-400 bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400",
+  },
+  shipped: {
+    label: "Shipped",
+    className:
+      "border-purple-400 bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400",
+  },
+  delivered: {
+    label: "Delivered",
+    className:
+      "border-emerald-400 bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400",
+  },
+  cancelled: {
+    label: "Cancelled",
+    className:
+      "border-rose-400 bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400",
+  },
+}
 
 function StatusBadge({ status }: Readonly<{ status: OrderStatus }>) {
   const config = STATUS_CONFIG[status] ?? { label: status, className: "" }
@@ -110,14 +111,10 @@ function OrderProgress({ status }: Readonly<{ status: OrderStatus }>) {
 export function OrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
-  const location = useLocation()
-  const justPlaced =
-    (location.state as { justPlaced?: boolean } | null)?.justPlaced ?? false
 
   const [order, setOrder] = useState<OrderOut | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isCancelling, setIsCancelling] = useState(false)
-  const [error, setError] = useState("")
 
   useEffect(() => {
     if (!orderId) return
@@ -132,7 +129,7 @@ export function OrderDetailPage() {
       })
       .catch(() => {
         if (!cancelled) {
-          setError("Order not found")
+          toast.error("Order not found")
           setIsLoading(false)
         }
       })
@@ -148,7 +145,7 @@ export function OrderDetailPage() {
       const res = await ordersApi.cancelOrder(order.id)
       setOrder(res.data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to cancel order")
+      toast.error(err instanceof Error ? err.message : "Failed to cancel order")
     } finally {
       setIsCancelling(false)
     }
@@ -162,10 +159,10 @@ export function OrderDetailPage() {
     )
   }
 
-  if (error || !order) {
+  if (!order) {
     return (
       <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 text-center">
-        <p className="text-destructive">{error || "Order not found"}</p>
+        <p className="text-destructive">Order not found</p>
         <Button variant="outline" onClick={() => navigate("/orders")}>
           Back to Orders
         </Button>
@@ -218,15 +215,7 @@ export function OrderDetailPage() {
         </div>
       </div>
 
-      {/* Just placed success banner */}
-      {justPlaced && (
-        <div className="flex items-center gap-3 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400">
-          <CheckCircle2 className="h-5 w-5 shrink-0" />
-          <p className="text-sm font-medium">
-            Your order has been placed successfully! We'll confirm it shortly.
-          </p>
-        </div>
-      )}
+
 
       <Separator />
 

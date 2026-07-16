@@ -19,6 +19,7 @@ import { DataTable, type ColumnDef } from "@/components/ui/data-table"
 import { usersApi } from "@/lib/api/users"
 import type { UserOut, UserCreate, UserUpdate } from "@/types/auth"
 import type { Pagination as PaginationType } from "@/types/api"
+import { toast } from "sonner"
 import { UserFormDialog } from "@/components/admin/users/UserFormDialog"
 import { UserDeleteDialog } from "@/components/admin/users/UserDeleteDialog"
 
@@ -100,30 +101,34 @@ export function UsersPage() {
   }
 
   const handleFormSubmit = async (data: UserCreate | UserUpdate) => {
-    if (selectedUser) {
-      await usersApi.updateUser(selectedUser.id, data)
-    } else {
-      await usersApi.createUser(data as UserCreate)
+    try {
+      if (selectedUser) {
+        const res = await usersApi.updateUser(selectedUser.id, data)
+        toast.success(res.message)
+      } else {
+        const res = await usersApi.createUser(data as UserCreate)
+        toast.success(res.message)
+      }
+      setIsFormOpen(false)
+      setIsLoading(true)
+      setError(null)
+      setRefreshTrigger((prev) => prev + 1)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Operation failed")
     }
-    setIsFormOpen(false)
-    setIsLoading(true)
-    setError(null)
-    setRefreshTrigger((prev) => prev + 1)
   }
 
   const handleConfirmDelete = async () => {
     if (!selectedUser) return
     try {
-      await usersApi.deleteUser(selectedUser.id)
+      const res = await usersApi.deleteUser(selectedUser.id)
       setIsDeleteOpen(false)
       setIsLoading(true)
       setError(null)
       setRefreshTrigger((prev) => prev + 1)
+      toast.success(res.message)
     } catch (err) {
-      alert(
-        "Failed to delete user: " +
-          (err instanceof Error ? err.message : "Unknown error")
-      )
+      toast.error(err instanceof Error ? err.message : "Failed to delete user")
     }
   }
 

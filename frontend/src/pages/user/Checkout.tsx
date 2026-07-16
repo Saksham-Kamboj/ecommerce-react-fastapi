@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 import { useCart } from "@/contexts/CartContext"
 import { useAuth } from "@/contexts/AuthContext"
 import { ordersApi } from "@/lib/api/orders"
@@ -23,7 +24,6 @@ export function CheckoutPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [isPlacing, setIsPlacing] = useState(false)
-  const [error, setError] = useState("")
 
   const items = cart?.items ?? []
   const total = cart?.total_price ?? 0
@@ -59,7 +59,6 @@ export function CheckoutPage() {
 
   const onSubmit = async (data: CheckoutForm) => {
     setIsPlacing(true)
-    setError("")
     try {
       const res = await ordersApi.placeOrder({
         shipping_address: {
@@ -75,9 +74,10 @@ export function CheckoutPage() {
         notes: data.notes || null,
       })
       await refreshCart()
+      toast.success(res.message)
       navigate(`/orders/${res.data.id}`, { state: { justPlaced: true } })
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof Error
           ? err.message
           : "Failed to place order. Please try again."
@@ -280,11 +280,6 @@ export function CheckoutPage() {
                   Shipping and taxes calculated at checkout.
                 </p>
 
-                {error && (
-                  <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    {error}
-                  </div>
-                )}
 
                 <Button type="submit" className="w-full" disabled={isPlacing}>
                   {isPlacing ? (

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 import { ordersApi } from "@/lib/api/orders"
 import type { OrderOut, OrderStatus } from "@/types/order"
 import type { Pagination } from "@/types/api"
@@ -62,7 +63,6 @@ export function UserOrders() {
   const [orders, setOrders] = useState<OrderOut[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState("")
   const [page, setPage] = useState(1)
   const LIMIT = 10
 
@@ -83,7 +83,7 @@ export function UserOrders() {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load orders")
+          toast.error(err instanceof Error ? err.message : "Failed to load orders")
           setIsLoading(false)
         }
       })
@@ -111,13 +111,7 @@ export function UserOrders() {
         </div>
       )}
 
-      {error && (
-        <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
-          {error}
-        </div>
-      )}
-
-      {!isLoading && !error && orders.length === 0 && (
+      {!isLoading && orders.length === 0 && (
         <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <PackageSearch className="h-8 w-8 text-muted-foreground/40" />

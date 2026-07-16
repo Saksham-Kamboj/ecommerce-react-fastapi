@@ -20,6 +20,7 @@ import type { ProductOut, ProductCreate, ProductUpdate } from "@/types/product"
 import type { Pagination as PaginationType } from "@/types/api"
 import { ProductFormDialog } from "@/components/admin/products/ProductFormDialog"
 import { ProductDeleteDialog } from "@/components/admin/products/ProductDeleteDialog"
+import { toast } from "sonner"
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<ProductOut[]>([])
@@ -106,35 +107,46 @@ export default function ProductsPage() {
     data: ProductCreate | ProductUpdate,
     imageFile?: File | null
   ) => {
-    let savedProduct: ProductOut
-    if (selectedProduct) {
-      const res = await productsApi.updateProduct(selectedProduct.id, data)
-      savedProduct = res.data
-    } else {
-      const res = await productsApi.createProduct(data as ProductCreate)
-      savedProduct = res.data
+    try {
+      let savedProduct: ProductOut
+      if (selectedProduct) {
+        const res = await productsApi.updateProduct(selectedProduct.id, data)
+        savedProduct = res.data
+        toast.success(res.message)
+      } else {
+        const res = await productsApi.createProduct(data as ProductCreate)
+        savedProduct = res.data
+        toast.success(res.message)
+      }
+
+      if (imageFile) {
+        await productsApi.uploadProductImage(
+          savedProduct.id,
+          imageFile
+        )
+      }
+
+      setIsFormOpen(false)
+      setIsLoading(true)
+      setError(null)
+      setRefreshTrigger((prev) => prev + 1)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Operation failed")
     }
-    if (imageFile) {
-      await productsApi.uploadProductImage(savedProduct.id, imageFile)
-    }
-    setIsFormOpen(false)
-    setIsLoading(true)
-    setError(null)
-    setRefreshTrigger((prev) => prev + 1)
   }
 
   const handleConfirmDelete = async () => {
     if (!selectedProduct) return
     try {
-      await productsApi.deleteProduct(selectedProduct.id)
+      const res = await productsApi.deleteProduct(selectedProduct.id)
       setIsDeleteOpen(false)
       setIsLoading(true)
       setError(null)
       setRefreshTrigger((prev) => prev + 1)
+      toast.success(res.message)
     } catch (err) {
-      alert(
-        "Failed to delete product: " +
-          (err instanceof Error ? err.message : "Unknown error")
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete product"
       )
     }
   }

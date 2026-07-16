@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import { CartProvider } from "@/contexts/CartContext"
 import { WishlistProvider } from "@/contexts/WishlistContext"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { Toaster } from "@/components/ui/sonner"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -19,6 +20,7 @@ createRoot(document.getElementById("root")!).render(
             <CartProvider>
               <WishlistProvider>
                 <App />
+                <Toaster position="top-right" richColors closeButton />
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>
