@@ -11,7 +11,8 @@ This document tracks everything built so far, all decisions made, known issues f
 #### Database Models
 
 - `User` — id (UUID), email, full_name, hashed_password, is_active, role, access_token, otp fields, phone, date_of_birth, bio, address fields (line1, line2, city, state, postal_code, country), created_at, updated_at
-- `Product` — id (UUID), name, description, price, stock_quantity, image_url, is_active, created_at, updated_at
+- `Product` — id (UUID), name, description, price, stock_quantity, image_url, category_id, is_active, created_at, updated_at
+- `Category` — id (UUID), name, slug, created_at, updated_at
 - `Cart` — id, user_id (FK), created_at, updated_at
 - `CartItem` — id, cart_id (FK), product_id (FK), quantity, created_at, updated_at
 - `WishlistItem` — id, user_id (FK), product_id (FK), created_at
@@ -34,7 +35,8 @@ This document tracks everything built so far, all decisions made, known issues f
 - `PUT /users/me` — self-service profile update (name, phone, bio, DOB, address)
 - `POST /users/me/change-password` — verify current password, set new
 - Full admin CRUD for users with pagination, search, sort
-- Full admin CRUD for products with pagination, search, sort
+- Full admin CRUD for products with pagination, search, sort, category assignment
+- Full admin CRUD for categories with pagination and search
 - Cart: get, add item, update quantity (with stock check), remove item, clear
 - Wishlist: get all, add (idempotent), remove
 - Orders: create from cart, list user's orders, order detail, cancel pending order, admin list all, admin update status
@@ -76,6 +78,7 @@ Admin routes:
   /dashboard  → AdminDashboard
   /users      → UsersPage
   /products   → ProductsPage
+  /categories → CategoriesPage
 ```
 
 #### Layouts & Navigation
@@ -201,10 +204,18 @@ Admin routes:
 
 #### Products Page
 
-- DataTable with product image (dicebear initials), name, description, price, stock, status
+- DataTable with product image (uploaded image or dicebear initials), name, description, price, stock, category, status
 - Sort by created/updated
 - Full CRUD dialogs
 - "Showing X entries" in pagination
+
+#### Categories Page
+
+- DataTable with category name, slug, and created/updated dates
+- Search with 500ms debounce
+- Create / Edit category dialog
+- Delete confirmation dialog
+- Sidebar route added for admin category management
 
 ---
 
@@ -260,6 +271,29 @@ Admin routes:
 
 ---
 
+### Phase 8 — Product Categories & Filters
+
+**Backend:**
+
+- Added `Category` model with unique `name` and `slug`
+- Added nullable `category_id` FK on `Product` with `ON DELETE SET NULL`
+- Added product-category relationship in SQLAlchemy models
+- Added Alembic migrations for categories and category cleanup
+- Added `/categories` CRUD endpoints with admin-only create/update/delete
+- `GET /products` supports `category_id` filtering
+- Product responses include `category_id` and nested `category`
+
+**Frontend:**
+
+- Added `categoriesApi` client and category TypeScript types
+- Added admin `/categories` management page
+- Added category field in admin product form
+- Admin Products page supports category filtering via dropdown
+- User Products page supports category filtering via dropdown
+- Product cards and detail pages show category information when available
+
+---
+
 ## Known Technical Decisions
 
 | Decision                           | Reason                                     |
@@ -274,6 +308,7 @@ Admin routes:
 | Plain `<span>` for header badges   | Badge component padding makes it too large |
 | Order prices snapshotted           | Product price changes should not alter old orders |
 | Shipping address snapshotted       | Orders keep delivery details as placed     |
+| Product category `SET NULL`        | Deleting a category should not delete products |
 
 ---
 
@@ -305,22 +340,7 @@ Admin routes:
 
 ---
 
-### 🟡 Priority 2 — Product Categories & Filters
-
-**Backend needed:**
-
-- `Category` model — id, name, slug
-- `product_category_id` FK on Product
-- Filter by category in `GET /products`
-
-**Frontend needed:**
-
-- Category filter pills/dropdown on Products page
-- Category management in admin
-
----
-
-### 🟢 Priority 3 — Payment Integration (Razorpay)
+### 🟢 Priority 2 — Payment Integration (Razorpay)
 
 **Requires:** Orders system is complete
 
@@ -348,7 +368,7 @@ Admin routes:
 
 ---
 
-### 🟢 Priority 4 — Logout API Endpoint
+### 🟢 Priority 3 — Logout API Endpoint
 
 **Backend needed:**
 
@@ -360,7 +380,7 @@ Admin routes:
 
 ---
 
-### 🟢 Priority 5 — DB Constraints & Data Integrity
+### 🟢 Priority 4 — DB Constraints & Data Integrity
 
 - Add `UniqueConstraint("user_id", "product_id")` to `wishlist_items` table
 - Add migration for the constraint
@@ -394,6 +414,8 @@ Admin routes:
 | add_profile_fields_to_user   | phone, DOB, bio, address fields  |
 | add_wishlist_items_table     | WishlistItem table               |
 | create_orders_system         | Order and OrderItem tables       |
+| add_categories_and_product_category_id | Categories table and product category FK |
+| remove_category_description  | Removed unused category description field |
 
 ---
 
