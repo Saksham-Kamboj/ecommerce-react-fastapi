@@ -207,7 +207,7 @@ export function OrderDetailPage() {
                 )}
               </Button>
             )}
-            <Button variant="outline" onClick={() => navigate("/orders")}>
+            <Button onClick={() => navigate("/orders")}>
               <ArrowLeft className="h-4 w-4" />
               Back
             </Button>

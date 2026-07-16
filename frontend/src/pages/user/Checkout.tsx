@@ -88,10 +88,7 @@ export function CheckoutPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/cart")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+      <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-primary">
             Checkout
@@ -100,6 +97,10 @@ export function CheckoutPage() {
             Confirm your delivery address and place your order.
           </p>
         </div>
+        <Button onClick={() => navigate("/cart")}>
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
       </div>
 
       <Separator />
