@@ -142,7 +142,13 @@ export function CartSheet() {
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-muted-foreground">
             <ShoppingCart className="h-16 w-16 text-muted-foreground/30" />
             <p>Your cart is empty.</p>
-            <Button variant="outline" onClick={() => setIsCartOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCartOpen(false)
+                navigate("/products")
+              }}
+            >
               Continue Shopping
             </Button>
           </div>

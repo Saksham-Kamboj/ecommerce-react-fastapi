@@ -11,7 +11,7 @@ import {
 
 export function DynamicBreadcrumb() {
   const location = useLocation()
-  const pathnames = location.pathname.split("/").filter((x) => x)
+  const pathnames = location.pathname.split("/").filter(Boolean)
 
   return (
     <Breadcrumb>
@@ -27,7 +27,7 @@ export function DynamicBreadcrumb() {
           const routeTo = `/${pathnames.slice(0, index + 1).join("/")}`
           const isLast = index === pathnames.length - 1
           const formattedName =
-            name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, " ")
+            name.charAt(0).toUpperCase() + name.slice(1).replaceAll("-", " ")
 
           return (
             <React.Fragment key={routeTo}>

@@ -3,9 +3,19 @@ import { toast } from "sonner"
 import { productsApi } from "@/lib/api/products"
 import type { ProductOut } from "@/types/product"
 import { ProductCard } from "@/components/user/ProductCard"
-import { Loader2 } from "lucide-react"
+import { Filter, Loader2 } from "lucide-react"
 import { categoriesApi } from "@/lib/api/categories"
 import type { CategoryOut } from "@/types/category"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Pagination,
   PaginationContent,
@@ -88,57 +98,72 @@ export function UserProducts() {
   }, [page, debouncedSearch, selectedCategory])
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-extrabold tracking-tight text-primary">
-          Our Collection
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          Discover our carefully curated selection of premium products designed
-          just for you.
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-4 rounded-xl border bg-card p-2 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="hide-scrollbar flex flex-wrap gap-2 overflow-x-auto pb-1 sm:pb-0">
-          <button
-            onClick={() => {
-              setSelectedCategory(null)
-              setPage(1)
-            }}
-            className={`rounded-full border px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-              selectedCategory === null
-                ? "border-primary bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
-                : "border-transparent bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-            }`}
-          >
-            All
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                setSelectedCategory(cat.id)
-                setPage(1)
-              }}
-              className={`rounded-full border px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                selectedCategory === cat.id
-                  ? "border-primary bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
-                  : "border-transparent bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
+    <div className="flex-1 space-y-3">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Products</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Browse available products and find what you need.
+          </p>
         </div>
-
-        <div className="w-full shrink-0 sm:w-72">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
           <SearchInput
-            containerClassName="w-full"
+            containerClassName="sm:w-64"
             placeholder="Search products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="outline" className="gap-2 whitespace-nowrap" />
+              }
+            >
+              <Filter className="h-4 w-4" />
+              {selectedCategory
+                ? (categories.find((c) => c.id === selectedCategory)?.name ??
+                  "Category")
+                : "All Categories"}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedCategory(null)
+                    setPage(1)
+                  }}
+                  className={!selectedCategory ? "font-semibold text-primary" : ""}
+                >
+                  All Categories
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              {categories.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    {categories.map((category) => (
+                      <DropdownMenuItem
+                        key={category.id}
+                        onClick={() => {
+                          setSelectedCategory(category.id)
+                          setPage(1)
+                        }}
+                        className={
+                          selectedCategory === category.id
+                            ? "font-semibold text-primary"
+                            : ""
+                        }
+                      >
+                        {category.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

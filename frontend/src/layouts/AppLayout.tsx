@@ -7,7 +7,7 @@ import {
 import { AppSidebar } from "./sidebar/app-sidebar"
 import { ModeToggle } from "@/components/theme/mode-toggle"
 import { Separator } from "@/components/ui/separator"
-import { DynamicBreadcrumb } from "@/components/layout/DynamicBreadcrumb"
+import { DynamicBreadcrumb } from "@/layouts/DynamicBreadcrumb"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ShoppingCart, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"

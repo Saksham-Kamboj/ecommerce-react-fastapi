@@ -11,10 +11,12 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Heart, ShoppingCart, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { useNavigate } from "react-router-dom"
 
 export function WishlistSheet() {
   const { items, isWishlistOpen, setIsWishlistOpen, toggle } = useWishlist()
   const { addToCart, updateQuantity, cart } = useCart()
+  const navigate = useNavigate()
 
   const hasItems = items.length > 0
 
@@ -121,7 +123,13 @@ export function WishlistSheet() {
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-muted-foreground">
             <Heart className="h-16 w-16 text-muted-foreground/30" />
             <p>Your wishlist is empty.</p>
-            <Button variant="outline" onClick={() => setIsWishlistOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsWishlistOpen(false)
+                navigate("/products")
+              }}
+            >
               Browse Products
             </Button>
           </div>
