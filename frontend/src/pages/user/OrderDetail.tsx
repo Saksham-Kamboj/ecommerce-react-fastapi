@@ -243,8 +243,18 @@ export function OrderDetailPage() {
               <div key={item.id}>
                 <div className="flex items-center justify-between py-2.5">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-muted/50">
-                      <ShoppingCart className="h-4 w-4 text-muted-foreground/40" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white">
+                      {item.product.image_url ? (
+                        <img
+                          src={item.product.image_url}
+                          alt={item.product.name}
+                          className="h-full w-full object-contain mix-blend-multiply p-1"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-muted/50">
+                          <ShoppingCart className="h-4 w-4 text-muted-foreground/40" />
+                        </div>
+                      )}
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">

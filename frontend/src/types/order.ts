@@ -29,6 +29,7 @@ export interface OrderItemOut {
     price: number
     stock_quantity: number
     is_active: boolean
+    image_url: string | null
   }
 }
 
