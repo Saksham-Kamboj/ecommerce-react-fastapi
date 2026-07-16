@@ -1,19 +1,23 @@
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { Link } from "react-router-dom"
+import { Filter } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { DataTable, type ColumnDef } from "@/components/ui/data-table"
 import { ordersApi } from "@/lib/api/orders"
 import type { OrderOut, OrderStatus } from "@/types/order"
 import type { Pagination as PaginationType } from "@/types/api"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
   {
@@ -44,6 +48,16 @@ const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
     },
   }
 
+const ORDER_STATUS_OPTIONS: Array<{ value: "all" | OrderStatus; label: string }> =
+  [
+    { value: "all", label: "All Orders" },
+    { value: "pending", label: "Pending" },
+    { value: "confirmed", label: "Confirmed" },
+    { value: "shipped", label: "Shipped" },
+    { value: "delivered", label: "Delivered" },
+    { value: "cancelled", label: "Cancelled" },
+  ]
+
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<OrderOut[]>([])
   const [pagination, setPagination] = useState<PaginationType | null>(null)
@@ -53,7 +67,10 @@ export default function AdminOrdersPage() {
   // Pagination & Filter state
   const [page, setPage] = useState(1)
   const limit = 10
-  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [statusFilter, setStatusFilter] = useState<"all" | OrderStatus>("all")
+  const selectedStatusLabel =
+    ORDER_STATUS_OPTIONS.find((status) => status.value === statusFilter)
+      ?.label ?? "Status"
 
   useEffect(() => {
     let ignore = false
@@ -154,34 +171,60 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <div className="flex-1 space-y-6">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+    <div className="flex-1 space-y-3">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Orders</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Manage customer orders and update their statuses.
           </p>
         </div>
-        <div className="flex w-full items-center gap-3 sm:w-auto">
-          <Select
-            value={statusFilter}
-            onValueChange={(val) => {
-              setStatusFilter(val || "all")
-              setPage(1)
-            }}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Orders</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="shipped">Shipped</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="outline" className="gap-2 whitespace-nowrap" />
+              }
+            >
+              <Filter className="h-4 w-4" />
+              {selectedStatusLabel}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setStatusFilter("all")
+                    setPage(1)
+                  }}
+                  className={statusFilter === "all" ? "font-semibold text-primary" : ""}
+                >
+                  All Orders
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                {ORDER_STATUS_OPTIONS.filter(
+                  (status) => status.value !== "all"
+                ).map((status) => (
+                  <DropdownMenuItem
+                    key={status.value}
+                    onClick={() => {
+                      setStatusFilter(status.value)
+                      setPage(1)
+                    }}
+                    className={
+                      statusFilter === status.value
+                        ? "font-semibold text-primary"
+                        : ""
+                    }
+                  >
+                    {status.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

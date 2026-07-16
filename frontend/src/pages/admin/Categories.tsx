@@ -224,8 +224,8 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="flex-1 space-y-6">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+    <div className="flex-1 space-y-3">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Categories</h2>
           <p className="mt-1 text-sm text-muted-foreground">
