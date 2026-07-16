@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     MAIL_STARTTLS: bool = True
     MAIL_SSL_TLS: bool = False
 
+    # Razorpay
+    RAZORPAY_KEY_ID: str = ""
+    RAZORPAY_KEY_SECRET: str = ""
+    RAZORPAY_CURRENCY: str = "INR"
+
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
 

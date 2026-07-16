@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { useCart } from "@/contexts/CartContext"
 import { useAuth } from "@/contexts/AuthContext"
 import { ordersApi } from "@/lib/api/orders"
+import { paymentsApi } from "@/lib/api/payments"
 import type { ShippingAddress } from "@/types/order"
 
 import { Button } from "@/components/ui/button"
@@ -17,6 +18,67 @@ import { ArrowLeft, Loader2, MapPin, ShoppingCart, Package } from "lucide-react"
 
 interface CheckoutForm extends ShippingAddress {
   notes?: string
+}
+
+interface RazorpayResponse {
+  razorpay_order_id: string
+  razorpay_payment_id: string
+  razorpay_signature: string
+}
+
+interface RazorpayOptions {
+  key: string
+  amount: number
+  currency: string
+  name: string
+  description: string
+  order_id: string
+  prefill: {
+    name: string
+    email: string
+    contact?: string | null
+  }
+  notes: Record<string, string>
+  theme: {
+    color: string
+  }
+  handler: (response: RazorpayResponse) => void
+  modal: {
+    ondismiss: () => void
+  }
+}
+
+interface RazorpayCheckout {
+  open: () => void
+}
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => RazorpayCheckout
+  }
+}
+
+function loadRazorpayScript(): Promise<void> {
+  const existingScript = document.querySelector<HTMLScriptElement>(
+    'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
+  )
+  if (window.Razorpay) return Promise.resolve()
+  if (existingScript) {
+    return new Promise((resolve, reject) => {
+      existingScript.addEventListener("load", () => resolve(), { once: true })
+      existingScript.addEventListener("error", () => reject(new Error("Failed to load Razorpay")), {
+        once: true,
+      })
+    })
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script")
+    script.src = "https://checkout.razorpay.com/v1/checkout.js"
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error("Failed to load Razorpay"))
+    document.body.appendChild(script)
+  })
 }
 
 export function CheckoutPage() {
