@@ -115,11 +115,11 @@ export function ProductDetailPage() {
         {/* ── Left: visual ── */}
         <div className="flex flex-col gap-4">
           {product.image_url ? (
-            <div className="aspect-3/2 w-full overflow-hidden rounded-2xl border bg-muted shadow-lg">
+            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border bg-white shadow-lg flex items-center justify-center p-4">
               <img
                 src={product.image_url}
                 alt={product.name}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain mix-blend-multiply"
               />
             </div>
           ) : (
