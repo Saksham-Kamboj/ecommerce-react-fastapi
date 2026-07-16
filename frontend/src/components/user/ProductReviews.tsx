@@ -267,9 +267,15 @@ export function ProductReviews({
                   </div>
 
                   {review.comment && (
-                    <p className="mt-1 text-sm whitespace-pre-wrap text-foreground">
+                    <blockquote className="relative mt-1 rounded-r-md border-l-4 border-amber-400 bg-muted/30 py-2 pr-3 pl-4 text-sm whitespace-pre-wrap text-foreground italic">
+                      <span className="mr-1 font-serif text-lg text-amber-400">
+                        “
+                      </span>
                       {review.comment}
-                    </p>
+                      <span className="ml-1 font-serif text-lg text-amber-400">
+                        ”
+                      </span>
+                    </blockquote>
                   )}
                 </div>
               ))}
