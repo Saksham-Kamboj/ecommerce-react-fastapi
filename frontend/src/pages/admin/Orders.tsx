@@ -48,15 +48,17 @@ const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
     },
   }
 
-const ORDER_STATUS_OPTIONS: Array<{ value: "all" | OrderStatus; label: string }> =
-  [
-    { value: "all", label: "All Orders" },
-    { value: "pending", label: "Pending" },
-    { value: "confirmed", label: "Confirmed" },
-    { value: "shipped", label: "Shipped" },
-    { value: "delivered", label: "Delivered" },
-    { value: "cancelled", label: "Cancelled" },
-  ]
+const ORDER_STATUS_OPTIONS: Array<{
+  value: "all" | OrderStatus
+  label: string
+}> = [
+  { value: "all", label: "All Orders" },
+  { value: "pending", label: "Pending" },
+  { value: "confirmed", label: "Confirmed" },
+  { value: "shipped", label: "Shipped" },
+  { value: "delivered", label: "Delivered" },
+  { value: "cancelled", label: "Cancelled" },
+]
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<OrderOut[]>([])
@@ -197,7 +199,9 @@ export default function AdminOrdersPage() {
                     setStatusFilter("all")
                     setPage(1)
                   }}
-                  className={statusFilter === "all" ? "font-semibold text-primary" : ""}
+                  className={
+                    statusFilter === "all" ? "font-semibold text-primary" : ""
+                  }
                 >
                   All Orders
                 </DropdownMenuItem>

@@ -1,5 +1,5 @@
 import { useCart } from "@/contexts/CartContext"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -70,11 +70,15 @@ export function UserCart() {
               <Card key={item.id} className="overflow-hidden p-0">
                 <CardContent className="flex items-center gap-4 p-2">
                   {/* Product visual */}
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-white">
+                  <Link
+                    to={`/products/${item.product.id}`}
+                    className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white transition-opacity hover:opacity-80"
+                  >
                     {item.product.image_url ? (
                       <img
                         src={item.product.image_url}
                         alt={item.product.name}
+                        loading="lazy"
                         className="h-full w-full object-contain p-1 mix-blend-multiply"
                       />
                     ) : (
@@ -82,13 +86,16 @@ export function UserCart() {
                         <ShoppingCart className="h-7 w-7 text-muted-foreground/30" />
                       </div>
                     )}
-                  </div>
+                  </Link>
 
                   {/* Info */}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold">
+                    <Link
+                      to={`/products/${item.product.id}`}
+                      className="truncate font-semibold hover:text-primary hover:underline"
+                    >
                       {item.product.name}
-                    </p>
+                    </Link>
                     <p className="text-sm text-muted-foreground">
                       ₹{item.product.price.toFixed(2)} each
                     </p>

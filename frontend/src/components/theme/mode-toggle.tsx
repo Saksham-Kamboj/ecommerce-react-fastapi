@@ -1,4 +1,4 @@
-import { Monitor, Moon, Sun } from "lucide-react"
+import { Monitor, Moon, Sun, type LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "./theme-provider"
 
@@ -17,12 +17,14 @@ export function ModeToggle() {
   }
 
   // Theme configuration
-  const themeConfig: Record<Theme, { Icon: any; label: string; next: Theme }> =
-    {
-      light: { Icon: Sun, label: "Light mode", next: "dark" },
-      dark: { Icon: Moon, label: "Dark mode", next: "system" },
-      system: { Icon: Monitor, label: "System mode", next: "light" },
-    }
+  const themeConfig: Record<
+    Theme,
+    { Icon: LucideIcon; label: string; next: Theme }
+  > = {
+    light: { Icon: Sun, label: "Light mode", next: "dark" },
+    dark: { Icon: Moon, label: "Dark mode", next: "system" },
+    system: { Icon: Monitor, label: "System mode", next: "light" },
+  }
 
   const current = themeConfig[theme as Theme]
 

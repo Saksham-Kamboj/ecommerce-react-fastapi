@@ -23,7 +23,7 @@ import type { Pagination as PaginationType } from "@/types/api"
 import { ProductFormDialog } from "@/components/admin/products/ProductFormDialog"
 import { ProductDeleteDialog } from "@/components/admin/products/ProductDeleteDialog"
 import { toast } from "sonner"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 export default function ProductsPage() {
   const navigate = useNavigate()
@@ -191,7 +191,10 @@ export default function ProductsPage() {
       className: "pl-6 min-w-[250px]",
       cell: (product) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white shadow-xs">
+          <Link
+            to={`/products/${product.id}`}
+            className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white shadow-xs"
+          >
             <img
               src={
                 product.image_url ||
@@ -200,7 +203,7 @@ export default function ProductsPage() {
               alt={product.name}
               className="h-full w-full object-contain p-1 mix-blend-multiply"
             />
-          </div>
+          </Link>
           <div className="flex max-w-[300px] flex-col">
             <span className="truncate leading-tight font-semibold text-foreground">
               {product.name}

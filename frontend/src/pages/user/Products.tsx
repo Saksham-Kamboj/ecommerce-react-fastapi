@@ -134,7 +134,9 @@ export function UserProducts() {
                     setSelectedCategory(null)
                     setPage(1)
                   }}
-                  className={!selectedCategory ? "font-semibold text-primary" : ""}
+                  className={
+                    !selectedCategory ? "font-semibold text-primary" : ""
+                  }
                 >
                   All Categories
                 </DropdownMenuItem>
