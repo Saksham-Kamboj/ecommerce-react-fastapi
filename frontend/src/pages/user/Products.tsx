@@ -88,56 +88,55 @@ export function UserProducts() {
   }, [page, debouncedSearch, selectedCategory])
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col justify-between gap-4 pr-2 sm:flex-row sm:items-end">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">
-            All Products
-          </h1>
-          <p className="text-muted-foreground">
-            Browse our collection of available products.
-          </p>
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-4xl font-extrabold tracking-tight text-primary">
+          Our Collection
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          Discover our carefully curated selection of premium products designed just for you.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-4 rounded-xl bg-card p-2 border shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-2 overflow-x-auto pb-1 sm:pb-0 hide-scrollbar">
+          <button
+            onClick={() => {
+              setSelectedCategory(null)
+              setPage(1)
+            }}
+            className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition-all duration-200 ${selectedCategory === null
+              ? "border-primary bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+              : "border-transparent bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+              }`}
+          >
+            All
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => {
+                setSelectedCategory(cat.id)
+                setPage(1)
+              }}
+              className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition-all duration-200 ${selectedCategory === cat.id
+                ? "border-primary bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+                : "border-transparent bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                }`}
+            >
+              {cat.name}
+            </button>
+          ))}
         </div>
-        <div className="flex flex-col items-end gap-2">
+
+        <div className="w-full shrink-0 sm:w-72">
           <SearchInput
-            containerClassName="sm:w-64"
+            containerClassName="w-full"
             placeholder="Search products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => {
-            setSelectedCategory(null)
-            setPage(1)
-          }}
-          className={`rounded-full border px-4 py-1 text-sm font-medium transition-colors ${
-            selectedCategory === null
-              ? "border-primary bg-primary text-primary-foreground"
-              : "bg-background text-foreground hover:bg-muted"
-          }`}
-        >
-          All
-        </button>
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => {
-              setSelectedCategory(cat.id)
-              setPage(1)
-            }}
-            className={`rounded-full border px-4 py-1 text-sm font-medium transition-colors ${
-              selectedCategory === cat.id
-                ? "border-primary bg-primary text-primary-foreground"
-                : "bg-background text-foreground hover:bg-muted"
-            }`}
-          >
-            {cat.name}
-          </button>
-        ))}
       </div>
 
       {isLoading && (
