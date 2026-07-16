@@ -55,6 +55,25 @@ export function AdminProductDetailPage() {
     }
   }, [productId])
 
+  const [relatedProducts, setRelatedProducts] = useState<ProductOut[]>([])
+
+  // Load related products
+  useEffect(() => {
+    if (!product || !product.category_id) return
+    let cancelled = false
+    productsApi
+      .getProducts(0, 10, undefined, undefined, undefined, product.category_id)
+      .then((res) => {
+        if (!cancelled) {
+          setRelatedProducts(res.data.filter((p) => p.id !== product.id).slice(0, 5))
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [product])
+
   if (isLoading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
@@ -154,6 +173,46 @@ export function AdminProductDetailPage() {
           )}
         </div>
       </div>
+
+      {relatedProducts.length > 0 && (
+        <div className="mt-8 flex flex-col gap-6">
+          <Separator />
+          <h2 className="text-2xl font-bold tracking-tight">
+            More from {product.category?.name || "this category"}
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {relatedProducts.map((rp) => (
+              <div
+                key={rp.id}
+                className="group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md cursor-pointer"
+                onClick={() => navigate(`/products/${rp.id}`)}
+              >
+                <div className="relative aspect-square w-full overflow-hidden bg-white p-2">
+                  {rp.image_url ? (
+                    <img
+                      src={rp.image_url}
+                      alt={rp.name}
+                      className="h-full w-full rounded-sm object-contain mix-blend-multiply"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center rounded-sm bg-muted p-6 text-muted-foreground">
+                      <Package className="h-10 w-10 opacity-50" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col gap-1 p-3">
+                  <h3 className="line-clamp-2 leading-tight font-semibold tracking-tight group-hover:text-primary group-hover:underline">
+                    {rp.name}
+                  </h3>
+                  <div className="mt-auto pt-2 text-lg font-bold">
+                    ₹{rp.price.toFixed(2)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

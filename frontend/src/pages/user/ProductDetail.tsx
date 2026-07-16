@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Heart, Loader2, Minus, Plus, ShoppingCart, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ProductCard } from "@/components/user/ProductCard"
 
 const GRADIENT_COLORS = [
   "from-blue-500 to-indigo-600",
@@ -67,6 +68,25 @@ export function ProductDetailPage() {
       cancelled = true
     }
   }, [productId])
+
+  const [relatedProducts, setRelatedProducts] = useState<ProductOut[]>([])
+
+  // Load related products
+  useEffect(() => {
+    if (!product || !product.category_id) return
+    let cancelled = false
+    productsApi
+      .getProducts(0, 10, undefined, undefined, undefined, product.category_id)
+      .then((res) => {
+        if (!cancelled) {
+          setRelatedProducts(res.data.filter((p) => p.id !== product.id).slice(0, 5))
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [product])
 
   if (isLoading) {
     return (
@@ -273,6 +293,20 @@ export function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      {relatedProducts.length > 0 && (
+        <div className="mt-8 flex flex-col gap-6">
+          <Separator />
+          <h2 className="text-2xl font-bold tracking-tight">
+            More from {product.category?.name || "this category"}
+          </h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {relatedProducts.map((rp) => (
+              <ProductCard key={rp.id} product={rp} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
