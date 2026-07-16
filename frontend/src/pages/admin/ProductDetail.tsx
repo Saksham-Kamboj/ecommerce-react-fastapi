@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, Link } from "react-router-dom"
 import { productsApi } from "@/lib/api/products"
 import { reviewsApi } from "@/lib/api/reviews"
 import type { ProductOut } from "@/types/product"
@@ -81,15 +81,21 @@ export function AdminProductDetailPage() {
 
   // Load related products
   useEffect(() => {
-    if (!product || !product.category_id) return
+    if (!product?.category_id) return
     let cancelled = false
     productsApi
       .getProducts(0, 10, undefined, undefined, undefined, product.category_id)
       .then((res) => {
         if (!cancelled) {
-          setRelatedProducts(
-            res.data.filter((p) => p.id !== product.id).slice(0, 5)
-          )
+          const others = res.data.filter((p) => p.id !== product.id)
+          // Cryptographically safe shuffle, max 5
+          const shuffled = [...others]
+            .sort(
+              () =>
+                crypto.getRandomValues(new Uint32Array(1))[0] / 0xffffffff - 0.5
+            )
+            .slice(0, 5)
+          setRelatedProducts(shuffled)
         }
       })
       .catch(() => {})
@@ -132,7 +138,7 @@ export function AdminProductDetailPage() {
         {/* ── Left: visual ── */}
         <div className="flex flex-col gap-4">
           {product.image_url ? (
-            <div className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl border bg-white p-4 shadow-lg">
+            <div className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-2xl border bg-white p-4 shadow-lg">
               <img
                 src={product.image_url}
                 alt={product.name}
@@ -142,7 +148,7 @@ export function AdminProductDetailPage() {
           ) : (
             <div
               className={cn(
-                "flex aspect-[4/3] w-full items-center justify-center rounded-2xl bg-linear-to-br p-12 text-center text-white shadow-lg",
+                "flex aspect-4/3 w-full items-center justify-center rounded-2xl bg-linear-to-br p-12 text-center text-white shadow-lg",
                 gradient
               )}
             >
@@ -235,10 +241,10 @@ export function AdminProductDetailPage() {
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {relatedProducts.map((rp) => (
-              <div
+              <Link
+                to={`/products/${rp.id}`}
                 key={rp.id}
                 className="group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md"
-                onClick={() => navigate(`/products/${rp.id}`)}
               >
                 <div className="relative aspect-square w-full overflow-hidden bg-white p-2">
                   {rp.image_url ? (
@@ -257,11 +263,20 @@ export function AdminProductDetailPage() {
                   <h3 className="line-clamp-2 leading-tight font-semibold tracking-tight group-hover:text-primary group-hover:underline">
                     {rp.name}
                   </h3>
-                  <div className="mt-auto pt-2 text-lg font-bold">
-                    ₹{rp.price.toFixed(2)}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-lg font-bold">
+                      ₹{rp.price.toFixed(2)}
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className="flex items-center gap-1"
+                    >
+                      <Package className="h-3.5 w-3.5" />
+                      {rp.stock_quantity} in stock
+                    </Badge>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

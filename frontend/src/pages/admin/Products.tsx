@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { MoreHorizontal, Plus, Pencil, Trash2, Eye } from "lucide-react"
+import { MoreHorizontal, Plus, Pencil, Trash2, Eye, Filter } from "lucide-react"
 import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
@@ -16,7 +16,9 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { DataTable, type ColumnDef } from "@/components/ui/data-table"
 import { productsApi } from "@/lib/api/products"
+import { categoriesApi } from "@/lib/api/categories"
 import type { ProductOut, ProductCreate, ProductUpdate } from "@/types/product"
+import type { CategoryOut } from "@/types/category"
 import type { Pagination as PaginationType } from "@/types/api"
 import { ProductFormDialog } from "@/components/admin/products/ProductFormDialog"
 import { ProductDeleteDialog } from "@/components/admin/products/ProductDeleteDialog"
@@ -40,6 +42,20 @@ export default function ProductsPage() {
   // Sort state
   const [sortBy, setSortBy] = useState("created_at")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+
+  // Category filter state
+  const [categories, setCategories] = useState<CategoryOut[]>([])
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    null
+  )
+
+  // Load categories once
+  useEffect(() => {
+    categoriesApi
+      .getCategories({ limit: 100 })
+      .then((res) => setCategories(res.data))
+      .catch(() => {})
+  }, [])
 
   // Debounce search query
   useEffect(() => {
@@ -68,7 +84,8 @@ export default function ProductsPage() {
           limit,
           debouncedSearch,
           sortBy,
-          sortOrder
+          sortOrder,
+          selectedCategoryId
         )
         if (!ignore) {
           setProducts(res.data)
@@ -88,7 +105,15 @@ export default function ProductsPage() {
     return () => {
       ignore = true
     }
-  }, [page, limit, refreshTrigger, debouncedSearch, sortBy, sortOrder])
+  }, [
+    page,
+    limit,
+    refreshTrigger,
+    debouncedSearch,
+    sortBy,
+    sortOrder,
+    selectedCategoryId,
+  ])
 
   const handleCreateProduct = () => {
     setSelectedProduct(null)
@@ -336,13 +361,68 @@ export default function ProductsPage() {
             Manage your inventory and product details.
           </p>
         </div>
-        <div className="flex w-full items-center gap-3 sm:w-auto">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
           <SearchInput
             containerClassName="sm:w-64"
             placeholder="Search products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+
+          {/* Category filter */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="outline" className="gap-2 whitespace-nowrap" />
+              }
+            >
+              <Filter className="h-4 w-4" />
+              {selectedCategoryId
+                ? (categories.find((c) => c.id === selectedCategoryId)?.name ??
+                  "Category")
+                : "All Categories"}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedCategoryId(null)
+                    setPage(1)
+                  }}
+                  className={
+                    !selectedCategoryId ? "font-semibold text-primary" : ""
+                  }
+                >
+                  All Categories
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              {categories.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    {categories.map((cat) => (
+                      <DropdownMenuItem
+                        key={cat.id}
+                        onClick={() => {
+                          setSelectedCategoryId(cat.id)
+                          setPage(1)
+                        }}
+                        className={
+                          selectedCategoryId === cat.id
+                            ? "font-semibold text-primary"
+                            : ""
+                        }
+                      >
+                        {cat.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Button
             onClick={handleCreateProduct}
             className="cursor-pointer whitespace-nowrap shadow-xs"
@@ -360,7 +440,7 @@ export default function ProductsPage() {
         emptyMessage="No products found."
         pagination={pagination}
         onPageChange={handlePageChange}
-        showIndex={false} // Match screenshot, no index shown
+        showIndex={true}
         sortColumn={sortBy}
         sortOrder={sortOrder}
         onSort={handleSort}

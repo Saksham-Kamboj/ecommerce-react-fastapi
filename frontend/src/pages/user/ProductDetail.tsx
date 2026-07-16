@@ -87,15 +87,21 @@ export function ProductDetailPage() {
 
   // Load related products
   useEffect(() => {
-    if (!product || !product.category_id) return
+    if (!product?.category_id) return
     let cancelled = false
     productsApi
       .getProducts(0, 10, undefined, undefined, undefined, product.category_id)
       .then((res) => {
         if (!cancelled) {
-          setRelatedProducts(
-            res.data.filter((p) => p.id !== product.id).slice(0, 5)
-          )
+          const others = res.data.filter((p) => p.id !== product.id)
+          // Cryptographically safe shuffle, max 5
+          const shuffled = [...others]
+            .sort(
+              () =>
+                crypto.getRandomValues(new Uint32Array(1))[0] / 0xffffffff - 0.5
+            )
+            .slice(0, 5)
+          setRelatedProducts(shuffled)
         }
       })
       .catch(() => {})
@@ -158,7 +164,7 @@ export function ProductDetailPage() {
         {/* ── Left: visual ── */}
         <div className="flex flex-col gap-4">
           {product.image_url ? (
-            <div className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl border bg-white p-4 shadow-lg">
+            <div className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-2xl border bg-white p-4 shadow-lg">
               <img
                 src={product.image_url}
                 alt={product.name}
