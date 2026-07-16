@@ -37,12 +37,21 @@ function getMockRating(id: string) {
 export function ProductCard({ product }: Readonly<ProductCardProps>) {
   const gradientClass = getGradientFromName(product.name)
   const { rating, reviews } = getMockRating(product.id)
-  const { cart, addToCart } = useCart()
+  const { cart, addToCart, updateQuantity } = useCart()
   const { isWishlisted, toggle } = useWishlist()
 
   const cartItem = cart?.items.find((item) => item.product.id === product.id)
   const isInCart = !!cartItem
   const wishlisted = isWishlisted(product.id)
+
+  const handleCartClick = () => {
+    if (isInCart && cartItem) {
+      // Already in cart — increment via updateQuantity (debounced, sends final qty)
+      updateQuantity(cartItem.id, cartItem.quantity + 1)
+    } else {
+      addToCart(product.id, 1)
+    }
+  }
 
   return (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md">
@@ -127,7 +136,7 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
           className="w-full transition-all"
           variant={isInCart ? "secondary" : "default"}
           disabled={product.stock_quantity === 0}
-          onClick={() => addToCart(product.id, 1)}
+          onClick={handleCartClick}
         >
           <ShoppingCart className="mr-2 h-4 w-4" />
           {isInCart ? `Added (${cartItem.quantity}) - Add More` : "Add to Cart"}

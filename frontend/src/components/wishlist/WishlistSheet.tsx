@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge"
 
 export function WishlistSheet() {
   const { items, isWishlistOpen, setIsWishlistOpen, toggle } = useWishlist()
-  const { addToCart, cart } = useCart()
+  const { addToCart, updateQuantity, cart } = useCart()
 
   const hasItems = items.length > 0
 
@@ -73,7 +73,13 @@ export function WishlistSheet() {
                               size="sm"
                               className="h-7 gap-1 px-2 text-xs"
                               disabled={item.product.stock_quantity === 0}
-                              onClick={() => addToCart(item.product_id, 1)}
+                              onClick={() => {
+                                if (inCart) {
+                                  updateQuantity(inCart.id, inCart.quantity + 1)
+                                } else {
+                                  addToCart(item.product_id, 1)
+                                }
+                              }}
                             >
                               <ShoppingCart className="h-3 w-3" />
                               {inCart ? "Add More" : "Add to Cart"}
