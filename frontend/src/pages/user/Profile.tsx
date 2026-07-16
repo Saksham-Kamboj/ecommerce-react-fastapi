@@ -601,6 +601,19 @@ function WishlistCard({
               return (
                 <div key={item.id}>
                   <div className="flex items-center justify-between gap-3 py-2.5">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white">
+                      {item.product.image_url ? (
+                        <img
+                          src={item.product.image_url}
+                          alt={item.product.name}
+                          className="h-full w-full object-contain mix-blend-multiply p-1"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-muted/50">
+                          <PackageIcon className="h-5 w-5 text-muted-foreground/30" />
+                        </div>
+                      )}
+                    </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
                         {item.product.name}
@@ -694,7 +707,20 @@ function CartSummaryCard({
           <div className="flex flex-col gap-1">
             {cart?.items.map((item) => (
               <div key={item.id}>
-                <div className="flex items-center justify-between py-2.5">
+                <div className="flex items-center justify-between py-2.5 gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white">
+                    {item.product.image_url ? (
+                      <img
+                        src={item.product.image_url}
+                        alt={item.product.name}
+                        className="h-full w-full object-contain mix-blend-multiply p-1"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-muted/50">
+                        <ShoppingCartIcon className="h-5 w-5 text-muted-foreground/30" />
+                      </div>
+                    )}
+                  </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">
                       {item.product.name}
