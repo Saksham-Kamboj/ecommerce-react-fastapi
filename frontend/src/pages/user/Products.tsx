@@ -4,6 +4,8 @@ import { productsApi } from "@/lib/api/products"
 import type { ProductOut } from "@/types/product"
 import { ProductCard } from "@/components/user/ProductCard"
 import { Loader2 } from "lucide-react"
+import { categoriesApi } from "@/lib/api/categories"
+import type { CategoryOut } from "@/types/category"
 import {
   Pagination,
   PaginationContent,
@@ -21,6 +23,8 @@ export function UserProducts() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
+  const [categories, setCategories] = useState<CategoryOut[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const ITEMS_PER_PAGE = 10
 
   // Debounce search query
@@ -33,6 +37,15 @@ export function UserProducts() {
   }, [searchQuery])
 
   useEffect(() => {
+    categoriesApi
+      .getCategories()
+      .then((res) => {
+        setCategories(res.data)
+      })
+      .catch(console.error)
+  }, [])
+
+  useEffect(() => {
     let ignore = false
 
     const loadProducts = async () => {
@@ -42,7 +55,10 @@ export function UserProducts() {
         const response = await productsApi.getProducts(
           skip,
           ITEMS_PER_PAGE,
-          debouncedSearch
+          debouncedSearch,
+          undefined,
+          undefined,
+          selectedCategory
         )
         if (!ignore) {
           // Only show active products to normal users
@@ -69,7 +85,7 @@ export function UserProducts() {
     return () => {
       ignore = true
     }
-  }, [page, debouncedSearch])
+  }, [page, debouncedSearch, selectedCategory])
 
   return (
     <div className="flex flex-col gap-6">
@@ -92,6 +108,37 @@ export function UserProducts() {
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => {
+            setSelectedCategory(null)
+            setPage(1)
+          }}
+          className={`rounded-full border px-4 py-1 text-sm font-medium transition-colors ${
+            selectedCategory === null
+              ? "border-primary bg-primary text-primary-foreground"
+              : "bg-background text-foreground hover:bg-muted"
+          }`}
+        >
+          All
+        </button>
+        {categories.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => {
+              setSelectedCategory(cat.id)
+              setPage(1)
+            }}
+            className={`rounded-full border px-4 py-1 text-sm font-medium transition-colors ${
+              selectedCategory === cat.id
+                ? "border-primary bg-primary text-primary-foreground"
+                : "bg-background text-foreground hover:bg-muted"
+            }`}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
 
       {isLoading && (
         <div className="flex min-h-[400px] items-center justify-center">

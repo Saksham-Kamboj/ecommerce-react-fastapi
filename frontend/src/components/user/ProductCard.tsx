@@ -102,6 +102,11 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
             {product.name}
           </h3>
         </Link>
+        {product.category && (
+          <span className="text-xs font-medium text-muted-foreground">
+            {product.category.name}
+          </span>
+        )}
 
         <p className="line-clamp-2 text-sm text-muted-foreground">
           {product.description || "No description available."}

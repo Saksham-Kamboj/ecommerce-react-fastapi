@@ -83,7 +83,9 @@ export function UserOrders() {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          toast.error(err instanceof Error ? err.message : "Failed to load orders")
+          toast.error(
+            err instanceof Error ? err.message : "Failed to load orders"
+          )
           setIsLoading(false)
         }
       })

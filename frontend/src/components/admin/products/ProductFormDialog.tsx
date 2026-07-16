@@ -15,6 +15,15 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { categoriesApi } from "@/lib/api/categories"
+import type { CategoryOut } from "@/types/category"
 import type { ProductCreate, ProductUpdate, ProductOut } from "@/types/product"
 
 const formSchema = z.object({
@@ -37,6 +46,7 @@ const formSchema = z.object({
     .int()
     .min(0, "Stock cannot be negative")
     .max(100000, "Stock is too high"),
+  category_id: z.string().nullable().optional(),
   is_active: z.boolean(),
 })
 
@@ -61,6 +71,7 @@ export function ProductFormDialog({
   const isEditing = !!product
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
+  const [categories, setCategories] = useState<CategoryOut[]>([])
   const previewUrl = imagePreviewUrl ?? product?.image_url ?? null
 
   const form = useForm<FormValues>({
@@ -70,6 +81,7 @@ export function ProductFormDialog({
       description: "",
       price: 0,
       stock_quantity: 0,
+      category_id: null,
       is_active: true,
     },
   })
@@ -81,6 +93,7 @@ export function ProductFormDialog({
         description: product.description || "",
         price: product.price,
         stock_quantity: product.stock_quantity,
+        category_id: product.category_id || null,
         is_active: product.is_active,
       })
     } else if (open && !product) {
@@ -89,8 +102,16 @@ export function ProductFormDialog({
         description: "",
         price: 0,
         stock_quantity: 0,
+        category_id: null,
         is_active: true,
       })
+    }
+
+    if (open) {
+      categoriesApi
+        .getCategories()
+        .then((data) => setCategories(data.data))
+        .catch(console.error)
     }
   }, [open, product, form])
 
@@ -163,6 +184,44 @@ export function ProductFormDialog({
               {form.formState.errors.root.message}
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="category_id">Category</Label>
+            <Controller
+              control={form.control}
+              name="category_id"
+              render={({ field }) => (
+                <Select
+                  value={field.value || "none"}
+                  onValueChange={(val) =>
+                    field.onChange(val === "none" ? null : val)
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a category">
+                      {field.value === "none" || !field.value
+                        ? "No Category"
+                        : categories.find((c) => c.id === field.value)?.name ||
+                          "Select a category"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Category</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {form.formState.errors.category_id && (
+              <p className="text-sm font-medium text-destructive">
+                {form.formState.errors.category_id.message}
+              </p>
+            )}
+          </div>
           <div className="space-y-2">
             <Label htmlFor="name">Product Name</Label>
             <Input

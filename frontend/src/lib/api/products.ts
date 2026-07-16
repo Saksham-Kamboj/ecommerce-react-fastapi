@@ -8,7 +8,8 @@ export const productsApi = {
     limit = 10,
     search?: string,
     sortBy?: string,
-    sortOrder?: string
+    sortOrder?: string,
+    categoryId?: string | null
   ): Promise<PaginatedApiResponse<ProductOut>> => {
     let url = `/products/?skip=${skip}&limit=${limit}`
     if (search) {
@@ -19,6 +20,9 @@ export const productsApi = {
     }
     if (sortOrder) {
       url += `&sort_order=${encodeURIComponent(sortOrder)}`
+    }
+    if (categoryId) {
+      url += `&category_id=${encodeURIComponent(categoryId)}`
     }
     const res = await apiClient<ProductOut[]>(url, {
       method: "GET",

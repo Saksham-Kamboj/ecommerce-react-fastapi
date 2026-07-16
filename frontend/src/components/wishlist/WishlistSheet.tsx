@@ -36,7 +36,7 @@ export function WishlistSheet() {
             <ScrollArea className="min-h-0 flex-1 px-4">
               <div className="flex flex-col gap-6 py-4">
                 {items.map((item) => {
-                  const inCart = cart?.items.some(
+                  const inCart = cart?.items.find(
                     (c) => c.product.id === item.product_id
                   )
                   return (

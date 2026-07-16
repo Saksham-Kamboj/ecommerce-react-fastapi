@@ -120,10 +120,7 @@ export default function ProductsPage() {
       }
 
       if (imageFile) {
-        await productsApi.uploadProductImage(
-          savedProduct.id,
-          imageFile
-        )
+        await productsApi.uploadProductImage(savedProduct.id, imageFile)
       }
 
       setIsFormOpen(false)

@@ -78,9 +78,7 @@ export function CheckoutPage() {
       navigate(`/orders/${res.data.id}`, { state: { justPlaced: true } })
     } catch (err) {
       toast.error(
-        err instanceof Error
-          ? err.message
-          : "Failed to place order. Please try again."
+        err instanceof Error ? err.message : "Failed to delete product"
       )
     } finally {
       setIsPlacing(false)
@@ -279,7 +277,6 @@ export function CheckoutPage() {
                 <p className="text-xs text-muted-foreground">
                   Shipping and taxes calculated at checkout.
                 </p>
-
 
                 <Button type="submit" className="w-full" disabled={isPlacing}>
                   {isPlacing ? (

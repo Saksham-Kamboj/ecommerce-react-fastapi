@@ -19,33 +19,33 @@ import {
 } from "lucide-react"
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
-{
-  pending: {
-    label: "Pending",
-    className:
-      "border-amber-400 bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400",
-  },
-  confirmed: {
-    label: "Confirmed",
-    className:
-      "border-blue-400 bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400",
-  },
-  shipped: {
-    label: "Shipped",
-    className:
-      "border-purple-400 bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400",
-  },
-  delivered: {
-    label: "Delivered",
-    className:
-      "border-emerald-400 bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400",
-  },
-  cancelled: {
-    label: "Cancelled",
-    className:
-      "border-rose-400 bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400",
-  },
-}
+  {
+    pending: {
+      label: "Pending",
+      className:
+        "border-amber-400 bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400",
+    },
+    confirmed: {
+      label: "Confirmed",
+      className:
+        "border-blue-400 bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400",
+    },
+    shipped: {
+      label: "Shipped",
+      className:
+        "border-purple-400 bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400",
+    },
+    delivered: {
+      label: "Delivered",
+      className:
+        "border-emerald-400 bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400",
+    },
+    cancelled: {
+      label: "Cancelled",
+      className:
+        "border-rose-400 bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400",
+    },
+  }
 
 function StatusBadge({ status }: Readonly<{ status: OrderStatus }>) {
   const config = STATUS_CONFIG[status] ?? { label: status, className: "" }
@@ -214,8 +214,6 @@ export function OrderDetailPage() {
           </div>
         </div>
       </div>
-
-
 
       <Separator />
 

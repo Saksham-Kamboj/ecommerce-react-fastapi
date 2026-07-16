@@ -41,6 +41,13 @@ const navAdmin = [
     requireRole: "superadmin",
   },
   {
+    title: "Categories",
+    url: "/categories",
+    icon: <PackageIcon />,
+    isActive: false,
+    requireRole: "superadmin",
+  },
+  {
     title: "Products",
     url: "/products",
     icon: <ShoppingBag />,
