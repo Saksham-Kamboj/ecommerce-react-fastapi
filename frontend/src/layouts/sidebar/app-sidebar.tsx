@@ -28,6 +28,7 @@ import {
   HeartIcon,
   ShoppingCartIcon,
   PackageIcon,
+  ClipboardList,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -51,6 +52,13 @@ const navAdmin = [
     title: "Products",
     url: "/products",
     icon: <ShoppingBag />,
+    isActive: false,
+    requireRole: "superadmin",
+  },
+  {
+    title: "Orders",
+    url: "/orders",
+    icon: <ClipboardList />,
     isActive: false,
     requireRole: "superadmin",
   },

@@ -93,6 +93,19 @@ def list_all_orders(
     return paginate(items=orders, total_items=total, skip=skip, limit=limit, message="All orders retrieved")
 
 
+@router.get("/admin/{order_id}", response_model=ApiResponse[OrderOut])
+def get_admin_order(
+    order_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_admin),
+) -> Any:
+    """Admin: get a specific order by ID."""
+    order = order_crud.get_by_id(db, order_id=order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return ApiResponse(message="Order retrieved", data=order)
+
+
 @router.patch("/admin/{order_id}/status", response_model=ApiResponse[OrderOut])
 def update_order_status(
     order_id: uuid.UUID,
