@@ -56,12 +56,12 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
   return (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md">
       {/* Product visual area */}
-      <div className="relative aspect-square w-full overflow-hidden bg-muted p-2">
+      <div className="relative aspect-square w-full overflow-hidden bg-white p-2">
         {product.image_url ? (
           <img
             src={product.image_url}
             alt={product.name}
-            className="h-full w-full rounded-sm object-cover shadow-inner transition-transform duration-300 group-hover:scale-102"
+            className="h-full w-full rounded-sm object-contain mix-blend-multiply shadow-inner transition-transform duration-300 group-hover:scale-102"
           />
         ) : (
           <div
