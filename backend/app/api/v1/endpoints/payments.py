@@ -61,7 +61,7 @@ def create_payment_order(
         {
             "amount": amount,
             "currency": settings.RAZORPAY_CURRENCY,
-            "receipt": f"order_{order.id}",
+            "receipt": str(order.id)[:40],
             "payment_capture": 1,
             "notes": {"order_id": str(order.id), "user_id": str(current_user.id)},
         }
