@@ -144,16 +144,14 @@ export function AdminProductDetailPage() {
 
           <Separator />
 
-          <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-            <p>
-              <strong>Product ID:</strong>{" "}
-              <span className="font-mono">{product.id}</span>
-            </p>
-            <p>
-              <strong>Category ID:</strong>{" "}
-              <span className="font-mono">{product.category_id}</span>
-            </p>
-          </div>
+          {product.category && (
+            <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+              <p>
+                <strong>Category:</strong>{" "}
+                <span className="font-medium text-foreground">{product.category.name}</span>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

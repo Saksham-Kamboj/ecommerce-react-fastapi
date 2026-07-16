@@ -194,6 +194,15 @@ export function ProductDetailPage() {
             </div>
           )}
 
+          {product.category && (
+            <div className="flex flex-col gap-2 text-sm text-muted-foreground mt-2">
+              <p>
+                <strong>Category:</strong>{" "}
+                <span className="font-medium text-foreground">{product.category.name}</span>
+              </p>
+            </div>
+          )}
+
           <Separator />
 
           {/* Quantity */}
