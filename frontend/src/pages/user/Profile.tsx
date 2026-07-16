@@ -226,6 +226,14 @@ export function UserProfile() {
           <TabsTrigger value="cart" className="flex items-center gap-1.5">
             <ShoppingCartIcon className="h-3.5 w-3.5" />
             Cart
+            {cartItemCount > 0 && (
+              <Badge
+                variant="secondary"
+                className="ml-0.5 h-4 px-1 text-[10px]"
+              >
+                {cartItemCount}
+              </Badge>
+            )}
           </TabsTrigger>
           <TabsTrigger value="security" className="flex items-center gap-1.5">
             <KeyRoundIcon className="h-3.5 w-3.5" />
