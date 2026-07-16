@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { MoreHorizontal, Plus, Pencil, Trash2 } from "lucide-react"
+import { MoreHorizontal, Plus, Pencil, Trash2, Eye } from "lucide-react"
 import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
@@ -21,8 +21,10 @@ import type { Pagination as PaginationType } from "@/types/api"
 import { ProductFormDialog } from "@/components/admin/products/ProductFormDialog"
 import { ProductDeleteDialog } from "@/components/admin/products/ProductDeleteDialog"
 import { toast } from "sonner"
+import { useNavigate } from "react-router-dom"
 
 export default function ProductsPage() {
+  const navigate = useNavigate()
   const [products, setProducts] = useState<ProductOut[]>([])
   const [pagination, setPagination] = useState<PaginationType | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -164,14 +166,14 @@ export default function ProductsPage() {
       className: "pl-6 min-w-[250px]",
       cell: (product) => (
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md border bg-muted/50 shadow-xs">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white shadow-xs">
             <img
               src={
                 product.image_url ||
                 `https://api.dicebear.com/7.x/initials/svg?seed=${product.name}&backgroundColor=f1f5f9,e2e8f0,cbd5e1&textColor=475569`
               }
               alt={product.name}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain p-1 mix-blend-multiply"
             />
           </div>
           <div className="flex max-w-[300px] flex-col">
@@ -296,6 +298,13 @@ export default function ProductsPage() {
                   onClick={() => navigator.clipboard.writeText(product.id)}
                 >
                   Copy product ID
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => navigate(`/products/${product.id}`)}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  View
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

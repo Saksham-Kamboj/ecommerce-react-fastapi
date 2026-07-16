@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Eye } from "lucide-react"
 import { format } from "date-fns"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,33 +18,33 @@ import {
 } from "@/components/ui/select"
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
-{
-  pending: {
-    label: "Pending",
-    className:
-      "border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-400",
-  },
-  confirmed: {
-    label: "Confirmed",
-    className:
-      "border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-400",
-  },
-  shipped: {
-    label: "Shipped",
-    className:
-      "border-purple-200 bg-purple-50 text-purple-600 dark:border-purple-900 dark:bg-purple-950 dark:text-purple-400",
-  },
-  delivered: {
-    label: "Delivered",
-    className:
-      "border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-400",
-  },
-  cancelled: {
-    label: "Cancelled",
-    className:
-      "border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-400",
-  },
-}
+  {
+    pending: {
+      label: "Pending",
+      className:
+        "border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-400",
+    },
+    confirmed: {
+      label: "Confirmed",
+      className:
+        "border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-400",
+    },
+    shipped: {
+      label: "Shipped",
+      className:
+        "border-purple-200 bg-purple-50 text-purple-600 dark:border-purple-900 dark:bg-purple-950 dark:text-purple-400",
+    },
+    delivered: {
+      label: "Delivered",
+      className:
+        "border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-400",
+    },
+    cancelled: {
+      label: "Cancelled",
+      className:
+        "border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-400",
+    },
+  }
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<OrderOut[]>([])
@@ -91,9 +91,12 @@ export default function AdminOrdersPage() {
       header: "Order ID",
       className: "pl-6 min-w-[120px]",
       cell: (order) => (
-        <span className="font-mono text-sm font-medium uppercase text-foreground">
+        <Link
+          to={`/orders/${order.id}`}
+          className="font-mono text-sm font-medium text-foreground uppercase hover:underline hover:text-primary"
+        >
           {order.id.slice(0, 8)}
-        </span>
+        </Link>
       ),
     },
     {
@@ -145,20 +148,6 @@ export default function AdminOrdersPage() {
         )
       },
     },
-    {
-      header: "Actions",
-      className: "w-[100px] pr-6 text-right",
-      cell: (order) => (
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1 text-xs"
-          onClick={() => navigate(`/orders/${order.id}`)}
-        >
-          <Eye className="h-3.5 w-3.5" />
-        </Button>
-      ),
-    },
   ]
 
   const handlePageChange = (newPage: number) => {
@@ -177,7 +166,13 @@ export default function AdminOrdersPage() {
           </p>
         </div>
         <div className="flex w-full items-center gap-3 sm:w-auto">
-          <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val || "all"); setPage(1); }}>
+          <Select
+            value={statusFilter}
+            onValueChange={(val) => {
+              setStatusFilter(val || "all")
+              setPage(1)
+            }}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by Status" />
             </SelectTrigger>
