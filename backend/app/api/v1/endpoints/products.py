@@ -116,7 +116,35 @@ def delete_product(product_id: uuid.UUID, db: Session = Depends(get_db), current
     """
     Delete a product. Admin only.
     """
-    db_product = product_crud.remove(db, id=product_id)
+    from sqlalchemy.exc import IntegrityError
+    from app.models.order import OrderItem, OrderStatus
+
+    db_product = product_crud.get(db, id=product_id)
     if not db_product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return ApiResponse(message="Product deleted successfully", data=None)
+
+    # Check if product is in any orders
+    order_items = db.query(OrderItem).filter(OrderItem.product_id == product_id).all()
+    has_active_orders = any(item.order.status != OrderStatus.cancelled for item in order_items)
+    
+    if has_active_orders:
+        raise HTTPException(
+            status_code=400, 
+            detail="Cannot delete this product because it is part of one or more active orders. Please deactivate it instead."
+        )
+
+    # If only in cancelled orders, remove from those orders to allow hard delete
+    for item in order_items:
+        order = item.order
+        order.total_amount -= (item.unit_price * item.quantity)
+        db.delete(item)
+        if order.total_amount <= 0:
+            db.delete(order)
+    db.commit()
+
+    try:
+        product_crud.remove(db, id=product_id)
+        return ApiResponse(message="Product deleted successfully", data=None)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Cannot delete product due to existing references.")
