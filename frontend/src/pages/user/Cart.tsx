@@ -70,8 +70,18 @@ export function UserCart() {
               <Card key={item.id} className="overflow-hidden p-0">
                 <CardContent className="flex items-center gap-4 p-2">
                   {/* Product visual */}
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted/50">
-                    <ShoppingCart className="h-7 w-7 text-muted-foreground/30" />
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-white">
+                    {item.product.image_url ? (
+                      <img
+                        src={item.product.image_url}
+                        alt={item.product.name}
+                        className="h-full w-full object-contain mix-blend-multiply p-1"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-muted/50">
+                        <ShoppingCart className="h-7 w-7 text-muted-foreground/30" />
+                      </div>
+                    )}
                   </div>
 
                   {/* Info */}
