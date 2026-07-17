@@ -85,7 +85,6 @@ export function CheckoutPage() {
         },
         notes: data.notes || null,
       })
-      await refreshCart()
       const order = orderRes.data
 
       // Step 2 — Create Razorpay payment order
@@ -117,13 +116,13 @@ export function CheckoutPage() {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             })
+            await refreshCart() // cart cleared on backend after verify — sync frontend
             toast.success(verifyRes.message)
             navigate(`/orders/${order.id}`)
           } catch (err) {
             toast.error(
               err instanceof Error ? err.message : "Payment verification failed"
             )
-            // Order placed but payment failed — redirect to order detail for retry
             navigate(`/orders/${order.id}`)
           } finally {
             setIsProcessing(false)

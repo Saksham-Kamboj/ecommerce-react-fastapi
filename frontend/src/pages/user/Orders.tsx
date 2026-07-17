@@ -96,13 +96,20 @@ export function UserOrders() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-primary">
-          My Orders
-        </h1>
-        <p className="text-muted-foreground">
-          Track and manage your purchase history.
-        </p>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">
+            My Orders
+          </h1>
+          <p className="text-muted-foreground">
+            Track and manage your purchase history.
+          </p>
+        </div>
+        <div className="">
+          <p className="text-sm text-muted-foreground">
+            {pagination?.totalItems || 0} total orders
+          </p>
+        </div>
       </div>
 
       <Separator />

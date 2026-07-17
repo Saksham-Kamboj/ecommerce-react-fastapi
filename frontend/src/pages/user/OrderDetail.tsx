@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import { useRazorpay } from "react-razorpay"
 import { ordersApi } from "@/lib/api/orders"
 import { paymentsApi } from "@/lib/api/payments"
+import { useCart } from "@/contexts/CartContext"
 import type { OrderOut, OrderStatus } from "@/types/order"
 
 import { Badge } from "@/components/ui/badge"
@@ -114,6 +115,7 @@ export function OrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
   const { Razorpay } = useRazorpay()
+  const { refreshCart } = useCart()
 
   const [order, setOrder] = useState<OrderOut | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -188,6 +190,7 @@ export function OrderDetailPage() {
               razorpay_signature: response.razorpay_signature,
             })
             toast.success(verifyRes.message)
+            await refreshCart() // sync cart after backend clears it
             const updated = await ordersApi.getOrder(order.id)
             setOrder(updated.data)
           } catch (err) {
