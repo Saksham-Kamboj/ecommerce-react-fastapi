@@ -682,4 +682,3 @@ function ProfilePage() {
 [ ] SonarLint shows zero NEW issues in changed files
 [ ] Early returns used instead of deep nesting
 ```
-ok ok 
