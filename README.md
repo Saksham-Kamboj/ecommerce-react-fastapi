@@ -263,7 +263,7 @@ PROJECT_NAME=E-Commerce Platform
 SECRET_KEY=your-strong-secret-key-here
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
 
-POSTGRES_SERVER=localhost
+POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your-password

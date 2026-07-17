@@ -36,38 +36,42 @@ alembic/                       # Database migration configurations and scripts
 ## Setup
 
 1. Create virtual environment:
+
    ```bash
    python -m venv venv
    source venv/bin/activate      # Windows: venv\Scripts\activate
    ```
 
 2. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. Copy env file and update values:
+
    ```bash
    cp .env.example .env
    ```
-   Set `POSTGRES_SERVER=localhost` in your .env file.
+
+   Set `POSTGRES_HOST=localhost` in your .env file.
 
 4. Run Postgres locally.
 
 5. Run first migration:
+
    ```bash
    alembic revision --autogenerate -m "init"
    alembic upgrade head
    ```
 
 6. Start the server:
+
    ```bash
    uvicorn app.main:app --reload
    ```
 
 7. Open docs: http://localhost:8000/docs
-
-
 
 ## Running Tests
 
