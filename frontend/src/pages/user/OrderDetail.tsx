@@ -297,70 +297,70 @@ export function OrderDetailPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Order Progress</CardTitle>
           </CardHeader>
-          <CardContent className="px-6 pb-6">
+          <CardContent className="px-6">
             <OrderProgress status={order.status} />
           </CardContent>
         </Card>
       )}
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Items */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Package className="h-4 w-4" />
-              Items ({order.items.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-1 px-6 pb-5">
-            {order.items.map((item) => (
-              <div key={item.id}>
-                <div className="flex items-center justify-between py-2.5">
-                  <div className="flex min-w-0 flex-1 items-center gap-3">
+      {/* Items */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Package className="h-4 w-4" />
+            Items ({order.items.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-1 px-6">
+          {order.items.map((item) => (
+            <div key={item.id}>
+              <div className="flex items-center justify-between py-2.5">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <Link
+                    to={`/products/${item.product.id}`}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white transition-opacity hover:opacity-80"
+                  >
+                    {item.product.image_url ? (
+                      <img
+                        src={item.product.image_url}
+                        alt={item.product.name}
+                        className="h-full w-full object-contain p-1 mix-blend-multiply"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-muted/50">
+                        <ShoppingCart className="h-4 w-4 text-muted-foreground/40" />
+                      </div>
+                    )}
+                  </Link>
+                  <div className="min-w-0">
                     <Link
                       to={`/products/${item.product.id}`}
-                      className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white transition-opacity hover:opacity-80"
+                      className="block truncate text-sm font-medium transition-colors hover:text-primary hover:underline"
                     >
-                      {item.product.image_url ? (
-                        <img
-                          src={item.product.image_url}
-                          alt={item.product.name}
-                          className="h-full w-full object-contain p-1 mix-blend-multiply"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-muted/50">
-                          <ShoppingCart className="h-4 w-4 text-muted-foreground/40" />
-                        </div>
-                      )}
+                      {item.product.name}
                     </Link>
-                    <div className="min-w-0">
-                      <Link
-                        to={`/products/${item.product.id}`}
-                        className="block truncate text-sm font-medium transition-colors hover:text-primary hover:underline"
-                      >
-                        {item.product.name}
-                      </Link>
-                      <p className="text-xs text-muted-foreground">
-                        ₹{Number(item.unit_price).toFixed(2)} × {item.quantity}
-                      </p>
-                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      ₹{Number(item.unit_price).toFixed(2)} × {item.quantity}
+                    </p>
                   </div>
-                  <p className="ml-3 shrink-0 font-semibold">
-                    ₹{(Number(item.unit_price) * item.quantity).toFixed(2)}
-                  </p>
                 </div>
-                <Separator />
+                <p className="ml-3 shrink-0 font-semibold">
+                  ₹{(Number(item.unit_price) * item.quantity).toFixed(2)}
+                </p>
               </div>
-            ))}
-            <div className="flex items-center justify-between pt-3">
-              <span className="font-medium">Total</span>
-              <span className="text-xl font-bold text-primary">
-                ₹{Number(order.total_amount).toFixed(2)}
-              </span>
+              <Separator />
             </div>
-          </CardContent>
-        </Card>
+          ))}
+          <div className="flex items-center justify-between pt-3">
+            <span className="font-medium">Total</span>
+            <span className="text-xl font-bold text-primary">
+              ₹{Number(order.total_amount).toFixed(2)}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
 
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Shipping */}
         <Card>
           <CardHeader className="pb-3">
@@ -369,7 +369,7 @@ export function OrderDetailPage() {
               Delivery Address
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-6 pb-5 text-sm">
+          <CardContent className="px-6 text-sm">
             <dl className="grid grid-cols-[100px_1fr] gap-x-2 gap-y-3">
               <dt className="text-muted-foreground">Name</dt>
               <dd className="text-right font-medium">{order.shipping_name}</dd>
@@ -386,7 +386,7 @@ export function OrderDetailPage() {
                 {order.shipping_address_line1}
                 {order.shipping_address_line2 && (
                   <>
-                    <br />
+                    {", "}
                     {order.shipping_address_line2}
                   </>
                 )}
@@ -415,67 +415,66 @@ export function OrderDetailPage() {
             </dl>
           </CardContent>
         </Card>
+        {/* Payment Details — from backend's single latest payment */}
+        {order.payment && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CreditCard className="h-4 w-4" />
+                Payment Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6">
+              <dl className="grid grid-cols-[140px_1fr] gap-x-2 gap-y-3 text-sm">
+                <dt className="text-muted-foreground">Status</dt>
+                <dd className="text-right">
+                  {order.payment.status === "captured" && (
+                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
+                      Paid
+                    </span>
+                  )}
+                  {order.payment.status === "created" && (
+                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
+                      Awaiting Payment
+                    </span>
+                  )}
+                  {order.payment.status === "cancelled" && (
+                    <span className="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-600 dark:bg-rose-950/50 dark:text-rose-400">
+                      Cancelled
+                    </span>
+                  )}
+                  {order.payment.status === "failed" && (
+                    <span className="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-600 dark:bg-rose-950/50 dark:text-rose-400">
+                      Failed
+                    </span>
+                  )}
+                </dd>
+                <dt className="text-muted-foreground">Amount</dt>
+                <dd className="text-right font-semibold text-primary">
+                  ₹{Number(order.payment.amount).toFixed(2)}{" "}
+                  {order.payment.currency}
+                </dd>
+                <dt className="text-muted-foreground">Provider</dt>
+                <dd className="text-right font-medium capitalize">
+                  {order.payment.provider}
+                </dd>
+                {order.payment.provider_payment_id && (
+                  <>
+                    <dt className="text-muted-foreground">Payment ID</dt>
+                    <dd className="text-right font-mono text-xs text-muted-foreground">
+                      {order.payment.provider_payment_id}
+                    </dd>
+                  </>
+                )}
+                <dt className="text-muted-foreground">Last Updated</dt>
+                <dd className="text-right font-medium">
+                  {formatDate(order.payment.created_at)}
+                </dd>
+              </dl>
+            </CardContent>
+          </Card>
+        )}
       </div>
-
-      {/* Payment Details — from backend's single latest payment */}
-      {order.payment && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <CreditCard className="h-4 w-4" />
-              Payment Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-5">
-            <dl className="grid grid-cols-[140px_1fr] gap-x-2 gap-y-3 text-sm">
-              <dt className="text-muted-foreground">Status</dt>
-              <dd className="text-right">
-                {order.payment.status === "captured" && (
-                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
-                    Paid
-                  </span>
-                )}
-                {order.payment.status === "created" && (
-                  <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
-                    Awaiting Payment
-                  </span>
-                )}
-                {order.payment.status === "cancelled" && (
-                  <span className="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-600 dark:bg-rose-950/50 dark:text-rose-400">
-                    Cancelled
-                  </span>
-                )}
-                {order.payment.status === "failed" && (
-                  <span className="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-600 dark:bg-rose-950/50 dark:text-rose-400">
-                    Failed
-                  </span>
-                )}
-              </dd>
-              <dt className="text-muted-foreground">Amount</dt>
-              <dd className="text-right font-semibold text-primary">
-                ₹{Number(order.payment.amount).toFixed(2)}{" "}
-                {order.payment.currency}
-              </dd>
-              <dt className="text-muted-foreground">Provider</dt>
-              <dd className="text-right font-medium capitalize">
-                {order.payment.provider}
-              </dd>
-              {order.payment.provider_payment_id && (
-                <>
-                  <dt className="text-muted-foreground">Payment ID</dt>
-                  <dd className="text-right font-mono text-xs text-muted-foreground">
-                    {order.payment.provider_payment_id}
-                  </dd>
-                </>
-              )}
-              <dt className="text-muted-foreground">Last Updated</dt>
-              <dd className="text-right font-medium">
-                {formatDate(order.payment.created_at)}
-              </dd>
-            </dl>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }
