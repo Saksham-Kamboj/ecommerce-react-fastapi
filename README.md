@@ -1,4 +1,4 @@
-# E-Commerce Platform — React + FastAPI 
+# E-Commerce Platform — React + FastAPI
 
 A full-stack e-commerce web application built with **React 19** (frontend) and **FastAPI** (backend), featuring authentication, product management, cart, wishlist, and user profiles.
 
@@ -267,7 +267,7 @@ POSTGRES_SERVER=localhost
 POSTGRES_PORT=5432
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your-password
-POSTGRES_DB=ecommerce_db
+POSTGRES_DATABASE=ecommerce_db
 
 # Email (for OTP password reset)
 MAIL_USERNAME=your@email.com
