@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { toast } from "sonner"
+import { useRazorpay } from "react-razorpay"
 import { ordersApi } from "@/lib/api/orders"
+import { paymentsApi } from "@/lib/api/payments"
 import type { OrderOut, OrderStatus } from "@/types/order"
 
 import { Badge } from "@/components/ui/badge"
@@ -11,6 +13,7 @@ import { Separator } from "@/components/ui/separator"
 import {
   ArrowLeft,
   CheckCircle2,
+  CreditCard,
   Loader2,
   MapPin,
   Package,
@@ -66,7 +69,6 @@ function formatDate(iso: string) {
   })
 }
 
-// Order progress steps
 const STATUS_STEPS: OrderStatus[] = [
   "pending",
   "confirmed",
@@ -111,10 +113,12 @@ function OrderProgress({ status }: Readonly<{ status: OrderStatus }>) {
 export function OrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
+  const { Razorpay } = useRazorpay()
 
   const [order, setOrder] = useState<OrderOut | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isCancelling, setIsCancelling] = useState(false)
+  const [isPayingNow, setIsPayingNow] = useState(false)
 
   useEffect(() => {
     if (!orderId) return
@@ -144,10 +148,69 @@ export function OrderDetailPage() {
     try {
       const res = await ordersApi.cancelOrder(order.id)
       setOrder(res.data)
+      toast.success(res.message)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to cancel order")
     } finally {
       setIsCancelling(false)
+    }
+  }
+
+  const handlePayNow = async () => {
+    if (!order) return
+    setIsPayingNow(true)
+    try {
+      // 1. Create payment order on backend
+      const res = await paymentsApi.createPaymentOrder({ order_id: order.id })
+      const { razorpay_order_id, amount, currency, key_id } = res.data
+
+      // 2. Open Razorpay checkout via react-razorpay hook
+      const rzp = new Razorpay({
+        key: key_id,
+        amount,
+        currency: currency as "INR",
+        order_id: razorpay_order_id,
+        name: "E-Commerce Platform",
+        description: `Order #${order.id.slice(0, 8).toUpperCase()}`,
+        prefill: {
+          name: order.shipping_name,
+          email: "",
+          contact: order.shipping_phone ?? "",
+        },
+        theme: { color: "#0ea5e9" },
+        handler: async (response) => {
+          // 3. Verify payment signature on backend
+          try {
+            const verifyRes = await paymentsApi.verifyPayment({
+              order_id: order.id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            })
+            toast.success(verifyRes.message)
+            const updated = await ordersApi.getOrder(order.id)
+            setOrder(updated.data)
+          } catch (err) {
+            toast.error(
+              err instanceof Error ? err.message : "Payment verification failed"
+            )
+          } finally {
+            setIsPayingNow(false)
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            toast.info("Payment cancelled")
+            setIsPayingNow(false)
+          },
+        },
+      })
+      rzp.open()
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to initiate payment"
+      )
+      setIsPayingNow(false)
     }
   }
 
@@ -173,26 +236,38 @@ export function OrderDetailPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex w-full items-center justify-between gap-3">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight text-primary">
-                Order #{order.id.slice(0, 8).toUpperCase()}
-              </h1>
-              <StatusBadge status={order.status} />
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Placed on {formatDate(order.created_at)}
-            </p>
+      <div className="flex w-full items-center justify-between gap-3">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-primary">
+              Order #{order.id.slice(0, 8).toUpperCase()}
+            </h1>
+            <StatusBadge status={order.status} />
           </div>
-          <div className="flex items-center gap-4">
-            {order.status === "pending" && (
+          <p className="text-sm text-muted-foreground">
+            Placed on {formatDate(order.created_at)}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {order.status === "pending" && (
+            <>
+              <Button
+                className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+                onClick={handlePayNow}
+                disabled={isPayingNow || isCancelling}
+              >
+                {isPayingNow ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CreditCard className="h-4 w-4" />
+                )}
+                {isPayingNow ? "Processing..." : "Pay Now"}
+              </Button>
               <Button
                 variant="outline"
-                className="shrink-0 text-destructive hover:text-destructive"
+                className="text-destructive hover:text-destructive"
                 onClick={handleCancel}
-                disabled={isCancelling}
+                disabled={isCancelling || isPayingNow}
               >
                 {isCancelling ? (
                   <>
@@ -206,18 +281,17 @@ export function OrderDetailPage() {
                   </>
                 )}
               </Button>
-            )}
-            <Button onClick={() => navigate("/orders")}>
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
-          </div>
+            </>
+          )}
+          <Button variant="outline" onClick={() => navigate("/orders")}>
+            <ArrowLeft className="mr-1 h-4 w-4" />
+            Back
+          </Button>
         </div>
       </div>
 
       <Separator />
 
-      {/* Progress tracker */}
       {order.status !== "cancelled" && (
         <Card>
           <CardHeader className="pb-3">
@@ -287,7 +361,7 @@ export function OrderDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Shipping address */}
+        {/* Shipping */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -299,7 +373,6 @@ export function OrderDetailPage() {
             <dl className="grid grid-cols-[100px_1fr] gap-x-2 gap-y-3">
               <dt className="text-muted-foreground">Name</dt>
               <dd className="text-right font-medium">{order.shipping_name}</dd>
-
               {order.shipping_phone && (
                 <>
                   <dt className="text-muted-foreground">Phone</dt>
@@ -308,7 +381,6 @@ export function OrderDetailPage() {
                   </dd>
                 </>
               )}
-
               <dt className="text-muted-foreground">Address</dt>
               <dd className="text-right font-medium">
                 {order.shipping_address_line1}
@@ -319,22 +391,18 @@ export function OrderDetailPage() {
                   </>
                 )}
               </dd>
-
               <dt className="text-muted-foreground">Location</dt>
               <dd className="text-right font-medium">
                 {order.shipping_city}, {order.shipping_state}
               </dd>
-
               <dt className="text-muted-foreground">PIN Code</dt>
               <dd className="text-right font-medium">
                 {order.shipping_postal_code}
               </dd>
-
               <dt className="text-muted-foreground">Country</dt>
               <dd className="text-right font-medium">
                 {order.shipping_country}
               </dd>
-
               {order.notes && (
                 <>
                   <div className="col-span-2 my-1">
