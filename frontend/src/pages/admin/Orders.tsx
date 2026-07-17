@@ -130,6 +130,15 @@ export default function AdminOrdersPage() {
       ),
     },
     {
+      header: "Items",
+      className: "min-w-[100px]",
+      cell: (order) => (
+        <span className="font-semibold text-foreground">
+          {order.items.length}
+        </span>
+      ),
+    },
+    {
       header: "Date",
       className: "min-w-[140px]",
       cell: (order) => (
@@ -157,6 +166,45 @@ export default function AdminOrdersPage() {
       className: "w-[140px]",
       cell: (order) => {
         const config = STATUS_CONFIG[order.status]
+        return (
+          <Badge variant="outline" className={config.className}>
+            {config.label}
+          </Badge>
+        )
+      },
+    },
+    {
+      header: "Payment",
+      className: "w-[140px]",
+      cell: (order) => {
+        if (!order.payment) {
+          return <span className="text-xs text-muted-foreground">—</span>
+        }
+        const PAYMENT_CONFIG = {
+          captured: {
+            label: "Paid",
+            className:
+              "border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-400",
+          },
+          created: {
+            label: "Pending",
+            className:
+              "border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-400",
+          },
+          cancelled: {
+            label: "Cancelled",
+            className:
+              "border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-400",
+          },
+          failed: {
+            label: "Failed",
+            className:
+              "border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-400",
+          },
+        } as const
+        const config = PAYMENT_CONFIG[
+          order.payment.status as keyof typeof PAYMENT_CONFIG
+        ] ?? { label: order.payment.status, className: "" }
         return (
           <Badge variant="outline" className={config.className}>
             {config.label}
