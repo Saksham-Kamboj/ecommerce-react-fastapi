@@ -1,6 +1,7 @@
 import { Outlet, Link } from "react-router-dom"
 import { ModeToggle } from "@/components/theme/mode-toggle"
 import { appConfig } from "@/config/app"
+import loginBg from "@/assets/loginBackground.png"
 
 export function AuthLayout() {
   return (
@@ -10,8 +11,10 @@ export function AuthLayout() {
       </div>
 
       {/* Left side - Branding/Image */}
-      <div className="relative hidden flex-1 flex-col justify-center overflow-hidden bg-zinc-900 px-10 text-white md:flex">
-        <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 to-transparent" />
+      <div 
+        className="relative hidden flex-1 flex-col justify-center overflow-hidden bg-zinc-900 bg-cover bg-center px-10 text-white md:flex"
+        style={{ backgroundImage: `url(${loginBg})` }}
+      >
         <div className="relative z-20">
           <Link
             to="/"
