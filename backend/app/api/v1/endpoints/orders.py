@@ -26,14 +26,12 @@ def place_order(
     - Validates stock for all items
     - Snapshots prices at order time
     - Decrements product stock
-    - Clears the cart after successful order
+    - Cart is cleared only after payment is verified
     """
     cart = cart_crud.get_cart_by_user(db, user_id=current_user.id)
     order = order_crud.create_from_cart(
         db, user_id=current_user.id, cart=cart, order_in=order_in
     )
-    # Clear cart after successful order
-    cart_crud.clear_cart(db, cart_id=cart.id)
     return ApiResponse(message="Order placed successfully", data=order)
 
 

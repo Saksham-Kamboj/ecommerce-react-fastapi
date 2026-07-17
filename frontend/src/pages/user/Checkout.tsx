@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
+import { useRazorpay } from "react-razorpay"
 import { useCart } from "@/contexts/CartContext"
 import { useAuth } from "@/contexts/AuthContext"
 import { ordersApi } from "@/lib/api/orders"
@@ -14,78 +15,26 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Loader2, MapPin, ShoppingCart, Package } from "lucide-react"
+import {
+  ArrowLeft,
+  CreditCard,
+  Loader2,
+  MapPin,
+  Package,
+  ShoppingCart,
+} from "lucide-react"
 
 interface CheckoutForm extends ShippingAddress {
   notes?: string
-}
-
-interface RazorpayResponse {
-  razorpay_order_id: string
-  razorpay_payment_id: string
-  razorpay_signature: string
-}
-
-interface RazorpayOptions {
-  key: string
-  amount: number
-  currency: string
-  name: string
-  description: string
-  order_id: string
-  prefill: {
-    name: string
-    email: string
-    contact?: string | null
-  }
-  notes: Record<string, string>
-  theme: {
-    color: string
-  }
-  handler: (response: RazorpayResponse) => void
-  modal: {
-    ondismiss: () => void
-  }
-}
-
-interface RazorpayCheckout {
-  open: () => void
-}
-
-declare global {
-  interface Window {
-    Razorpay?: new (options: RazorpayOptions) => RazorpayCheckout
-  }
-}
-
-function loadRazorpayScript(): Promise<void> {
-  const existingScript = document.querySelector<HTMLScriptElement>(
-    'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
-  )
-  if (window.Razorpay) return Promise.resolve()
-  if (existingScript) {
-    return new Promise((resolve, reject) => {
-      existingScript.addEventListener("load", () => resolve(), { once: true })
-      existingScript.addEventListener("error", () => reject(new Error("Failed to load Razorpay")), {
-        once: true,
-      })
-    })
-  }
-
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script")
-    script.src = "https://checkout.razorpay.com/v1/checkout.js"
-    script.onload = () => resolve()
-    script.onerror = () => reject(new Error("Failed to load Razorpay"))
-    document.body.appendChild(script)
-  })
 }
 
 export function CheckoutPage() {
   const { cart, refreshCart } = useCart()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [isPlacing, setIsPlacing] = useState(false)
+  const { Razorpay } = useRazorpay()
+
+  const [isProcessing, setIsProcessing] = useState(false)
 
   const items = cart?.items ?? []
   const total = cart?.total_price ?? 0
@@ -120,9 +69,10 @@ export function CheckoutPage() {
   }
 
   const onSubmit = async (data: CheckoutForm) => {
-    setIsPlacing(true)
+    setIsProcessing(true)
     try {
-      const res = await ordersApi.placeOrder({
+      // Step 1 — Create order (status: pending, cart cleared)
+      const orderRes = await ordersApi.placeOrder({
         shipping_address: {
           name: data.name,
           phone: data.phone || null,
@@ -136,14 +86,63 @@ export function CheckoutPage() {
         notes: data.notes || null,
       })
       await refreshCart()
-      toast.success(res.message)
-      navigate(`/orders/${res.data.id}`, { state: { justPlaced: true } })
+      const order = orderRes.data
+
+      // Step 2 — Create Razorpay payment order
+      const payRes = await paymentsApi.createPaymentOrder({
+        order_id: order.id,
+      })
+      const { razorpay_order_id, amount, currency, key_id } = payRes.data
+
+      // Step 3 — Open Razorpay checkout
+      const rzp = new Razorpay({
+        key: key_id,
+        amount,
+        currency: currency as "INR",
+        order_id: razorpay_order_id,
+        name: "E-Commerce Platform",
+        description: `Order #${order.id.slice(0, 8).toUpperCase()}`,
+        prefill: {
+          name: data.name,
+          email: user?.email ?? "",
+          contact: data.phone ?? "",
+        },
+        theme: { color: "#0ea5e9" },
+        handler: async (response) => {
+          // Step 4 — Verify payment on backend
+          try {
+            const verifyRes = await paymentsApi.verifyPayment({
+              order_id: order.id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            })
+            toast.success(verifyRes.message)
+            navigate(`/orders/${order.id}`)
+          } catch (err) {
+            toast.error(
+              err instanceof Error ? err.message : "Payment verification failed"
+            )
+            // Order placed but payment failed — redirect to order detail for retry
+            navigate(`/orders/${order.id}`)
+          } finally {
+            setIsProcessing(false)
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            toast.info(
+              "Payment cancelled. Your order is saved — you can pay from Orders page."
+            )
+            navigate(`/orders/${order.id}`)
+            setIsProcessing(false)
+          },
+        },
+      })
+      rzp.open()
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to delete product"
-      )
-    } finally {
-      setIsPlacing(false)
+      toast.error(err instanceof Error ? err.message : "Failed to place order")
+      setIsProcessing(false)
     }
   }
 
@@ -156,12 +155,12 @@ export function CheckoutPage() {
             Checkout
           </h1>
           <p className="text-muted-foreground">
-            Confirm your delivery address and place your order.
+            Confirm your delivery address and pay.
           </p>
         </div>
-        <Button onClick={() => navigate("/cart")}>
-          <ArrowLeft className="h-4 w-4" />
-          Back
+        <Button variant="outline" onClick={() => navigate("/cart")}>
+          <ArrowLeft className="mr-1 h-4 w-4" />
+          Back to Cart
         </Button>
       </div>
 
@@ -174,7 +173,8 @@ export function CheckoutPage() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <MapPin className="h-4 w-4" /> Delivery Address
+                  <MapPin className="h-4 w-4" />
+                  Delivery Address
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4 px-6 pb-6">
@@ -311,7 +311,8 @@ export function CheckoutPage() {
             <Card className="sticky top-4">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Package className="h-4 w-4" /> Order Summary
+                  <Package className="h-4 w-4" />
+                  Order Summary
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4 px-6 pb-6">
@@ -331,7 +332,7 @@ export function CheckoutPage() {
                 <Separator />
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Subtotal</span>
+                  <span className="text-sm font-medium">Total</span>
                   <span className="text-xl font-bold text-primary">
                     ₹{total.toFixed(2)}
                   </span>
@@ -341,14 +342,21 @@ export function CheckoutPage() {
                   Shipping and taxes calculated at checkout.
                 </p>
 
-                <Button type="submit" className="w-full" disabled={isPlacing}>
-                  {isPlacing ? (
+                <Button
+                  type="submit"
+                  className="w-full gap-2"
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Placing Order...
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Processing...
                     </>
                   ) : (
-                    `Place Order — ₹${total.toFixed(2)}`
+                    <>
+                      <CreditCard className="h-4 w-4" />
+                      Place Order & Pay ₹{total.toFixed(2)}
+                    </>
                   )}
                 </Button>
 
