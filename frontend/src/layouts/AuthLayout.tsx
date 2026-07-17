@@ -11,17 +11,24 @@ export function AuthLayout() {
       </div>
 
       {/* Left side - Branding/Image */}
-      <div 
+      <div
         className="relative hidden flex-1 flex-col justify-center overflow-hidden bg-zinc-900 bg-cover bg-center px-10 text-white md:flex"
         style={{ backgroundImage: `url(${loginBg})` }}
       >
         <div className="relative z-20">
-          <Link
-            to="/"
-            className="mb-10 inline-block text-2xl font-bold tracking-tight"
-          >
-            {appConfig.name}
-          </Link>
+          <div className="flex items-center gap-2">
+            <img
+              src={appConfig.logo}
+              alt={appConfig.name}
+              className="h-16 w-16"
+            />
+            <Link
+              to="/"
+              className="inline-block text-2xl font-bold tracking-tight text-primary"
+            >
+              {appConfig.name}
+            </Link>
+          </div>
           <div className="mt-auto">
             <blockquote className="space-y-2">
               <p className="text-lg">
