@@ -34,6 +34,20 @@ class OrderItemOut(BaseModel):
     product: ProductCartOut
 
 
+class PaymentSummary(BaseModel):
+    """Embedded payment info inside OrderOut."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    status: str
+    amount: float
+    currency: str
+    provider: str
+    provider_order_id: str
+    provider_payment_id: str | None
+    created_at: datetime
+
+
 class OrderOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -54,6 +68,7 @@ class OrderOut(BaseModel):
 
     notes: str | None
     items: list[OrderItemOut]
+    payments: list[PaymentSummary] = []
     created_at: datetime
     updated_at: datetime
 

@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import {
   ArrowLeft,
   CheckCircle2,
+  CreditCard,
   Loader2,
   MapPin,
   Package,
@@ -378,6 +379,47 @@ export default function AdminOrderDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Payment Details — show only successful captured payment */}
+      {order.payments
+        .filter((p) => p.status === "captured")
+        .slice(0, 1)
+        .map((payment) => (
+          <Card key={payment.id}>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CreditCard className="h-4 w-4" />
+                Payment Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-5">
+              <dl className="grid grid-cols-[140px_1fr] gap-x-2 gap-y-3 text-sm">
+                <dt className="text-muted-foreground">Status</dt>
+                <dd className="text-right">
+                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
+                    Paid
+                  </span>
+                </dd>
+                <dt className="text-muted-foreground">Amount</dt>
+                <dd className="text-right font-semibold text-primary">
+                  ₹{Number(payment.amount).toFixed(2)} {payment.currency}
+                </dd>
+                <dt className="text-muted-foreground">Provider</dt>
+                <dd className="text-right font-medium capitalize">
+                  {payment.provider}
+                </dd>
+                <dt className="text-muted-foreground">Payment ID</dt>
+                <dd className="text-right font-mono text-xs text-muted-foreground">
+                  {payment.provider_payment_id ?? "—"}
+                </dd>
+                <dt className="text-muted-foreground">Paid On</dt>
+                <dd className="text-right font-medium">
+                  {formatDate(payment.created_at)}
+                </dd>
+              </dl>
+            </CardContent>
+          </Card>
+        ))}
     </div>
   )
 }

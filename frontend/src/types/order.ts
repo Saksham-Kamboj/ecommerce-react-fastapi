@@ -33,6 +33,17 @@ export interface OrderItemOut {
   }
 }
 
+export interface PaymentSummary {
+  id: string
+  status: string
+  amount: number
+  currency: string
+  provider: string
+  provider_order_id: string
+  provider_payment_id: string | null
+  created_at: string
+}
+
 export interface OrderOut {
   id: string
   user_id: string
@@ -48,6 +59,7 @@ export interface OrderOut {
   shipping_country: string
   notes: string | null
   items: OrderItemOut[]
+  payments: PaymentSummary[]
   created_at: string
   updated_at: string
 }

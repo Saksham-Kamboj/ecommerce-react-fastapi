@@ -416,6 +416,54 @@ export function OrderDetailPage() {
           </CardContent>
         </Card>
       </div>
+      {/* Payment Info */}
+      {order.payments.length > 0 && (
+        <Card className="grid-cols-1">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CreditCard className="h-4 w-4" />
+              Payment Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-5">
+            {order.payments.map((payment) => (
+              <dl
+                key={payment.id}
+                className="grid grid-cols-[140px_1fr] gap-x-2 gap-y-3 text-sm"
+              >
+                <dt className="text-muted-foreground">Status</dt>
+                <dd className="text-right">
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      payment.status === "captured"
+                        ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400"
+                        : "bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400"
+                    }`}
+                  >
+                    {payment.status === "captured" ? "Paid" : payment.status}
+                  </span>
+                </dd>
+                <dt className="text-muted-foreground">Amount</dt>
+                <dd className="text-right font-semibold text-primary">
+                  ₹{Number(payment.amount).toFixed(2)} {payment.currency}
+                </dd>
+                <dt className="text-muted-foreground">Provider</dt>
+                <dd className="text-right font-medium capitalize">
+                  {payment.provider}
+                </dd>
+                <dt className="text-muted-foreground">Payment ID</dt>
+                <dd className="text-right font-mono text-xs text-muted-foreground">
+                  {payment.provider_payment_id ?? "—"}
+                </dd>
+                <dt className="text-muted-foreground">Paid On</dt>
+                <dd className="text-right font-medium">
+                  {formatDate(payment.created_at)}
+                </dd>
+              </dl>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

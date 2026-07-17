@@ -32,5 +32,5 @@ class Payment(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    order = relationship("Order")
+    order = relationship("Order", back_populates="payments")
     user = relationship("User")
