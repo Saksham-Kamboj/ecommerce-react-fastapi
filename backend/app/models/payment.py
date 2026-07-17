@@ -12,6 +12,7 @@ class PaymentStatus(str, Enum):
     created = "created"
     captured = "captured"
     failed = "failed"
+    cancelled = "cancelled"
 
 
 class Payment(Base):

@@ -35,7 +35,7 @@ export interface OrderItemOut {
 
 export interface PaymentSummary {
   id: string
-  status: string
+  status: "created" | "captured" | "failed" | "cancelled"
   amount: number
   currency: string
   provider: string
@@ -59,7 +59,7 @@ export interface OrderOut {
   shipping_country: string
   notes: string | null
   items: OrderItemOut[]
-  payments: PaymentSummary[]
+  payment: PaymentSummary | null // latest payment only — not an array
   created_at: string
   updated_at: string
 }

@@ -34,17 +34,6 @@ def _amount_to_paise(amount: float) -> int:
     return int(round(float(amount) * 100))
 
 
-def _verify_signature(payload: PaymentVerify) -> None:
-    message = f"{payload.razorpay_order_id}|{payload.razorpay_payment_id}"
-    expected = hmac.new(
-        settings.RAZORPAY_KEY_SECRET.encode(),
-        message.encode(),
-        hashlib.sha256,
-    ).hexdigest()
-    if not hmac.compare_digest(expected, payload.razorpay_signature):
-        raise HTTPException(status_code=400, detail="Invalid payment signature")
-
-
 @router.post("/create", response_model=ApiResponse[PaymentCreateOut])
 def create_payment_order(
     payment_in: PaymentCreate,
@@ -56,6 +45,20 @@ def create_payment_order(
         raise HTTPException(status_code=404, detail="Order not found")
     if order.status != OrderStatus.pending:
         raise HTTPException(status_code=400, detail="Payment can be created only for pending orders")
+
+    # Cancel any previous non-captured payments for this order
+    previous_payments = (
+        db.query(Payment)
+        .filter(
+            Payment.order_id == order.id,
+            Payment.status == PaymentStatus.created,
+        )
+        .all()
+    )
+    for p in previous_payments:
+        p.status = PaymentStatus.cancelled
+    if previous_payments:
+        db.commit()
 
     amount = _amount_to_paise(order.total_amount)
     razorpay_order = _get_razorpay_client().order.create(
@@ -116,7 +119,19 @@ def verify_payment(
         raise HTTPException(status_code=404, detail="Payment order not found")
 
     _ensure_razorpay_configured()
-    _verify_signature(payment_in)
+
+    # Verify signature — mark payment as failed on mismatch
+    message = f"{payment_in.razorpay_order_id}|{payment_in.razorpay_payment_id}"
+    expected = hmac.new(
+        settings.RAZORPAY_KEY_SECRET.encode(),
+        message.encode(),
+        hashlib.sha256,
+    ).hexdigest()
+    if not hmac.compare_digest(expected, payment_in.razorpay_signature):
+        payment.status = PaymentStatus.failed
+        db.add(payment)
+        db.commit()
+        raise HTTPException(status_code=400, detail="Invalid payment signature")
 
     payment.provider_payment_id = payment_in.razorpay_payment_id
     payment.provider_signature = payment_in.razorpay_signature

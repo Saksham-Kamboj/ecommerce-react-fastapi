@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+from typing import Any
 
 from app.models.order import OrderStatus
 from app.schemas.product import ProductCartOut
@@ -35,7 +36,7 @@ class OrderItemOut(BaseModel):
 
 
 class PaymentSummary(BaseModel):
-    """Embedded payment info inside OrderOut."""
+    """Latest payment info embedded inside OrderOut."""
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -68,9 +69,25 @@ class OrderOut(BaseModel):
 
     notes: str | None
     items: list[OrderItemOut]
-    payments: list[PaymentSummary] = []
+    payment: PaymentSummary | None = None  # Latest payment only
     created_at: datetime
     updated_at: datetime
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_latest_payment(cls, data: Any) -> Any:
+        """Pick the most relevant payment from the payments relationship."""
+        if hasattr(data, "payments") and data.payments:
+            status_order = {"captured": 0, "created": 1, "failed": 2, "cancelled": 3}
+            sorted_payments = sorted(
+                data.payments,
+                key=lambda p: (
+                    status_order.get(p.status if isinstance(p.status, str) else p.status.value, 99),
+                    -p.created_at.timestamp(),
+                ),
+            )
+            data.__dict__["payment"] = sorted_payments[0]
+        return data
 
 
 class OrderStatusUpdate(BaseModel):

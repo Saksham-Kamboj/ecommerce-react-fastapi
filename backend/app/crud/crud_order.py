@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 
 from app.models.order import Order, OrderItem, OrderStatus
@@ -8,6 +8,14 @@ from app.schemas.order import OrderCreate
 
 
 class CRUDOrder:
+    def get_by_id(self, db: Session, order_id: uuid.UUID) -> Order | None:
+        return (
+            db.query(Order)
+            .options(joinedload(Order.payments), joinedload(Order.items))
+            .filter(Order.id == order_id)
+            .first()
+        )
+
     def get_by_user(
         self,
         db: Session,
@@ -17,18 +25,13 @@ class CRUDOrder:
     ) -> list[Order]:
         return (
             db.query(Order)
+            .options(joinedload(Order.payments), joinedload(Order.items))
             .filter(Order.user_id == user_id)
             .order_by(Order.created_at.desc())
             .offset(skip)
             .limit(limit)
             .all()
         )
-
-    def count_by_user(self, db: Session, user_id: uuid.UUID) -> int:
-        return db.query(Order).filter(Order.user_id == user_id).count()
-
-    def get_by_id(self, db: Session, order_id: uuid.UUID) -> Order | None:
-        return db.query(Order).filter(Order.id == order_id).first()
 
     def get_all(
         self,
@@ -37,10 +40,13 @@ class CRUDOrder:
         limit: int = 10,
         status: str | None = None,
     ) -> list[Order]:
-        query = db.query(Order)
+        query = db.query(Order).options(joinedload(Order.payments), joinedload(Order.items))
         if status:
             query = query.filter(Order.status == status)
         return query.order_by(Order.created_at.desc()).offset(skip).limit(limit).all()
+
+    def count_by_user(self, db: Session, user_id: uuid.UUID) -> int:
+        return db.query(Order).filter(Order.user_id == user_id).count()
 
     def count_all(self, db: Session, status: str | None = None) -> int:
         query = db.query(Order)
