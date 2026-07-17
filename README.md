@@ -1,4 +1,4 @@
-# E-Commerce Platform — React + FastAPI
+# E-Commerce Platform — React + FastAPI 
 
 A full-stack e-commerce web application built with **React 19** (frontend) and **FastAPI** (backend), featuring authentication, product management, cart, wishlist, and user profiles.
 
