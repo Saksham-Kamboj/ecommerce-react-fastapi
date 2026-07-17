@@ -95,7 +95,7 @@ export function UserOrders() {
   }, [fetchOrders, page])
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3">
       <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-primary">
@@ -139,40 +139,47 @@ export function UserOrders() {
       )}
 
       {!isLoading && orders.length > 0 && (
-        <div className="flex flex-col gap-3">
-          {orders.map((order) => (
-            <Card
-              key={order.id}
-              className="cursor-pointer p-0 transition-shadow hover:shadow-md"
-              onClick={() => navigate(`/orders/${order.id}`)}
-            >
-              <CardContent className="flex items-center justify-between gap-4 p-5">
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold">
-                      Order #{order.id.slice(0, 8).toUpperCase()}
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            {orders.map((order, index) => (
+              <Card
+                key={order.id}
+                className={`cursor-pointer p-0 transition-shadow hover:shadow-md ${
+                  // Agar last item hai aur odd number hai toh full width
+                  index === orders.length - 1 && orders.length % 2 !== 0
+                    ? "col-span-2"
+                    : ""
+                }`}
+                onClick={() => navigate(`/orders/${order.id}`)}
+              >
+                <CardContent className="flex items-center justify-between gap-4 p-5">
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold">
+                        Order #{order.id.slice(0, 8).toUpperCase()}
+                      </p>
+                      <StatusBadge status={order.status} />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {order.items.length} item
+                      {order.items.length !== 1 ? "s" : ""} · Placed on{" "}
+                      {formatDate(order.created_at)}
                     </p>
-                    <StatusBadge status={order.status} />
+                    <p className="truncate text-xs text-muted-foreground">
+                      {order.shipping_city}, {order.shipping_state} —{" "}
+                      {order.shipping_name}
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {order.items.length} item
-                    {order.items.length !== 1 ? "s" : ""} · Placed on{" "}
-                    {formatDate(order.created_at)}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {order.shipping_city}, {order.shipping_state} —{" "}
-                    {order.shipping_name}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-3">
-                  <p className="text-lg font-bold text-primary">
-                    ₹{Number(order.total_amount).toFixed(2)}
-                  </p>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="flex shrink-0 items-center gap-3">
+                    <p className="text-lg font-bold text-primary">
+                      ₹{Number(order.total_amount).toFixed(2)}
+                    </p>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
           {pagination && pagination.totalPages > 1 && (
             <div className="flex items-center justify-center gap-3 pt-2">
