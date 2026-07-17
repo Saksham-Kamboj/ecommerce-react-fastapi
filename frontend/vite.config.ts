@@ -10,7 +10,10 @@ export default defineConfig(({ mode }) => {
 
   // Extract just the origin (e.g. http://localhost:8000) from the full base URL
   const apiBaseUrl = env.VITE_API_BASE_URL
-  const targetUrl = new URL(apiBaseUrl).origin
+
+  const targetUrl = apiBaseUrl
+    ? new URL(apiBaseUrl).origin
+    : "http://localhost:8000"
 
   return {
     plugins: [react(), tailwindcss()],
@@ -19,17 +22,19 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    server: {
-      proxy: {
-        "/api": {
-          target: targetUrl,
-          changeOrigin: true,
-        },
-        "/uploads": {
-          target: targetUrl,
-          changeOrigin: true,
-        },
-      },
-    },
+    server: apiBaseUrl
+      ? {
+          proxy: {
+            "/api": {
+              target: targetUrl,
+              changeOrigin: true,
+            },
+            "/uploads": {
+              target: targetUrl,
+              changeOrigin: true,
+            },
+          },
+        }
+      : undefined,
   }
 })
