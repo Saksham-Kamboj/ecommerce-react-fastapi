@@ -294,6 +294,23 @@ Admin routes:
 
 ---
 
+### Phase 9 — Payment Integration (Razorpay)
+
+**Backend:**
+
+- Added `razorpay` Python package
+- Added `POST /payments/create` to create Razorpay orders
+- Added `POST /payments/verify` to verify payment signatures (HMAC-SHA256)
+- Added `Payment` model to store transaction records
+
+**Frontend:**
+
+- Integrated Razorpay checkout script
+- Implemented checkout button flow to trigger Razorpay popup
+- Added payment success/failure handling
+
+---
+
 ## Known Technical Decisions
 
 | Decision                           | Reason                                     |
@@ -337,34 +354,6 @@ Admin routes:
 
 - Replace static cards with real numbers
 - Simple charts (optional — recharts or similar)
-
----
-
-### 🟢 Priority 2 — Payment Integration (Razorpay)
-
-**Requires:** Orders system is complete
-
-**Flow:**
-
-1. User clicks "Proceed to Checkout"
-2. Frontend calls `POST /orders` → gets `order_id`
-3. Frontend calls `POST /payments/create` → gets Razorpay `order_id`
-4. Razorpay checkout popup opens
-5. On success, frontend calls `POST /payments/verify` with signature
-6. Backend verifies signature, marks order as `confirmed`
-
-**Backend needed:**
-
-- `razorpay` Python package
-- `POST /payments/create` — create Razorpay order
-- `POST /payments/verify` — verify payment signature (HMAC-SHA256)
-- `Payment` model to store transaction records
-
-**Frontend needed:**
-
-- Load Razorpay checkout script
-- Checkout button flow
-- Payment success/failure pages
 
 ---
 
