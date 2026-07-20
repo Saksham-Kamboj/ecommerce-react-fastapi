@@ -15,13 +15,17 @@ import { useCart } from "@/contexts/CartContext"
 import { useWishlist } from "@/contexts/WishlistContext"
 import { CartSheet } from "@/components/cart/CartSheet"
 import { WishlistSheet } from "@/components/wishlist/WishlistSheet"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function AppLayout() {
   const { cart, setIsCartOpen } = useCart()
+  const { user } = useAuth()
   const { items: wishlistItems, setIsWishlistOpen } = useWishlist()
 
   const itemCount = cart?.items.length || 0
   const wishlistCount = wishlistItems.length
+
+  const isSuperAdmin = user?.role === "superadmin"
 
   return (
     <SidebarProvider className="h-svh overflow-hidden">
@@ -35,36 +39,39 @@ export function AppLayout() {
           </div>
           <div className="flex items-center gap-1">
             {/* Wishlist */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-9 w-9 overflow-visible"
-              onClick={() => setIsWishlistOpen(true)}
-              aria-label="Open wishlist"
-            >
-              <Heart className="h-[1.2rem] w-[1.2rem]" />
-              {wishlistCount > 0 && (
-                <span className="pointer-events-none absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
-                  {wishlistCount}
-                </span>
-              )}
-            </Button>
-
+            {!isSuperAdmin && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative h-9 w-9 overflow-visible"
+                onClick={() => setIsWishlistOpen(true)}
+                aria-label="Open wishlist"
+              >
+                <Heart className="h-[1.2rem] w-[1.2rem]" />
+                {wishlistCount > 0 && (
+                  <span className="pointer-events-none absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Button>
+            )}
             {/* Cart */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-9 w-9 overflow-visible"
-              onClick={() => setIsCartOpen(true)}
-              aria-label="Open cart"
-            >
-              <ShoppingCart className="h-[1.2rem] w-[1.2rem]" />
-              {itemCount > 0 && (
-                <span className="pointer-events-none absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
-                  {itemCount}
-                </span>
-              )}
-            </Button>
+            {!isSuperAdmin && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative h-9 w-9 overflow-visible"
+                onClick={() => setIsCartOpen(true)}
+                aria-label="Open cart"
+              >
+                <ShoppingCart className="h-[1.2rem] w-[1.2rem]" />
+                {itemCount > 0 && (
+                  <span className="pointer-events-none absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+                    {itemCount}
+                  </span>
+                )}
+              </Button>
+            )}
 
             <ModeToggle />
           </div>
