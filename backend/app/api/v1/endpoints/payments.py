@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 import razorpay
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, get_db
@@ -16,6 +16,7 @@ from app.models.payment import Payment, PaymentStatus
 from app.models.user import User
 from app.schemas.payment import PaymentCreate, PaymentCreateOut, PaymentOut, PaymentVerify
 from app.schemas.response import ApiResponse
+from app.utils.email import send_order_confirmation_email
 
 router = APIRouter()
 
@@ -98,6 +99,7 @@ def create_payment_order(
 @router.post("/verify", response_model=ApiResponse[PaymentOut])
 def verify_payment(
     payment_in: PaymentVerify,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
@@ -145,6 +147,20 @@ def verify_payment(
     # Clear cart only after payment is confirmed
     cart = cart_crud.get_cart_by_user(db, user_id=current_user.id)
     cart_crud.clear_cart(db, cart_id=cart.id)
+    
+    background_tasks.add_task(
+        send_order_confirmation_email,
+        email_to=current_user.email,
+        order_id=str(order.id),
+        total_amount=order.total_amount,
+        user_name=current_user.full_name or current_user.email.split("@")[0],
+        items=[{
+            "name": item.product.name,
+            "image_url": item.product.image_url,
+            "quantity": item.quantity,
+            "price": float(item.unit_price)
+        } for item in order.items]
+    )
 
     db.refresh(payment)
     return ApiResponse(message="Payment verified successfully", data=payment)
