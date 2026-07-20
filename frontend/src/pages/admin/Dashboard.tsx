@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { adminApi } from "@/lib/api/admin"
 import type { AdminStatsOut } from "@/types/admin"
@@ -19,6 +20,7 @@ const chartConfig = {
 
 export function AdminDashboard() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [stats, setStats] = useState<AdminStatsOut | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -140,7 +142,11 @@ export function AdminDashboard() {
                 </TableHeader>
                 <TableBody>
                   {stats.recent_orders.map((order) => (
-                    <TableRow key={order.id}>
+                    <TableRow
+                      key={order.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => navigate(`/orders/${order.id}`)}
+                    >
                       <TableCell className="font-mono text-xs">{order.id.split("-")[0]}</TableCell>
                       <TableCell>{order.user_email}</TableCell>
                       <TableCell className="text-muted-foreground">
