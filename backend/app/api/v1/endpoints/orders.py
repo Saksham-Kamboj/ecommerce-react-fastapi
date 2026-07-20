@@ -9,7 +9,7 @@ from app.crud.crud_order import order_crud
 from app.crud.crud_cart import cart_crud
 from app.schemas.order import OrderCreate, OrderOut, OrderStatusUpdate
 from app.schemas.response import ApiResponse, PaginatedApiResponse, paginate
-from app.utils.email import send_order_confirmation_email, send_order_cancellation_email, send_order_status_update_email
+from app.utils.email import send_order_placed_email, send_order_cancellation_email, send_order_status_update_email
 
 router = APIRouter()
 
@@ -36,7 +36,7 @@ def place_order(
     )
     
     background_tasks.add_task(
-        send_order_confirmation_email,
+        send_order_placed_email,
         email_to=current_user.email,
         order_id=str(order.id),
         total_amount=order.total_amount,

@@ -31,9 +31,25 @@ async def send_otp_email(email_to: EmailStr, otp_code: str):
     await fm.send_message(message, template_name="otp.html")
 
 
+async def send_order_placed_email(email_to: EmailStr, order_id: str, total_amount: float, user_name: str, items: list[dict] = None):
+    message = MessageSchema(
+        subject=f"Order Placed #{str(order_id).split('-')[0]}",
+        recipients=[email_to],
+        template_body={
+            "user_name": user_name,
+            "order_id": str(order_id).split('-')[0],
+            "total_amount": f"{total_amount:.2f}",
+            "items": items or []
+        },
+        subtype=MessageType.html
+    )
+    fm = FastMail(conf)
+    await fm.send_message(message, template_name="order_placed.html")
+
+
 async def send_order_confirmation_email(email_to: EmailStr, order_id: str, total_amount: float, user_name: str, items: list[dict] = None):
     message = MessageSchema(
-        subject=f"Order Confirmation #{str(order_id).split('-')[0]}",
+        subject=f"Payment Successful - Order #{str(order_id).split('-')[0]}",
         recipients=[email_to],
         template_body={
             "user_name": user_name,
