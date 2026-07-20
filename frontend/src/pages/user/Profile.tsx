@@ -267,12 +267,13 @@ export function UserProfile() {
                 Payment Settings
               </CardTitle>
               <CardDescription>
-                Manage your payment methods and billing preferences securely via Razorpay.
+                Manage your payment methods and billing preferences securely via
+                Razorpay.
               </CardDescription>
             </CardHeader>
             <CardContent className="px-6 pb-5">
               <div className="flex flex-col gap-5 pt-2">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-primary/20 bg-primary/5 p-4">
+                <div className="flex flex-col gap-4 rounded-lg border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
                       <ShieldCheckIcon className="h-5 w-5 text-primary" />
@@ -284,18 +285,22 @@ export function UserProfile() {
                       </p>
                     </div>
                   </div>
-                  <Badge variant="outline" className="w-fit border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+                  <Badge
+                    variant="outline"
+                    className="w-fit border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  >
                     Active
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-3">
                   <h4 className="text-sm font-medium">Saved Payment Methods</h4>
                   <div className="flex min-h-[140px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
                     <CreditCardIcon className="h-8 w-8 text-muted-foreground/40" />
                     <p className="text-sm font-medium">No cards saved yet</p>
                     <p className="max-w-xs text-xs text-muted-foreground">
-                      You can save a new card or UPI handle during your next checkout for faster payments.
+                      You can save a new card or UPI handle during your next
+                      checkout for faster payments.
                     </p>
                   </div>
                 </div>

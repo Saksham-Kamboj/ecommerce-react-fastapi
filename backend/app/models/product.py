@@ -24,3 +24,13 @@ class Product(Base):
     # Relationships
     category = relationship("Category", back_populates="products")
     reviews = relationship("Review", back_populates="product", cascade="all, delete-orphan")
+
+    @property
+    def rating(self) -> float:
+        if not self.reviews:
+            return 0.0
+        return round(sum(r.rating for r in self.reviews) / len(self.reviews), 1)
+
+    @property
+    def reviews_count(self) -> int:
+        return len(self.reviews)

@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import or_
 
 from app.crud.base import CRUDBase
@@ -8,7 +8,7 @@ from app.schemas.product import ProductCreate, ProductUpdate
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
     def get_multi_active(self, db: Session, skip: int = 0, limit: int = 100, search: str | None = None, sort_by: str = "created_at", sort_order: str = "desc", category_id: uuid.UUID | None = None) -> list[Product]:
-        query = db.query(self.model).filter(self.model.is_active == True)
+        query = db.query(self.model).options(selectinload(self.model.reviews)).filter(self.model.is_active == True)
         if category_id:
             query = query.filter(self.model.category_id == category_id)
         if search:

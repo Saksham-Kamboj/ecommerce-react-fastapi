@@ -37,39 +37,50 @@ export const productsApi = {
   },
 
   createProduct: async (
-    data: ProductCreate
+    data: ProductCreate,
+    imageFile?: File | null
   ): Promise<ApiResponse<ProductOut>> => {
+    const formData = new FormData()
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value.toString())
+      }
+    })
+    if (imageFile) {
+      formData.append("image", imageFile)
+    }
+
     return apiClient<ProductOut>("/products/", {
       method: "POST",
-      data,
+      data: formData,
     })
   },
 
   updateProduct: async (
     productId: string,
-    data: ProductUpdate
+    data: ProductUpdate,
+    imageFile?: File | null
   ): Promise<ApiResponse<ProductOut>> => {
+    const formData = new FormData()
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        // If it's explicitly null, send a special string so the backend can clear it
+        formData.append(key, value === null ? "null" : value.toString())
+      }
+    })
+    if (imageFile) {
+      formData.append("image", imageFile)
+    }
+
     return apiClient<ProductOut>(`/products/${productId}`, {
       method: "PATCH",
-      data,
+      data: formData,
     })
   },
 
   deleteProduct: async (productId: string): Promise<ApiResponse<null>> => {
     return apiClient<null>(`/products/${productId}`, {
       method: "DELETE",
-    })
-  },
-
-  uploadProductImage: async (
-    productId: string,
-    image: File
-  ): Promise<ApiResponse<ProductOut>> => {
-    const formData = new FormData()
-    formData.append("image", image)
-    return apiClient<ProductOut>(`/products/${productId}/upload-image`, {
-      method: "POST",
-      data: formData,
     })
   },
 }

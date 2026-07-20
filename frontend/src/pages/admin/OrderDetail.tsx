@@ -328,27 +328,19 @@ export default function AdminOrderDetailPage() {
           </CardHeader>
           <CardContent className="px-6 text-sm">
             <dl className="grid grid-cols-[100px_1fr] gap-x-2 gap-y-3">
-              <dt className="text-muted-foreground">
-                Name
-              </dt>
-              <dd className="text-right font-medium">
-                {order.shipping_name}
-              </dd>
+              <dt className="text-muted-foreground">Name</dt>
+              <dd className="text-right font-medium">{order.shipping_name}</dd>
 
               {order.shipping_phone && (
                 <>
-                  <dt className="text-muted-foreground">
-                    Phone
-                  </dt>
+                  <dt className="text-muted-foreground">Phone</dt>
                   <dd className="text-right font-medium">
                     {order.shipping_phone}
                   </dd>
                 </>
               )}
 
-              <dt className="text-muted-foreground">
-                Address
-              </dt>
+              <dt className="text-muted-foreground">Address</dt>
               <dd className="text-right font-medium">
                 {order.shipping_address_line1}
                 {order.shipping_address_line2 && (

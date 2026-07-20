@@ -32,6 +32,8 @@ class ProductOut(ProductBase):
     created_at: datetime
     updated_at: datetime
     category: CategoryOut | None = None
+    rating: float = 0.0
+    reviews_count: int = 0
 
 class ProductCartOut(ProductBase):
     model_config = ConfigDict(from_attributes=True)

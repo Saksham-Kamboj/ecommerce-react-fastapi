@@ -1,7 +1,7 @@
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_current_active_admin
@@ -33,11 +33,19 @@ async def _save_product_image(file: UploadFile, product_id: uuid.UUID) -> str:
     if len(content) > MAX_IMAGE_SIZE_BYTES:
         raise HTTPException(status_code=400, detail="Image must be 2MB or smaller")
 
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    filename = f"{product_id}-{uuid.uuid4().hex}{extension}"
-    image_path = UPLOAD_DIR / filename
-    image_path.write_bytes(content)
-    return f"/uploads/products/{filename}"
+    import cloudinary.uploader
+    
+    # Upload to Cloudinary using the file bytes
+    try:
+        result = cloudinary.uploader.upload(
+            content,
+            folder="ecommerce/products",
+            public_id=f"{product_id}-{uuid.uuid4().hex}",
+            resource_type="image"
+        )
+        return result.get("secure_url")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
 
 @router.get("/", response_model=PaginatedApiResponse[ProductOut])
 def list_products(
@@ -73,44 +81,81 @@ def get_product(product_id: uuid.UUID, db: Session = Depends(get_db)):
     return ApiResponse(message="Product retrieved successfully", data=db_product)
 
 @router.post("/", response_model=ApiResponse[ProductOut])
-def create_product(product_in: ProductCreate, db: Session = Depends(get_db), current_user = Depends(get_current_active_admin)):
+async def create_product(
+    name: str = Form(..., min_length=1, max_length=255),
+    price: float = Form(..., ge=0.0),
+    description: str | None = Form(None),
+    stock_quantity: int = Form(0, ge=0),
+    category_id: uuid.UUID | None = Form(None),
+    is_active: bool = Form(True),
+    image: UploadFile | None = File(None),
+    db: Session = Depends(get_db), 
+    current_user = Depends(get_current_active_admin)
+):
     """
     Create a new product. Admin only.
     """
+    product_in = ProductCreate(
+        name=name,
+        description=description,
+        price=price,
+        stock_quantity=stock_quantity,
+        category_id=category_id,
+        is_active=is_active
+    )
     new_product = product_crud.create(db, obj_in=product_in)
+    
+    if image:
+        image_url = await _save_product_image(image, new_product.id)
+        new_product.image_url = image_url
+        db.add(new_product)
+        db.commit()
+        db.refresh(new_product)
+        
     return ApiResponse(message="Product created successfully", data=new_product)
 
 @router.patch("/{product_id}", response_model=ApiResponse[ProductOut])
-def update_product(product_id: uuid.UUID, product_in: ProductUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_active_admin)):
+async def update_product(
+    product_id: uuid.UUID,
+    name: str | None = Form(None, min_length=1, max_length=255),
+    price: float | None = Form(None, ge=0.0),
+    description: str | None = Form(None),
+    stock_quantity: int | None = Form(None, ge=0),
+    category_id: uuid.UUID | None = Form(None),
+    is_active: bool | None = Form(None),
+    image: UploadFile | None = File(None),
+    db: Session = Depends(get_db), 
+    current_user = Depends(get_current_active_admin)
+):
     """
     Update an existing product. Admin only.
     """
     db_product = product_crud.get(db, id=product_id)
     if not db_product:
         raise HTTPException(status_code=404, detail="Product not found")
+        
+    form_data = {
+        "name": name,
+        "price": price,
+        "description": None if description == "null" else description,
+        "stock_quantity": stock_quantity,
+        "category_id": None if category_id == "null" else category_id,
+        "is_active": is_active,
+    }
+    
+    # Filter out fields that weren't provided in the form
+    update_data = {k: v for k, v in form_data.items() if v is not None}
+    product_in = ProductUpdate(**update_data)
     updated_product = product_crud.update(db, db_obj=db_product, obj_in=product_in)
+    
+    if image:
+        image_url = await _save_product_image(image, updated_product.id)
+        updated_product.image_url = image_url
+        db.add(updated_product)
+        db.commit()
+        db.refresh(updated_product)
+        
     return ApiResponse(message="Product updated successfully", data=updated_product)
-
-@router.post("/{product_id}/upload-image", response_model=ApiResponse[ProductOut])
-async def upload_product_image(
-    product_id: uuid.UUID,
-    image: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_active_admin),
-):
-    """
-    Upload or replace a product image. Superadmin only.
-    """
-    db_product = product_crud.get(db, id=product_id)
-    if not db_product:
-        raise HTTPException(status_code=404, detail="Product not found")
-
-    image_url = await _save_product_image(image, product_id)
-    db_product.image_url = image_url
-    db.add(db_product)
-    db.commit()
-    db.refresh(db_product)
-    return ApiResponse(message="Product image uploaded successfully", data=db_product)
 
 @router.delete("/{product_id}", response_model=ApiResponse[None])
 def delete_product(product_id: uuid.UUID, db: Session = Depends(get_db), current_user = Depends(get_current_active_admin)):

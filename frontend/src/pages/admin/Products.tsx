@@ -135,19 +135,19 @@ export default function ProductsPage() {
     imageFile?: File | null
   ) => {
     try {
-      let savedProduct: ProductOut
       if (selectedProduct) {
-        const res = await productsApi.updateProduct(selectedProduct.id, data)
-        savedProduct = res.data
+        const res = await productsApi.updateProduct(
+          selectedProduct.id,
+          data,
+          imageFile
+        )
         toast.success(res.message)
       } else {
-        const res = await productsApi.createProduct(data as ProductCreate)
-        savedProduct = res.data
+        const res = await productsApi.createProduct(
+          data as ProductCreate,
+          imageFile
+        )
         toast.success(res.message)
-      }
-
-      if (imageFile) {
-        await productsApi.uploadProductImage(savedProduct.id, imageFile)
       }
 
       setIsFormOpen(false)

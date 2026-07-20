@@ -1,6 +1,7 @@
 import type { ApiResponse } from "@/types/api"
 
-const API_BASE = "/api/v1"
+const baseUrl = import.meta.env.VITE_API_BASE_URL || ""
+const API_BASE = `${baseUrl}/api/v1`
 
 interface ApiOptions extends RequestInit {
   data?: unknown
