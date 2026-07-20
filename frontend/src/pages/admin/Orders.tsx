@@ -5,6 +5,7 @@ import { Filter } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { SearchInput } from "@/components/ui/search-input"
 import { DataTable, type ColumnDef } from "@/components/ui/data-table"
 import { ordersApi } from "@/lib/api/orders"
 import type { OrderOut, OrderStatus } from "@/types/order"
@@ -70,9 +71,20 @@ export default function AdminOrdersPage() {
   const [page, setPage] = useState(1)
   const limit = 10
   const [statusFilter, setStatusFilter] = useState<"all" | OrderStatus>("all")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
   const selectedStatusLabel =
     ORDER_STATUS_OPTIONS.find((status) => status.value === statusFilter)
       ?.label ?? "Status"
+
+  // Debounce search query
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+      setPage(1)
+    }, 500)
+    return () => clearTimeout(handler)
+  }, [searchQuery])
 
   useEffect(() => {
     let ignore = false
@@ -81,7 +93,8 @@ export default function AdminOrdersPage() {
       try {
         const skip = (page - 1) * limit
         const status = statusFilter === "all" ? undefined : statusFilter
-        const res = await ordersApi.getAllOrdersAdmin(skip, limit, status)
+        const search = debouncedSearch.trim() || undefined
+        const res = await ordersApi.getAllOrdersAdmin(skip, limit, status, search)
         if (!ignore) {
           setOrders(res.data)
           setPagination(res.pagination)
@@ -100,7 +113,7 @@ export default function AdminOrdersPage() {
     return () => {
       ignore = true
     }
-  }, [page, limit, statusFilter])
+  }, [page, limit, statusFilter, debouncedSearch])
 
   const orderColumns: ColumnDef<OrderOut>[] = [
     {
@@ -229,7 +242,13 @@ export default function AdminOrdersPage() {
             Manage customer orders and update their statuses.
           </p>
         </div>
-        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+        <div className="flex w-full items-center gap-3 sm:w-auto">
+          <SearchInput
+            placeholder="Search user or ID..."
+            className="w-full sm:w-64"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
           <DropdownMenu>
             <DropdownMenuTrigger
               render={

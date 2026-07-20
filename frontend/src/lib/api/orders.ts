@@ -10,11 +10,19 @@ export const ordersApi = {
   /** Get current user's orders (paginated) */
   getMyOrders: (
     skip = 0,
-    limit = 10
-  ): Promise<PaginatedApiResponse<OrderOut>> =>
-    apiClient<OrderOut[]>(`/orders/?skip=${skip}&limit=${limit}`, {
+    limit = 10,
+    search?: string
+  ): Promise<PaginatedApiResponse<OrderOut>> => {
+    const params = new URLSearchParams()
+    params.append("skip", skip.toString())
+    params.append("limit", limit.toString())
+    if (search) {
+      params.append("search", search)
+    }
+    return apiClient<OrderOut[]>(`/orders/?${params.toString()}`, {
       method: "GET",
-    }) as unknown as Promise<PaginatedApiResponse<OrderOut>>,
+    }) as unknown as Promise<PaginatedApiResponse<OrderOut>>
+  },
 
   /** Get a single order by ID */
   getOrder: (orderId: string): Promise<ApiResponse<OrderOut>> =>
@@ -30,13 +38,17 @@ export const ordersApi = {
   getAllOrdersAdmin: (
     skip = 0,
     limit = 10,
-    status?: string
+    status?: string,
+    search?: string
   ): Promise<PaginatedApiResponse<OrderOut>> => {
     const params = new URLSearchParams()
     params.append("skip", skip.toString())
     params.append("limit", limit.toString())
     if (status) {
       params.append("status", status)
+    }
+    if (search) {
+      params.append("search", search)
     }
     return apiClient<OrderOut[]>(`/orders/admin/all?${params.toString()}`, {
       method: "GET",

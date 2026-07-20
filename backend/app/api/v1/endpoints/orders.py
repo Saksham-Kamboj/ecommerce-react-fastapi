@@ -10,6 +10,8 @@ from app.crud.crud_cart import cart_crud
 from app.schemas.order import OrderCreate, OrderOut, OrderStatusUpdate
 from app.schemas.response import ApiResponse, PaginatedApiResponse, paginate
 from app.utils.email import send_order_placed_email, send_order_cancellation_email, send_order_status_update_email
+from app.crud.crud_notification import notification_crud
+from app.schemas.notification import NotificationCreate
 
 router = APIRouter()
 
@@ -49,6 +51,16 @@ def place_order(
         } for item in order.items]
     )
     
+    # Create notification
+    notification_crud.create(
+        db,
+        obj_in=NotificationCreate(
+            title="New Order Placed",
+            message=f"Order #{str(order.id)[:8]} was placed by {current_user.email}",
+            type="order_placed"
+        )
+    )
+
     return ApiResponse(message="Order placed successfully", data=order)
 
 
@@ -56,12 +68,13 @@ def place_order(
 def list_my_orders(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=50),
+    search: str | None = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
     """Get paginated list of current user's orders."""
-    total = order_crud.count_by_user(db, user_id=current_user.id)
-    orders = order_crud.get_by_user(db, user_id=current_user.id, skip=skip, limit=limit)
+    total = order_crud.count_by_user(db, user_id=current_user.id, search=search)
+    orders = order_crud.get_by_user(db, user_id=current_user.id, skip=skip, limit=limit, search=search)
     return paginate(items=orders, total_items=total, skip=skip, limit=limit, message="Orders retrieved")
 
 
@@ -89,23 +102,33 @@ def cancel_my_order(
     order = order_crud.get_by_id(db, order_id=order_id)
     if not order or order.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Order not found")
-    cancelled = order_crud.cancel_order(db, order=order)
+    cancelled_order = order_crud.cancel_order(db, order=order)
     
     background_tasks.add_task(
         send_order_cancellation_email,
         email_to=current_user.email,
-        order_id=str(cancelled.id),
-        total_amount=cancelled.total_amount,
+        order_id=str(cancelled_order.id),
+        total_amount=cancelled_order.total_amount,
         user_name=current_user.full_name or current_user.email.split("@")[0],
         items=[{
             "name": item.product.name,
             "image_url": item.product.image_url,
             "quantity": item.quantity,
             "price": float(item.unit_price)
-        } for item in cancelled.items]
+        } for item in cancelled_order.items]
     )
     
-    return ApiResponse(message="Order cancelled successfully", data=cancelled)
+    # Create notification
+    notification_crud.create(
+        db,
+        obj_in=NotificationCreate(
+            title="Order Cancelled",
+            message=f"Order #{str(cancelled_order.id)[:8]} was cancelled by {current_user.email}",
+            type="order_cancelled"
+        )
+    )
+
+    return ApiResponse(message="Order cancelled successfully", data=cancelled_order)
 
 
 # ── Admin endpoints ────────────────────────────────────────────────────────────
@@ -115,12 +138,13 @@ def list_all_orders(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
     status: str | None = Query(None),
+    search: str | None = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_admin),
 ) -> Any:
-    """Admin: list all orders with optional status filter."""
-    total = order_crud.count_all(db, status=status)
-    orders = order_crud.get_all(db, skip=skip, limit=limit, status=status)
+    """Admin: list all orders with optional status filter and search query."""
+    total = order_crud.count_all(db, status=status, search=search)
+    orders = order_crud.get_all(db, skip=skip, limit=limit, status=status, search=search)
     return paginate(items=orders, total_items=total, skip=skip, limit=limit, message="All orders retrieved")
 
 

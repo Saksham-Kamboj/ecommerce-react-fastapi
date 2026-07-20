@@ -373,7 +373,7 @@ Admin routes:
 
 ### 🔵 Future / Nice to Have
 
-- Email notifications (order confirmation, shipping update)
+- Admin Header notifications for user trackink like (user create , delete), (user order placed, payment, cancel)
 - Coupon / discount codes
 - Address book (multiple saved addresses per user)
 - Search suggestions / autocomplete

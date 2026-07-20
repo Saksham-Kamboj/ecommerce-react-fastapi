@@ -17,6 +17,8 @@ from app.models.user import User
 from app.schemas.payment import PaymentCreate, PaymentCreateOut, PaymentOut, PaymentVerify
 from app.schemas.response import ApiResponse
 from app.utils.email import send_order_confirmation_email
+from app.crud.crud_notification import notification_crud
+from app.schemas.notification import NotificationCreate
 
 router = APIRouter()
 
@@ -160,6 +162,16 @@ def verify_payment(
             "quantity": item.quantity,
             "price": float(item.unit_price)
         } for item in order.items]
+    )
+
+    # Create notification
+    notification_crud.create(
+        db,
+        obj_in=NotificationCreate(
+            title="Payment Successful",
+            message=f"Payment for order #{str(order.id)[:8]} was successful",
+            type="payment_success"
+        )
     )
 
     db.refresh(payment)

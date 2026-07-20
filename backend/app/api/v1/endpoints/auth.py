@@ -5,7 +5,10 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_current_user
 from app.core.security import create_access_token, get_password_hash
 from app.crud.crud_user import user as user_crud
+from app.crud.crud_cart import cart_crud
+from app.crud.crud_notification import notification_crud
 from app.schemas.token import Token, LoginRequest
+from app.schemas.notification import NotificationCreate
 from app.schemas.response import ApiResponse
 
 from app.schemas.user import UserCreate, UserOut, UserRole, UserRegister
@@ -93,6 +96,20 @@ def register_user(user_in: UserRegister, db: Session = Depends(get_db)) -> Any:
         create_data.role = UserRole.superadmin
         
     new_user = user_crud.create(db, obj_in=create_data)
+
+    # Create an empty cart for the new user
+    cart_crud.get_or_create_cart(db, user_id=new_user.id)
+
+    # Create a notification for admins
+    notification_crud.create(
+        db,
+        obj_in=NotificationCreate(
+            title="New User Registration",
+            message=f"A new user registered: {new_user.email}",
+            type="user_created"
+        )
+    )
+
     return ApiResponse(message="User registered successfully", data=new_user)
 
 @router.post("/send-otp", response_model=ApiResponse[None])
