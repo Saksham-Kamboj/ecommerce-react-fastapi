@@ -2,7 +2,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db
+from app.api.deps import get_db, get_current_user
 from app.core.security import create_access_token, get_password_hash
 from app.crud.crud_user import user as user_crud
 from app.schemas.token import Token, LoginRequest
@@ -41,6 +41,16 @@ def login_access_token(
         token_type="bearer",
     )
     return ApiResponse(message="Login successful", data=token)
+
+
+@router.post("/logout", response_model=ApiResponse[None])
+def logout(db: Session = Depends(get_db), current_user = Depends(get_current_user)) -> Any:
+    """
+    Logout endpoint. Clears the user's access token in the database.
+    """
+    current_user.access_token = None
+    db.commit()
+    return ApiResponse(message="Logged out successfully", data=None)
 
 
 from fastapi.security import OAuth2PasswordRequestForm

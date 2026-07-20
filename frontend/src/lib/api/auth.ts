@@ -9,6 +9,12 @@ export const authApi = {
     })
   },
 
+  async logout(): Promise<ApiResponse<null>> {
+    return apiClient<null>("/auth/logout", {
+      method: "POST",
+    })
+  },
+
   async register(
     email: string,
     fullName: string,

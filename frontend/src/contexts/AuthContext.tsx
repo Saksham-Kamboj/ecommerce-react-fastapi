@@ -16,7 +16,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (token: string) => void
-  logout: () => void
+  logout: () => Promise<void>
   updateUser: (updated: UserOut) => void
 }
 
@@ -59,10 +59,16 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     setToken(newToken)
   }, [])
 
-  const logout = useCallback(() => {
-    localStorage.removeItem("token")
-    setToken(null)
-    setUser(null)
+  const logout = useCallback(async () => {
+    try {
+      await authApi.logout()
+    } catch (err) {
+      console.error("Failed to call logout API:", err)
+    } finally {
+      localStorage.removeItem("token")
+      setToken(null)
+      setUser(null)
+    }
   }, [])
 
   const updateUser = useCallback((updated: UserOut) => {
