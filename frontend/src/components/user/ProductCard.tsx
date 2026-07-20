@@ -25,18 +25,10 @@ function getGradientFromName(name: string) {
   return colors[charSum % colors.length]
 }
 
-// Mock rating generation
-function getMockRating(id: string) {
-  // deterministic pseudo-random rating between 4.0 and 5.0 based on ID
-  const num = Number.parseInt(id.replaceAll("-", "").substring(0, 8), 16)
-  const rating = 4.0 + (num % 11) / 10 // 4.0 to 5.0
-  const reviews = 20 + (num % 200) // 20 to 219
-  return { rating: rating.toFixed(1), reviews }
-}
+
 
 export function ProductCard({ product }: Readonly<ProductCardProps>) {
   const gradientClass = getGradientFromName(product.name)
-  const { rating, reviews } = getMockRating(product.id)
   const { cart, addToCart, updateQuantity } = useCart()
   const { isWishlisted, toggle } = useWishlist()
 
@@ -120,8 +112,8 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
 
             <div className="flex items-center gap-1 text-sm">
               <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-              <span className="font-medium text-foreground">{rating}</span>
-              <span className="text-xs text-muted-foreground">({reviews})</span>
+              <span className="font-medium text-foreground">{product.rating.toFixed(1)}</span>
+              <span className="text-xs text-muted-foreground">({product.reviews_count})</span>
             </div>
           </div>
 

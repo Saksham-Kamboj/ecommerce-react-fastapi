@@ -27,4 +27,6 @@ export interface ProductOut extends ProductBase {
   created_at: string
   updated_at: string
   category?: CategoryOut | null
+  rating: number
+  reviews_count: number
 }
