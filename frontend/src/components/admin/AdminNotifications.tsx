@@ -71,7 +71,7 @@ export function AdminNotifications() {
       >
         <Bell className="h-[1.2rem] w-[1.2rem]" />
         {unreadCount > 0 && (
-          <span className="text-destructive-foreground pointer-events-none absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold">
+          <span className="text-white pointer-events-none absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
