@@ -15,8 +15,7 @@ from app.schemas.response import ApiResponse
 from app.api.v1.api import api_router
 from app.core.config import settings
 
-UPLOADS_DIR = Path("uploads")
-UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+# UPLOADS_DIR is no longer needed since we use Cloudinary
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -76,7 +75,6 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
-app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 
 @app.get("/")
