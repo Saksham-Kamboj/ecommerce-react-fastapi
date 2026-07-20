@@ -2,15 +2,26 @@ import { useState, useEffect } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { productsApi } from "@/lib/api/products"
 import { reviewsApi } from "@/lib/api/reviews"
-import type { ProductOut } from "@/types/product"
+import type { ProductOut, ProductCreate, ProductUpdate } from "@/types/product"
 import type { ReviewOut } from "@/types/review"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Package, Star } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Loader2, Package, Star, MoreVertical, Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductReviews } from "@/components/user/ProductReviews"
+import { useAuth } from "@/contexts/AuthContext"
+import { ProductFormDialog } from "@/components/admin/products/ProductFormDialog"
+import { ProductDeleteDialog } from "@/components/admin/products/ProductDeleteDialog"
+import { toast } from "sonner"
 
 const GRADIENT_COLORS = [
   "from-blue-500 to-indigo-600",
@@ -30,10 +41,14 @@ function getGradient(name: string): string {
 export function AdminProductDetailPage() {
   const { productId } = useParams<{ productId: string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   const [product, setProduct] = useState<ProductOut | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
+
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
   // Load product
   useEffect(() => {
@@ -58,6 +73,37 @@ export function AdminProductDetailPage() {
     }
   }, [productId])
 
+  const handleFormSubmit = async (
+    data: ProductCreate | ProductUpdate,
+    imageFile?: File | null
+  ) => {
+    if (!product) return
+    try {
+      const res = await productsApi.updateProduct(
+        product.id,
+        data,
+        imageFile
+      )
+      toast.success(res.message)
+      setProduct(res.data)
+      setIsFormOpen(false)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Update failed")
+    }
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!product) return
+    try {
+      const res = await productsApi.deleteProduct(product.id)
+      toast.success(res.message)
+      setIsDeleteOpen(false)
+      navigate("/products")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Delete failed")
+    }
+  }
+
   const [reviews, setReviews] = useState<ReviewOut[]>([])
 
   // Load reviews
@@ -71,7 +117,7 @@ export function AdminProductDetailPage() {
           setReviews(res.data)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
     return () => {
       cancelled = true
     }
@@ -98,7 +144,7 @@ export function AdminProductDetailPage() {
           setRelatedProducts(shuffled)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
     return () => {
       cancelled = true
     }
@@ -127,8 +173,8 @@ export function AdminProductDetailPage() {
   const rating =
     reviews.length > 0
       ? (
-          reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
-        ).toFixed(1)
+        reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+      ).toFixed(1)
       : "0.0"
   const reviewsCount = reviews.length
 
@@ -162,9 +208,36 @@ export function AdminProductDetailPage() {
         {/* ── Right: info ── */}
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
-            <h2 className="text-3xl font-bold tracking-tight">
-              {product.name}
-            </h2>
+            <div className="flex items-start justify-between gap-4">
+              <h2 className="text-3xl font-bold tracking-tight">
+                {product.name}
+              </h2>
+              {user?.role === "superadmin" && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" />
+                    }
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                    <span className="sr-only">Open menu</span>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[160px]">
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem onClick={() => setIsFormOpen(true)}>
+                        <Pencil className="mr-2 h-4 w-4" /> Update
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setIsDeleteOpen(true)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               <Badge
                 variant={product.is_active ? "outline" : "secondary"}
@@ -290,6 +363,20 @@ export function AdminProductDetailPage() {
           onReviewsChange={setReviews}
         />
       </div>
+
+      <ProductFormDialog
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        product={product}
+        onSubmit={handleFormSubmit}
+      />
+
+      <ProductDeleteDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        productName={product.name}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }
