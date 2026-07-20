@@ -33,11 +33,19 @@ async def _save_product_image(file: UploadFile, product_id: uuid.UUID) -> str:
     if len(content) > MAX_IMAGE_SIZE_BYTES:
         raise HTTPException(status_code=400, detail="Image must be 2MB or smaller")
 
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    filename = f"{product_id}-{uuid.uuid4().hex}{extension}"
-    image_path = UPLOAD_DIR / filename
-    image_path.write_bytes(content)
-    return f"/uploads/products/{filename}"
+    import cloudinary.uploader
+    
+    # Upload to Cloudinary using the file bytes
+    try:
+        result = cloudinary.uploader.upload(
+            content,
+            folder="ecommerce/products",
+            public_id=f"{product_id}-{uuid.uuid4().hex}",
+            resource_type="image"
+        )
+        return result.get("secure_url")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
 
 @router.get("/", response_model=PaginatedApiResponse[ProductOut])
 def list_products(

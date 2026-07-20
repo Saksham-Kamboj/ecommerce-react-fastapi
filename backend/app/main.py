@@ -1,4 +1,7 @@
 from pathlib import Path
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +23,15 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     swagger_ui_parameters={"persistAuthorization": True},
 )
+
+# Initialize Cloudinary
+if settings.CLOUDINARY_CLOUD_NAME and settings.CLOUDINARY_API_KEY and settings.CLOUDINARY_API_SECRET:
+    cloudinary.config(
+        cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+        api_key=settings.CLOUDINARY_API_KEY,
+        api_secret=settings.CLOUDINARY_API_SECRET,
+        secure=True
+    )
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
