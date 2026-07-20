@@ -39,5 +39,5 @@ class User(Base):
     # Relationships
     cart = relationship("Cart", back_populates="user", uselist=False, cascade="all, delete-orphan")
     wishlist_items = relationship("WishlistItem", back_populates="user", cascade="all, delete-orphan", order_by="WishlistItem.created_at")
-    orders = relationship("Order", back_populates="user", order_by="Order.created_at.desc()")
+    orders = relationship("Order", back_populates="user", cascade="all, delete-orphan", order_by="Order.created_at.desc()")
     reviews = relationship("Review", back_populates="user", cascade="all, delete-orphan", order_by="Review.created_at.desc()")

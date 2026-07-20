@@ -1,6 +1,6 @@
 import uuid
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_current_active_user, get_current_active_admin
@@ -9,6 +9,7 @@ from app.crud.crud_order import order_crud
 from app.crud.crud_cart import cart_crud
 from app.schemas.order import OrderCreate, OrderOut, OrderStatusUpdate
 from app.schemas.response import ApiResponse, PaginatedApiResponse, paginate
+from app.utils.email import send_order_confirmation_email, send_order_cancellation_email, send_order_status_update_email
 
 router = APIRouter()
 
@@ -18,6 +19,7 @@ router = APIRouter()
 @router.post("/", response_model=ApiResponse[OrderOut])
 def place_order(
     order_in: OrderCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
@@ -32,6 +34,21 @@ def place_order(
     order = order_crud.create_from_cart(
         db, user_id=current_user.id, cart=cart, order_in=order_in
     )
+    
+    background_tasks.add_task(
+        send_order_confirmation_email,
+        email_to=current_user.email,
+        order_id=str(order.id),
+        total_amount=order.total_amount,
+        user_name=current_user.full_name or current_user.email.split("@")[0],
+        items=[{
+            "name": item.product.name,
+            "image_url": item.product.image_url,
+            "quantity": item.quantity,
+            "price": float(item.unit_price)
+        } for item in order.items]
+    )
+    
     return ApiResponse(message="Order placed successfully", data=order)
 
 
@@ -64,6 +81,7 @@ def get_my_order(
 @router.post("/{order_id}/cancel", response_model=ApiResponse[OrderOut])
 def cancel_my_order(
     order_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
@@ -72,6 +90,21 @@ def cancel_my_order(
     if not order or order.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Order not found")
     cancelled = order_crud.cancel_order(db, order=order)
+    
+    background_tasks.add_task(
+        send_order_cancellation_email,
+        email_to=current_user.email,
+        order_id=str(cancelled.id),
+        total_amount=cancelled.total_amount,
+        user_name=current_user.full_name or current_user.email.split("@")[0],
+        items=[{
+            "name": item.product.name,
+            "image_url": item.product.image_url,
+            "quantity": item.quantity,
+            "price": float(item.unit_price)
+        } for item in cancelled.items]
+    )
+    
     return ApiResponse(message="Order cancelled successfully", data=cancelled)
 
 
@@ -108,6 +141,7 @@ def get_admin_order(
 def update_order_status(
     order_id: uuid.UUID,
     status_in: OrderStatusUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_admin),
 ) -> Any:
@@ -116,4 +150,22 @@ def update_order_status(
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     updated = order_crud.update_status(db, order=order, new_status=status_in.status)
+    
+    # order.user is eagerly loaded due to joinedload in get_by_id
+    if updated.user:
+        background_tasks.add_task(
+            send_order_status_update_email,
+            email_to=updated.user.email,
+            order_id=str(updated.id),
+            status=status_in.status.value if hasattr(status_in.status, "value") else str(status_in.status),
+            total_amount=updated.total_amount,
+            user_name=updated.user.full_name or updated.user.email.split("@")[0],
+            items=[{
+                "name": item.product.name,
+                "image_url": item.product.image_url,
+                "quantity": item.quantity,
+                "price": float(item.unit_price)
+            } for item in updated.items]
+        )
+        
     return ApiResponse(message=f"Order status updated to {status_in.status}", data=updated)

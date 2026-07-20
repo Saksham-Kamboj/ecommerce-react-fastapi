@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     MAIL_FROM: str = ""
     MAIL_PORT: int = 587
     MAIL_SERVER: str = ""
-    MAIL_FROM_NAME: str = "Auth API"
+    MAIL_FROM_NAME: str = ""
     MAIL_STARTTLS: bool = True
     MAIL_SSL_TLS: bool = False
 

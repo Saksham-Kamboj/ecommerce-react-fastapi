@@ -11,7 +11,7 @@ class CRUDOrder:
     def get_by_id(self, db: Session, order_id: uuid.UUID) -> Order | None:
         return (
             db.query(Order)
-            .options(joinedload(Order.payments), joinedload(Order.items))
+            .options(joinedload(Order.payments), joinedload(Order.items), joinedload(Order.user))
             .filter(Order.id == order_id)
             .first()
         )
