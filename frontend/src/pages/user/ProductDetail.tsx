@@ -9,10 +9,11 @@ import type { ProductOut } from "@/types/product"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Heart, Loader2, Minus, Plus, ShoppingCart, Star } from "lucide-react"
+import { Heart, Loader2, Minus, Plus, ShoppingCart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductCard } from "@/components/user/ProductCard"
 import { ProductReviews } from "@/components/user/ProductReviews"
+import { StarRating } from "@/components/ui/star-rating"
 import type { ReviewOut } from "@/types/review"
 
 const GRADIENT_COLORS = [
@@ -77,7 +78,7 @@ export function ProductDetailPage() {
           setReviews(res.data)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
     return () => {
       cancelled = true
     }
@@ -104,7 +105,7 @@ export function ProductDetailPage() {
           setRelatedProducts(shuffled)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
     return () => {
       cancelled = true
     }
@@ -133,8 +134,8 @@ export function ProductDetailPage() {
   const rating =
     reviews.length > 0
       ? (
-          reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
-        ).toFixed(1)
+        reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+      ).toFixed(1)
       : "0.0"
   const reviewsCount = reviews.length
 
@@ -207,19 +208,7 @@ export function ProductDetailPage() {
               )}
               {/* Rating */}
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={cn(
-                        "h-5 w-5",
-                        star <= Math.round(Number(rating))
-                          ? "fill-amber-400 text-amber-400"
-                          : "fill-muted text-muted"
-                      )}
-                    />
-                  ))}
-                </div>
+                <StarRating rating={Number(rating)} iconClassName="h-5 w-5" />
                 <span className="text-sm font-semibold">{rating}</span>
                 <span className="text-sm text-muted-foreground">
                   ({reviewsCount} reviews)

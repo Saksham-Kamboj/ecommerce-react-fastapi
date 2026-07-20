@@ -15,9 +15,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Loader2, Package, Star, MoreVertical, Pencil, Trash2 } from "lucide-react"
+import { Loader2, Package, MoreVertical, Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductReviews } from "@/components/user/ProductReviews"
+import { StarRating } from "@/components/ui/star-rating"
 import { useAuth } from "@/contexts/AuthContext"
 import { ProductFormDialog } from "@/components/admin/products/ProductFormDialog"
 import { ProductDeleteDialog } from "@/components/admin/products/ProductDeleteDialog"
@@ -255,19 +256,7 @@ export function AdminProductDetailPage() {
               </Badge>
               {/* Rating */}
               <div className="ml-2 flex items-center gap-3">
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={cn(
-                        "h-4 w-4",
-                        star <= Math.round(Number(rating))
-                          ? "fill-amber-400 text-amber-400"
-                          : "fill-muted text-muted"
-                      )}
-                    />
-                  ))}
-                </div>
+                <StarRating rating={Number(rating)} iconClassName="h-4 w-4" />
                 <span className="text-sm font-semibold">{rating}</span>
                 <span className="text-sm text-muted-foreground">
                   ({reviewsCount} reviews)
