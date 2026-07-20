@@ -324,6 +324,20 @@ Admin routes:
 
 ---
 
+### Phase 11 — Admin Dashboard Metrics
+
+**Backend:**
+
+- Added `GET /admin/stats` endpoint aggregating total users, products, orders, revenue, and recent orders
+
+**Frontend:**
+
+- Replaced static HTML dashboard with Shadcn UI Cards, Table, and Badges
+- Integrated Recharts (via Shadcn UI) for 30-day revenue charting
+- Connected frontend Dashboard page to real API data
+
+---
+
 ## Known Technical Decisions
 
 | Decision                           | Reason                                     |
@@ -356,26 +370,6 @@ Admin routes:
 
 ---
 
-## Pending Features (Prioritized)
-### 🟡 Priority 1 — Admin Dashboard Metrics
-
-**Backend needed:**
-
-- `GET /admin/stats` — total users, total products, total orders, total revenue, recent orders
-
-**Frontend needed:**
-
-- Replace static cards with real numbers
-- Simple charts (optional — recharts or similar)
-
----
-
-### 🟢 Priority 4 — DB Constraints & Data Integrity
-
-- Add `UniqueConstraint("user_id", "product_id")` to `wishlist_items` table
-- Add migration for the constraint
-
----
 
 ### 🔵 Future / Nice to Have
 
@@ -384,8 +378,6 @@ Admin routes:
 - Address book (multiple saved addresses per user)
 - Search suggestions / autocomplete
 - Recently viewed products
-- PWA support
-- Admin analytics dashboard with charts
 
 ---
 
