@@ -16,6 +16,7 @@ import { useWishlist } from "@/contexts/WishlistContext"
 import { CartSheet } from "@/components/cart/CartSheet"
 import { WishlistSheet } from "@/components/wishlist/WishlistSheet"
 import { useAuth } from "@/contexts/AuthContext"
+import { AdminNotifications } from "@/components/admin/AdminNotifications"
 
 export function AppLayout() {
   const { cart, setIsCartOpen } = useCart()
@@ -71,6 +72,11 @@ export function AppLayout() {
                   </span>
                 )}
               </Button>
+            )}
+
+            {/* Admin Notifications */}
+            {isSuperAdmin && (
+              <AdminNotifications />
             )}
 
             <ModeToggle />
