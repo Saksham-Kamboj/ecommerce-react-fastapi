@@ -68,12 +68,13 @@ def place_order(
 def list_my_orders(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=50),
+    search: str | None = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
     """Get paginated list of current user's orders."""
-    total = order_crud.count_by_user(db, user_id=current_user.id)
-    orders = order_crud.get_by_user(db, user_id=current_user.id, skip=skip, limit=limit)
+    total = order_crud.count_by_user(db, user_id=current_user.id, search=search)
+    orders = order_crud.get_by_user(db, user_id=current_user.id, skip=skip, limit=limit, search=search)
     return paginate(items=orders, total_items=total, skip=skip, limit=limit, message="Orders retrieved")
 
 
@@ -137,12 +138,13 @@ def list_all_orders(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
     status: str | None = Query(None),
+    search: str | None = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_admin),
 ) -> Any:
-    """Admin: list all orders with optional status filter."""
-    total = order_crud.count_all(db, status=status)
-    orders = order_crud.get_all(db, skip=skip, limit=limit, status=status)
+    """Admin: list all orders with optional status filter and search query."""
+    total = order_crud.count_all(db, status=status, search=search)
+    orders = order_crud.get_all(db, skip=skip, limit=limit, status=status, search=search)
     return paginate(items=orders, total_items=total, skip=skip, limit=limit, message="All orders retrieved")
 
 

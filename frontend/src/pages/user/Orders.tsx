@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { SearchInput } from "@/components/ui/search-input"
 import { Loader2, PackageSearch, ShoppingBag, ChevronRight } from "lucide-react"
 
 // ── Status config ──────────────────────────────────────────────────────────────
@@ -65,15 +66,26 @@ export function UserOrders() {
   const [isLoading, setIsLoading] = useState(true)
   const [page, setPage] = useState(1)
   const LIMIT = 10
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
 
-  const fetchOrders = useCallback((currentPage: number) => {
+  // Debounce search query
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+      setPage(1)
+    }, 500)
+    return () => clearTimeout(handler)
+  }, [searchQuery])
+
+  const fetchOrders = useCallback((currentPage: number, search?: string) => {
     const skip = (currentPage - 1) * LIMIT
-    return ordersApi.getMyOrders(skip, LIMIT)
+    return ordersApi.getMyOrders(skip, LIMIT, search || undefined)
   }, [])
 
   useEffect(() => {
     let cancelled = false
-    fetchOrders(page)
+    fetchOrders(page, debouncedSearch)
       .then((res) => {
         if (!cancelled) {
           setOrders(res.data)
@@ -92,7 +104,7 @@ export function UserOrders() {
     return () => {
       cancelled = true
     }
-  }, [fetchOrders, page])
+  }, [fetchOrders, page, debouncedSearch])
 
   return (
     <div className="flex flex-col gap-3">
@@ -105,8 +117,14 @@ export function UserOrders() {
             Track and manage your purchase history.
           </p>
         </div>
-        <div className="">
-          <p className="text-sm text-muted-foreground">
+        <div className="flex items-center gap-3 w-auto">
+          <SearchInput
+            placeholder="Search by Order ID..."
+            className="w-full sm:w-80"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <p className="text-sm text-muted-foreground whitespace-nowrap">
             {pagination?.totalItems || 0} total orders
           </p>
         </div>

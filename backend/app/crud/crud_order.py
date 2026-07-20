@@ -2,8 +2,10 @@ import uuid
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 
+from sqlalchemy import or_, cast, String
 from app.models.order import Order, OrderItem, OrderStatus
 from app.models.cart import Cart
+from app.models.user import User
 from app.schemas.order import OrderCreate
 
 
@@ -22,11 +24,15 @@ class CRUDOrder:
         user_id: uuid.UUID,
         skip: int = 0,
         limit: int = 10,
+        search: str | None = None,
     ) -> list[Order]:
+        query = db.query(Order).options(joinedload(Order.payments), joinedload(Order.items)).filter(Order.user_id == user_id)
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(cast(Order.id, String).ilike(search_term))
+            
         return (
-            db.query(Order)
-            .options(joinedload(Order.payments), joinedload(Order.items))
-            .filter(Order.user_id == user_id)
+            query
             .order_by(Order.created_at.desc())
             .offset(skip)
             .limit(limit)
@@ -39,17 +45,44 @@ class CRUDOrder:
         skip: int = 0,
         limit: int = 10,
         status: str | None = None,
+        search: str | None = None,
     ) -> list[Order]:
-        query = db.query(Order).options(joinedload(Order.payments), joinedload(Order.items))
+        query = db.query(Order).options(joinedload(Order.payments), joinedload(Order.items), joinedload(Order.user))
+        
+        if search:
+            search_term = f"%{search}%"
+            query = query.join(Order.user).filter(
+                or_(
+                    cast(Order.id, String).ilike(search_term),
+                    User.full_name.ilike(search_term),
+                    User.email.ilike(search_term)
+                )
+            )
+            
         if status:
             query = query.filter(Order.status == status)
         return query.order_by(Order.created_at.desc()).offset(skip).limit(limit).all()
 
-    def count_by_user(self, db: Session, user_id: uuid.UUID) -> int:
-        return db.query(Order).filter(Order.user_id == user_id).count()
+    def count_by_user(self, db: Session, user_id: uuid.UUID, search: str | None = None) -> int:
+        query = db.query(Order).filter(Order.user_id == user_id)
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(cast(Order.id, String).ilike(search_term))
+        return query.count()
 
-    def count_all(self, db: Session, status: str | None = None) -> int:
+    def count_all(self, db: Session, status: str | None = None, search: str | None = None) -> int:
         query = db.query(Order)
+        
+        if search:
+            search_term = f"%{search}%"
+            query = query.join(Order.user).filter(
+                or_(
+                    cast(Order.id, String).ilike(search_term),
+                    User.full_name.ilike(search_term),
+                    User.email.ilike(search_term)
+                )
+            )
+            
         if status:
             query = query.filter(Order.status == status)
         return query.count()
