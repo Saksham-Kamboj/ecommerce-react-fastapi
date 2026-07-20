@@ -1,0 +1,37 @@
+<p>Hello {{ user_name }},</p>
+<p>Your order <strong>#{{ order_id }}</strong> has been successfully cancelled.</p>
+
+<h3>Order Summary</h3>
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 600px; margin-bottom: 20px;">
+  <thead style="background-color: #f3f4f6;">
+    <tr>
+      <th style="text-align: left; border: 1px solid #e5e7eb;">Item</th>
+      <th style="text-align: center; border: 1px solid #e5e7eb;">Qty</th>
+      <th style="text-align: right; border: 1px solid #e5e7eb;">Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+    <tr>
+      <td style="border: 1px solid #e5e7eb; padding: 8px;">
+        <div style="display: flex; align-items: center;">
+          {% if item.image_url %}
+          <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px; border-radius: 4px; display: inline-block; vertical-align: middle;">
+          {% endif %}
+          <span style="display: inline-block; vertical-align: middle;">{{ item.name }}</span>
+        </div>
+      </td>
+      <td style="text-align: center; border: 1px solid #e5e7eb;">{{ item.quantity }}</td>
+      <td style="text-align: right; border: 1px solid #e5e7eb;">₹{{ "%.2f"|format(item.price) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="2" style="text-align: right; font-weight: bold; border: 1px solid #e5e7eb; padding: 8px;">Total Amount:</td>
+      <td style="text-align: right; font-weight: bold; border: 1px solid #e5e7eb; padding: 8px;">₹{{ total_amount }}</td>
+    </tr>
+  </tfoot>
+</table>
+
+<p>If you have any questions, please contact our support team.</p>
