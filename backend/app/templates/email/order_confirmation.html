@@ -16,7 +16,9 @@
       <td style="border: 1px solid #e5e7eb; padding: 8px;">
         <div style="display: flex; align-items: center;">
           {% if item.image_url %}
-          <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px; border-radius: 4px; display: inline-block; vertical-align: middle;">
+          <a href="{{ item.image_url }}" target="_blank" rel="noopener noreferrer">
+            <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px; border-radius: 4px; display: inline-block; vertical-align: middle;">
+          </a>
           {% endif %}
           <span style="display: inline-block; vertical-align: middle;">{{ item.name }}</span>
         </div>
