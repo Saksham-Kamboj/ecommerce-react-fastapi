@@ -146,6 +146,11 @@ def verify_payment(
     db.add(order)
     db.commit()
 
+    # Decrement stock after payment confirmed
+    for item in order.items:
+        item.product.stock_quantity -= item.quantity
+    db.commit()
+
     # Clear cart only after payment is confirmed
     cart = cart_crud.get_cart_by_user(db, user_id=current_user.id)
     cart_crud.clear_cart(db, cart_id=cart.id)

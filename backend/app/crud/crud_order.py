@@ -131,24 +131,24 @@ class CRUDOrder:
                 unit_price=product.price,  # price snapshot
             )
             db.add(order_item)
-            product.stock_quantity -= cart_item.quantity  # decrement stock
 
         db.commit()
         db.refresh(order)
         return order
 
     def cancel_order(self, db: Session, order: Order) -> Order:
-        if order.status != OrderStatus.pending:
+        if order.status in [OrderStatus.cancelled, OrderStatus.delivered]:
             raise HTTPException(
                 status_code=400,
-                detail=f"Only pending orders can be cancelled. Current status: {order.status}",
+                detail=f"Cannot cancel order with status '{order.status}'",
             )
+        
+        # Restore stock if payment was confirmed (was confirmed or shipped before cancellation)
+        if order.status in [OrderStatus.confirmed, OrderStatus.shipped]:
+            for item in order.items:
+                item.product.stock_quantity += item.quantity
+        
         order.status = OrderStatus.cancelled
-
-        # Restore stock
-        for item in order.items:
-            item.product.stock_quantity += item.quantity
-
         db.commit()
         db.refresh(order)
         return order

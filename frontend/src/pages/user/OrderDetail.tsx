@@ -250,38 +250,38 @@ export function OrderDetailPage() {
         </div>
         <div className="flex items-center gap-3">
           {order.status === "pending" && (
-            <>
-              <Button
-                className="gap-2 bg-emerald-600 hover:bg-emerald-700"
-                onClick={handlePayNow}
-                disabled={isPayingNow || isCancelling}
-              >
-                {isPayingNow ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <CreditCard className="h-4 w-4" />
-                )}
-                {isPayingNow ? "Processing..." : "Pay Now"}
-              </Button>
-              <Button
-                variant="outline"
-                className="text-destructive hover:text-destructive"
-                onClick={handleCancel}
-                disabled={isCancelling || isPayingNow}
-              >
-                {isCancelling ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Cancelling...
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="mr-2 h-4 w-4" />
-                    Cancel Order
-                  </>
-                )}
-              </Button>
-            </>
+            <Button
+              className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+              onClick={handlePayNow}
+              disabled={isPayingNow || isCancelling}
+            >
+              {isPayingNow ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="h-4 w-4" />
+              )}
+              {isPayingNow ? "Processing..." : "Pay Now"}
+            </Button>
+          )}
+          {order.status !== "delivered" && order.status !== "cancelled" && (
+            <Button
+              variant="outline"
+              className="text-destructive hover:text-destructive"
+              onClick={handleCancel}
+              disabled={isCancelling || isPayingNow}
+            >
+              {isCancelling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Cancelling...
+                </>
+              ) : (
+                <>
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Cancel Order
+                </>
+              )}
+            </Button>
           )}
           <Button variant="outline" onClick={() => navigate("/orders")}>
             <ArrowLeft className="mr-1 h-4 w-4" />
