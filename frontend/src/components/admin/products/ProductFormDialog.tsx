@@ -49,10 +49,10 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 interface ProductFormDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  product?: ProductOut | null
-  onSubmit: (
+  readonly open: boolean
+  readonly onOpenChange: (open: boolean) => void
+  readonly product?: ProductOut | null
+  readonly onSubmit: (
     data: ProductCreate | ProductUpdate,
     imageFile?: File | null
   ) => Promise<void>
@@ -63,7 +63,7 @@ export function ProductFormDialog({
   onOpenChange,
   product,
   onSubmit,
-}: ProductFormDialogProps) {
+}: Readonly<ProductFormDialogProps>) {
   const isEditing = !!product
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
@@ -158,7 +158,7 @@ export function ProductFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="gap-0 p-0 sm:max-w-[425px]">
+      <DialogContent className="gap-0 p-0 sm:max-w-106.25">
         <DialogHeader className="border-b p-4">
           <DialogTitle className="text-base">
             {isEditing ? "Edit Product" : "Create Product"}

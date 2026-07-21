@@ -177,7 +177,7 @@ export function UserProducts() {
       {isLoading && <PageLoading minHeight="min-h-135" />}
 
       {!isLoading && products.length === 0 && (
-        <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border border-dashed text-center">
+        <div className="flex min-h-100 flex-col items-center justify-center rounded-lg border border-dashed text-center">
           <h2 className="mb-2 text-xl font-semibold">No products found</h2>
           <p className="text-muted-foreground">
             Check back later for new arrivals.

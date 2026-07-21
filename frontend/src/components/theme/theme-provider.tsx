@@ -5,10 +5,10 @@ type Theme = "dark" | "light" | "system"
 type ResolvedTheme = "dark" | "light"
 
 type ThemeProviderProps = {
-  children: React.ReactNode
-  defaultTheme?: Theme
-  storageKey?: string
-  disableTransitionOnChange?: boolean
+  readonly children: React.ReactNode
+  readonly defaultTheme?: Theme
+  readonly storageKey?: string
+  readonly disableTransitionOnChange?: boolean
 }
 
 type ThemeProviderState = {
@@ -17,7 +17,7 @@ type ThemeProviderState = {
 }
 
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)"
-const THEME_VALUES: Theme[] = ["dark", "light", "system"]
+const THEME_VALUES: Set<Theme> = new Set(["dark", "light", "system"])
 
 const ThemeProviderContext = React.createContext<
   ThemeProviderState | undefined
@@ -28,7 +28,7 @@ function isTheme(value: string | null): value is Theme {
     return false
   }
 
-  return THEME_VALUES.includes(value as Theme)
+  return THEME_VALUES.has(value as Theme)
 }
 
 function getSystemTheme(): ResolvedTheme {
@@ -77,13 +77,24 @@ function isEditableTarget(target: EventTarget | null) {
   return false
 }
 
+function getNextTheme(currentTheme: Theme): Theme {
+  if (currentTheme === "dark") {
+    return "light"
+  }
+  if (currentTheme === "light") {
+    return "dark"
+  }
+  // For "system", toggle based on current system preference
+  return getSystemTheme() === "dark" ? "light" : "dark"
+}
+
 export function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "theme",
   disableTransitionOnChange = true,
   ...props
-}: ThemeProviderProps) {
+}: Readonly<ThemeProviderProps>) {
   const [theme, setThemeState] = React.useState<Theme>(() => {
     const storedTheme = localStorage.getItem(storageKey)
     if (isTheme(storedTheme)) {
@@ -158,15 +169,7 @@ export function ThemeProvider({
       }
 
       setThemeState((currentTheme) => {
-        const nextTheme =
-          currentTheme === "dark"
-            ? "light"
-            : currentTheme === "light"
-              ? "dark"
-              : getSystemTheme() === "dark"
-                ? "light"
-                : "dark"
-
+        const nextTheme = getNextTheme(currentTheme)
         localStorage.setItem(storageKey, nextTheme)
         return nextTheme
       })

@@ -94,6 +94,12 @@ function FieldRow({
   )
 }
 
+function getOrdersSub(totalOrders: number | null): string {
+  if (totalOrders === null) return "Loading..."
+  if (totalOrders === 0) return "No orders yet"
+  return `${totalOrders} order${totalOrders !== 1 ? "s" : ""} placed`
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────────
 export function UserProfile() {
   const { user, updateUser } = useAuth()
@@ -164,13 +170,7 @@ export function UserProfile() {
           icon={PackageIcon}
           label="Total Orders"
           value={totalOrders === null ? "—" : String(totalOrders)}
-          sub={
-            totalOrders === null
-              ? "Loading..."
-              : totalOrders === 0
-                ? "No orders yet"
-                : `${totalOrders} order${totalOrders !== 1 ? "s" : ""} placed`
-          }
+          sub={getOrdersSub(totalOrders)}
         />
         <StatCard
           icon={ShoppingCartIcon}
@@ -310,7 +310,7 @@ export function UserProfile() {
 
                 <div className="space-y-3">
                   <h4 className="text-sm font-medium">Saved Payment Methods</h4>
-                  <div className="flex min-h-[140px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
+                  <div className="flex min-h-35 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
                     <CreditCardIcon className="h-8 w-8 text-muted-foreground/40" />
                     <p className="text-sm font-medium">No cards saved yet</p>
                     <p className="max-w-xs text-xs text-muted-foreground">
@@ -481,7 +481,7 @@ function AddressViewCard({
             <FieldRow label="Country" value={user.country} />
           </div>
         ) : (
-          <div className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
+          <div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
             <MapPinIcon className="h-8 w-8 text-muted-foreground/40" />
             <p className="text-sm font-medium">No address saved</p>
             <p className="text-xs text-muted-foreground">
@@ -628,7 +628,7 @@ function WishlistCard({
       </CardHeader>
       <CardContent className="px-6 pb-5">
         {items.length === 0 ? (
-          <div className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
+          <div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
             <HeartIcon className="h-8 w-8 text-muted-foreground/40" />
             <p className="text-sm font-medium">Your wishlist is empty</p>
             <p className="text-xs text-muted-foreground">
@@ -740,7 +740,7 @@ function CartSummaryCard({
       </CardHeader>
       <CardContent className="px-6 pb-5">
         {cartItemCount === 0 ? (
-          <div className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
+          <div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
             <ShoppingCartIcon className="h-8 w-8 text-muted-foreground/40" />
             <p className="text-sm font-medium">Your cart is empty</p>
             <p className="text-xs text-muted-foreground">
@@ -897,7 +897,7 @@ function ChangePasswordCard() {
             Add an extra layer of security to your account.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex min-h-[160px] flex-col items-center justify-center gap-2 text-center">
+        <CardContent className="flex min-h-40 flex-col items-center justify-center gap-2 text-center">
           <KeyRoundIcon className="h-8 w-8 text-muted-foreground/30" />
           <p className="text-sm font-medium">Coming Soon</p>
           <p className="text-xs text-muted-foreground">

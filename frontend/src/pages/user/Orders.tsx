@@ -81,7 +81,6 @@ export function UserOrders() {
 
   useEffect(() => {
     let cancelled = false
-    setIsLoading(true)
     const skip = (page - 1) * LIMIT
     ordersApi
       .getMyOrders(skip, LIMIT, debouncedSearch || undefined)
@@ -134,7 +133,7 @@ export function UserOrders() {
       {isLoading && <PageLoading minHeight="min-h-135" />}
 
       {!isLoading && orders.length === 0 && (
-        <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">
+        <div className="flex min-h-90 flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <PackageSearch className="h-8 w-8 text-muted-foreground/40" />
           </div>

@@ -156,7 +156,7 @@ export default function AdminOrderDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
+      <div className="flex min-h-100 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
@@ -164,7 +164,7 @@ export default function AdminOrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 text-center">
+      <div className="flex min-h-75 flex-col items-center justify-center gap-4 text-center">
         <p className="text-destructive">Order not found</p>
         <Button variant="outline" onClick={() => navigate("/orders")}>
           Back to Orders

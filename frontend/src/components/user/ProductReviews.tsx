@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type SubmitEvent } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { reviewsApi } from "@/lib/api/reviews"
 import type { ReviewOut, ReviewCreate } from "@/types/review"
@@ -18,16 +18,16 @@ import { cn } from "@/lib/utils"
 import { useNavigate } from "react-router-dom"
 
 interface ProductReviewsProps {
-  productId: string
-  reviews: ReviewOut[]
-  onReviewsChange: (reviews: ReviewOut[]) => void
+  readonly productId: string
+  readonly reviews: ReviewOut[]
+  readonly onReviewsChange: (reviews: ReviewOut[]) => void
 }
 
 export function ProductReviews({
   productId,
   reviews,
   onReviewsChange,
-}: ProductReviewsProps) {
+}: Readonly<ProductReviewsProps>) {
   const { user } = useAuth()
   const navigate = useNavigate()
 
@@ -44,7 +44,7 @@ export function ProductReviews({
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [reviewToDelete, setReviewToDelete] = useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!user) {
       toast.error("Please login to submit a review")
@@ -229,7 +229,7 @@ export function ProductReviews({
 
       {/* Review Modal Form */}
       <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
             <DialogTitle>
               {isEditing ? "Edit Review" : "Write a Review"}
@@ -240,8 +240,10 @@ export function ProductReviews({
           </DialogHeader>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-2">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Rating</label>
-              <div className="flex items-center gap-1">
+              <label htmlFor="rating" className="text-sm font-medium">
+                Rating
+              </label>
+              <div id="rating" className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
@@ -263,8 +265,11 @@ export function ProductReviews({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Comment (Optional)</label>
+              <label htmlFor="comment" className="text-sm font-medium">
+                Comment (Optional)
+              </label>
               <textarea
+                id="comment"
                 rows={4}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 placeholder="What did you like or dislike?"

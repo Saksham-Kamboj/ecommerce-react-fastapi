@@ -25,12 +25,16 @@ import { Label } from "@/components/ui/label"
 import type { UserCreate, UserUpdate, UserOut } from "@/types/auth"
 
 const formSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.email({
+    error: "Invalid email address",
+  }),
   full_name: z
     .string()
     .min(2, "Full name must be at least 2 characters")
     .max(100, "Full name cannot exceed 100 characters")
-    .regex(/^[a-zA-Z\s]*$/, "Full name must contain characters only"),
+    .refine((val) => /^[a-zA-Z\s]*$/.test(val), {
+      message: "Full name must contain characters only",
+    }),
   password: z
     .string()
     .min(6, "Password must be at least 6 characters")
@@ -44,10 +48,10 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 interface UserFormDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  user?: UserOut | null
-  onSubmit: (data: UserCreate | UserUpdate) => Promise<void>
+  readonly open: boolean
+  readonly onOpenChange: (open: boolean) => void
+  readonly user?: UserOut | null
+  readonly onSubmit: (data: UserCreate | UserUpdate) => Promise<void>
 }
 
 export function UserFormDialog({
@@ -55,7 +59,7 @@ export function UserFormDialog({
   onOpenChange,
   user,
   onSubmit,
-}: UserFormDialogProps) {
+}: Readonly<UserFormDialogProps>) {
   const isEditing = !!user
 
   const form = useForm<FormValues>({
@@ -111,7 +115,7 @@ export function UserFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-0 p-0 sm:max-w-[425px]">
+      <DialogContent className="gap-0 p-0 sm:max-w-106.25">
         <DialogHeader className="border-b p-4">
           <DialogTitle className="text-base">
             {isEditing ? "Edit User" : "Create User"}

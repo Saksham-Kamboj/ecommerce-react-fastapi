@@ -8,10 +8,10 @@ import {
 import { Button } from "@/components/ui/button"
 
 interface ProductDeleteDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
-  productName: string
+  readonly open: boolean
+  readonly onOpenChange: (open: boolean) => void
+  readonly onConfirm: () => void
+  readonly productName: string
 }
 
 export function ProductDeleteDialog({
@@ -19,7 +19,7 @@ export function ProductDeleteDialog({
   onOpenChange,
   onConfirm,
   productName,
-}: ProductDeleteDialogProps) {
+}: Readonly<ProductDeleteDialogProps>) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>

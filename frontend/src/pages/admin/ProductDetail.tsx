@@ -163,7 +163,7 @@ export function AdminProductDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
+      <div className="flex min-h-100 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
@@ -171,7 +171,7 @@ export function AdminProductDetailPage() {
 
   if (error || !product) {
     return (
-      <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 text-center">
+      <div className="flex min-h-75 flex-col items-center justify-center gap-4 text-center">
         <p className="text-destructive">{error || "Product not found"}</p>
         <Button variant="outline" onClick={() => navigate("/products")}>
           Back to Products
@@ -237,7 +237,7 @@ export function AdminProductDetailPage() {
                     <MoreVertical className="h-4 w-4" />
                     <span className="sr-only">Open menu</span>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-[160px]">
+                  <DropdownMenuContent align="end" className="w-40">
                     <DropdownMenuGroup>
                       <DropdownMenuItem onClick={() => setIsFormOpen(true)}>
                         <Pencil className="mr-2 h-4 w-4" /> Update

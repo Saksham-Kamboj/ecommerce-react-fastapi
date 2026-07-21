@@ -58,7 +58,7 @@ export function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">
+      <div className="flex min-h-100 flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">
         <ShoppingCart className="h-12 w-12 text-muted-foreground/40" />
         <p className="text-lg font-semibold">Your cart is empty</p>
         <Button variant="outline" onClick={() => navigate("/products")}>
@@ -318,7 +318,7 @@ export function CheckoutPage() {
                 <div className="flex flex-col gap-2 text-sm">
                   {items.map((item) => (
                     <div key={item.id} className="flex justify-between">
-                      <span className="max-w-[160px] truncate text-muted-foreground">
+                      <span className="max-w-40 truncate text-muted-foreground">
                         {item.product.name} × {item.quantity}
                       </span>
                       <span className="font-medium">
