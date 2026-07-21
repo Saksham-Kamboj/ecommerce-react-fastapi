@@ -201,52 +201,50 @@ export default function AdminOrderDetailPage() {
       <Separator />
 
       {/* Admin Action Panel */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base text-primary">
-            Admin Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-3 px-6">
-          <Button
-            onClick={() => handleUpdateStatus("confirmed")}
-            disabled={isUpdating || order.status !== "pending"}
-            variant={order.status === "pending" ? "default" : "outline"}
-          >
-            Confirm Order
-          </Button>
-          <Button
-            onClick={() => handleUpdateStatus("shipped")}
-            disabled={isUpdating || order.status !== "confirmed"}
-            variant={order.status === "confirmed" ? "default" : "outline"}
-          >
-            Mark as Shipped
-          </Button>
-          <Button
-            onClick={() => handleUpdateStatus("delivered")}
-            disabled={isUpdating || order.status !== "shipped"}
-            variant={order.status === "shipped" ? "default" : "outline"}
-          >
-            Mark as Delivered
-          </Button>
-          <Separator
-            orientation="vertical"
-            className="mx-2 hidden h-10 sm:block"
-          />
-          <Button
-            onClick={() => handleUpdateStatus("cancelled")}
-            disabled={
-              isUpdating ||
-              order.status === "cancelled" ||
-              order.status === "delivered"
-            }
-            variant="destructive"
-            className="sm:ml-auto"
-          >
-            Cancel Order
-          </Button>
-        </CardContent>
-      </Card>
+      {order.status !== "cancelled" && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base text-primary">
+              Admin Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3 px-6">
+            <Button
+              onClick={() => handleUpdateStatus("confirmed")}
+              disabled={isUpdating || order.status !== "pending"}
+              variant={order.status === "pending" ? "default" : "outline"}
+            >
+              Confirm Order
+            </Button>
+            <Button
+              onClick={() => handleUpdateStatus("shipped")}
+              disabled={isUpdating || order.status !== "confirmed"}
+              variant={order.status === "confirmed" ? "default" : "outline"}
+            >
+              Mark as Shipped
+            </Button>
+            <Button
+              onClick={() => handleUpdateStatus("delivered")}
+              disabled={isUpdating || order.status !== "shipped"}
+              variant={order.status === "shipped" ? "default" : "outline"}
+            >
+              Mark as Delivered
+            </Button>
+            <Separator
+              orientation="vertical"
+              className="mx-2 hidden h-10 sm:block"
+            />
+            <Button
+              onClick={() => handleUpdateStatus("cancelled")}
+              disabled={isUpdating || order.status === "delivered"}
+              variant="destructive"
+              className="sm:ml-auto"
+            >
+              Cancel Order
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Progress tracker */}
       {order.status !== "cancelled" && (
