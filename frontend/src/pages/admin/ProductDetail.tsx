@@ -80,11 +80,7 @@ export function AdminProductDetailPage() {
   ) => {
     if (!product) return
     try {
-      const res = await productsApi.updateProduct(
-        product.id,
-        data,
-        imageFile
-      )
+      const res = await productsApi.updateProduct(product.id, data, imageFile)
       toast.success(res.message)
       setProduct(res.data)
       setIsFormOpen(false)
@@ -118,7 +114,13 @@ export function AdminProductDetailPage() {
           setReviews(res.data)
         }
       })
-      .catch(() => { })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error ? err.message : "Failed to load reviews"
+          )
+        }
+      })
     return () => {
       cancelled = true
     }
@@ -145,7 +147,15 @@ export function AdminProductDetailPage() {
           setRelatedProducts(shuffled)
         }
       })
-      .catch(() => { })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error
+              ? err.message
+              : "Failed to load related products"
+          )
+        }
+      })
     return () => {
       cancelled = true
     }
@@ -153,7 +163,7 @@ export function AdminProductDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
+      <div className="flex min-h-100 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
@@ -161,7 +171,7 @@ export function AdminProductDetailPage() {
 
   if (error || !product) {
     return (
-      <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 text-center">
+      <div className="flex min-h-75 flex-col items-center justify-center gap-4 text-center">
         <p className="text-destructive">{error || "Product not found"}</p>
         <Button variant="outline" onClick={() => navigate("/products")}>
           Back to Products
@@ -174,8 +184,8 @@ export function AdminProductDetailPage() {
   const rating =
     reviews.length > 0
       ? (
-        reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
-      ).toFixed(1)
+          reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+        ).toFixed(1)
       : "0.0"
   const reviewsCount = reviews.length
 
@@ -190,6 +200,7 @@ export function AdminProductDetailPage() {
                 src={product.image_url}
                 alt={product.name}
                 className="h-full w-full object-contain mix-blend-multiply"
+                loading="lazy"
               />
             </div>
           ) : (
@@ -217,13 +228,17 @@ export function AdminProductDetailPage() {
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      />
                     }
                   >
                     <MoreVertical className="h-4 w-4" />
                     <span className="sr-only">Open menu</span>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-[160px]">
+                  <DropdownMenuContent align="end" className="w-40">
                     <DropdownMenuGroup>
                       <DropdownMenuItem onClick={() => setIsFormOpen(true)}>
                         <Pencil className="mr-2 h-4 w-4" /> Update
@@ -314,6 +329,7 @@ export function AdminProductDetailPage() {
                       src={rp.image_url}
                       alt={rp.name}
                       className="h-full w-full rounded-sm object-contain mix-blend-multiply"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center rounded-sm bg-muted p-6 text-muted-foreground">

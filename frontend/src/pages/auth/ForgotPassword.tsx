@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type SubmitEvent } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,7 +25,7 @@ export function ForgotPassword() {
 
   const navigate = useNavigate()
 
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError("")
     setSuccess("")
@@ -43,7 +43,7 @@ export function ForgotPassword() {
     }
   }
 
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handleResetPassword = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError("")
     setSuccess("")

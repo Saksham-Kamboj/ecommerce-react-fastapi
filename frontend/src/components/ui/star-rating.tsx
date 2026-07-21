@@ -27,10 +27,15 @@ export function StarRating({
         } else if (star - 0.5 <= rating) {
           return (
             <div key={star} className="relative inline-flex">
-              <Star className={cn("text-muted-foreground/40 fill-transparent", iconClassName)} />
+              <Star
+                className={cn(
+                  "fill-transparent text-muted-foreground/40",
+                  iconClassName
+                )}
+              />
               <StarHalf
                 className={cn(
-                  "absolute left-0 top-0 fill-amber-400 text-amber-400",
+                  "absolute top-0 left-0 fill-amber-400 text-amber-400",
                   iconClassName
                 )}
               />
@@ -40,7 +45,10 @@ export function StarRating({
           return (
             <Star
               key={star}
-              className={cn("text-muted-foreground/40 fill-transparent", iconClassName)}
+              className={cn(
+                "fill-transparent text-muted-foreground/40",
+                iconClassName
+              )}
             />
           )
         }

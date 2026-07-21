@@ -202,9 +202,10 @@ export default function ProductsPage() {
               }
               alt={product.name}
               className="h-full w-full object-contain p-1 mix-blend-multiply"
+              loading="lazy"
             />
           </Link>
-          <div className="flex max-w-[300px] flex-col">
+          <div className="flex max-w-75 flex-col">
             <span className="truncate leading-tight font-semibold text-foreground">
               {product.name}
             </span>
@@ -319,7 +320,7 @@ export default function ProductsPage() {
               <span className="sr-only">Open menu</span>
               <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[160px]">
+            <DropdownMenuContent align="end" className="w-40">
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuItem

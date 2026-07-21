@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 import { productsApi } from "@/lib/api/products"
 import { reviewsApi } from "@/lib/api/reviews"
 import { useCart } from "@/contexts/CartContext"
@@ -9,12 +10,13 @@ import type { ProductOut } from "@/types/product"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Heart, Loader2, Minus, Plus, ShoppingCart } from "lucide-react"
+import { Heart, Minus, Plus, ShoppingCart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductCard } from "@/components/user/ProductCard"
 import { ProductReviews } from "@/components/user/ProductReviews"
 import { StarRating } from "@/components/ui/star-rating"
 import type { ReviewOut } from "@/types/review"
+import PageLoading from "@/components/custom/PageLoading"
 
 const GRADIENT_COLORS = [
   "from-blue-500 to-indigo-600",
@@ -78,7 +80,13 @@ export function ProductDetailPage() {
           setReviews(res.data)
         }
       })
-      .catch(() => { })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error ? err.message : "Failed to load reviews"
+          )
+        }
+      })
     return () => {
       cancelled = true
     }
@@ -105,23 +113,27 @@ export function ProductDetailPage() {
           setRelatedProducts(shuffled)
         }
       })
-      .catch(() => { })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error
+              ? err.message
+              : "Failed to load related products"
+          )
+        }
+      })
     return () => {
       cancelled = true
     }
   }, [product])
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
+    return <PageLoading minHeight="min-h-135" />
   }
 
   if (error || !product) {
     return (
-      <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 text-center">
+      <div className="flex min-h-75 flex-col items-center justify-center gap-4 text-center">
         <p className="text-destructive">{error || "Product not found"}</p>
         <Button variant="outline" onClick={() => navigate("/products")}>
           Back to Products
@@ -134,8 +146,8 @@ export function ProductDetailPage() {
   const rating =
     reviews.length > 0
       ? (
-        reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
-      ).toFixed(1)
+          reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+        ).toFixed(1)
       : "0.0"
   const reviewsCount = reviews.length
 
@@ -170,6 +182,7 @@ export function ProductDetailPage() {
                 src={product.image_url}
                 alt={product.name}
                 className="h-full w-full object-contain mix-blend-multiply"
+                loading="lazy"
               />
             </div>
           ) : (

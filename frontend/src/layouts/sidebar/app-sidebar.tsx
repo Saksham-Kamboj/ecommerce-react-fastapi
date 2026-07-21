@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useCart } from "@/contexts/CartContext"
 import { useWishlist } from "@/contexts/WishlistContext"
 import { appConfig } from "@/config/app"
+import logo from "@/assets/e-com-logo.png"
 
 import { NavMain } from "./nav-main"
 import { NavSecondary } from "./nav-secondary"
@@ -166,9 +167,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" render={<Link to="/" />}>
               <div className="flex aspect-square size-10 items-center justify-center overflow-hidden rounded-lg">
                 <img
-                  src="/e-com-logo.png"
+                  src={logo}
                   alt="Logo"
                   className="size-full object-cover"
+                  loading="lazy"
                 />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">

@@ -1,4 +1,10 @@
-import { useState, useEffect } from "react"
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  type SubmitEvent,
+} from "react"
 import { MoreHorizontal, Plus, Pencil, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -28,6 +34,80 @@ import type { CategoryOut, CategoryCreate } from "@/types/category"
 import type { Pagination as PaginationType } from "@/types/api"
 import { toast } from "sonner"
 
+interface CategoryColumnsProps {
+  onEdit: (category: CategoryOut) => void
+  onDelete: (category: CategoryOut) => void
+}
+
+function getCategoryColumns({
+  onEdit,
+  onDelete,
+}: CategoryColumnsProps): ColumnDef<CategoryOut>[] {
+  return [
+    {
+      header: "Name",
+      className: "pl-6 min-w-[200px]",
+      cell: (category) => (
+        <span className="font-semibold text-foreground">{category.name}</span>
+      ),
+    },
+    {
+      header: "Slug",
+      className: "w-[200px]",
+      cell: (category) => (
+        <span className="text-muted-foreground">{category.slug}</span>
+      ),
+    },
+    {
+      header: "Actions",
+      className: "w-[100px] pr-6 text-right",
+      cell: (category) => (
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            onClick={() => onEdit(category)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                />
+              }
+            >
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => navigator.clipboard.writeText(category.id)}
+                >
+                  Copy category ID
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => onDelete(category)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ),
+    },
+  ]
+}
+
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<CategoryOut[]>([])
   const [pagination, setPagination] = useState<PaginationType | null>(null)
@@ -52,6 +132,29 @@ export default function CategoriesPage() {
     name: "",
     slug: "",
   })
+
+  const handleEditCategory = useCallback((category: CategoryOut) => {
+    setSelectedCategory(category)
+    setFormData({
+      name: category.name,
+      slug: category.slug,
+    })
+    setIsFormOpen(true)
+  }, [])
+
+  const handleDeleteClick = useCallback((category: CategoryOut) => {
+    setSelectedCategory(category)
+    setIsDeleteOpen(true)
+  }, [])
+
+  const categoryColumns = useMemo(
+    () =>
+      getCategoryColumns({
+        onEdit: handleEditCategory,
+        onDelete: handleDeleteClick,
+      }),
+    [handleEditCategory, handleDeleteClick]
+  )
 
   // Debounce search query
   useEffect(() => {
@@ -99,21 +202,7 @@ export default function CategoriesPage() {
     setIsFormOpen(true)
   }
 
-  const handleEditCategory = (category: CategoryOut) => {
-    setSelectedCategory(category)
-    setFormData({
-      name: category.name,
-      slug: category.slug,
-    })
-    setIsFormOpen(true)
-  }
-
-  const handleDeleteClick = (category: CategoryOut) => {
-    setSelectedCategory(category)
-    setIsDeleteOpen(true)
-  }
-
-  const handleFormSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
       if (selectedCategory) {
@@ -152,70 +241,6 @@ export default function CategoriesPage() {
       )
     }
   }
-
-  const categoryColumns: ColumnDef<CategoryOut>[] = [
-    {
-      header: "Name",
-      className: "pl-6 min-w-[200px]",
-      cell: (category) => (
-        <span className="font-semibold text-foreground">{category.name}</span>
-      ),
-    },
-    {
-      header: "Slug",
-      className: "w-[200px]",
-      cell: (category) => (
-        <span className="text-muted-foreground">{category.slug}</span>
-      ),
-    },
-    {
-      header: "Actions",
-      className: "w-[100px] pr-6 text-right",
-      cell: (category) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            onClick={() => handleEditCategory(category)}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                />
-              }
-            >
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[160px]">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem
-                  onClick={() => navigator.clipboard.writeText(category.id)}
-                >
-                  Copy category ID
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => handleDeleteClick(category)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" /> Delete
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
-    },
-  ]
 
   const handlePageChange = (newPage: number) => {
     setIsLoading(true)

@@ -1,7 +1,14 @@
-export default function PageLoading() {
+import loadingImg from "@/assets/loading.svg"
+
+export default function PageLoading({ minHeight = "min-h-screen" }) {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      Loading...
+    <div className={`flex items-center justify-center ${minHeight}`}>
+      <img
+        src={loadingImg}
+        alt="loading..."
+        className="h-100 w-100"
+        loading="lazy"
+      />
     </div>
   )
 }

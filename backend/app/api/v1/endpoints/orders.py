@@ -18,50 +18,29 @@ router = APIRouter()
 
 # ── User endpoints ─────────────────────────────────────────────────────────────
 
-@router.post("/", response_model=ApiResponse[OrderOut])
+@router.post("/", response_model=ApiResponse)
 def place_order(
     order_in: OrderCreate,
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
     """
-    Place a new order from the current cart.
-    - Validates stock for all items
-    - Snapshots prices at order time
-    - Decrements product stock
-    - Cart is cleared only after payment is verified
+    Validate cart and stock (pre-payment check).
+    Order NOT created here - created after payment verification.
     """
     cart = cart_crud.get_cart_by_user(db, user_id=current_user.id)
-    order = order_crud.create_from_cart(
-        db, user_id=current_user.id, cart=cart, order_in=order_in
-    )
-    
-    background_tasks.add_task(
-        send_order_placed_email,
-        email_to=current_user.email,
-        order_id=str(order.id),
-        total_amount=order.total_amount,
-        user_name=current_user.full_name or current_user.email.split("@")[0],
-        items=[{
-            "name": item.product.name,
-            "image_url": item.product.image_url,
-            "quantity": item.quantity,
-            "price": float(item.unit_price)
-        } for item in order.items]
-    )
-    
-    # Create notification
-    notification_crud.create(
-        db,
-        obj_in=NotificationCreate(
-            title="New Order Placed",
-            message=f"Order #{str(order.id)[:8]} was placed by {current_user.email}",
-            type="order_placed"
-        )
-    )
+    if not cart.items:
+        raise HTTPException(status_code=400, detail="Cart is empty")
 
-    return ApiResponse(message="Order placed successfully", data=order)
+    # Validate stock for all items
+    for cart_item in cart.items:
+        if cart_item.product.stock_quantity < cart_item.quantity:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Not enough stock for '{cart_item.product.name}'. Available: {cart_item.product.stock_quantity}",
+            )
+
+    return ApiResponse(message="Cart validated. Proceed to payment.")
 
 
 @router.get("/", response_model=PaginatedApiResponse[OrderOut])
@@ -119,13 +98,14 @@ def cancel_my_order(
     )
     
     # Create notification
-    notification_crud.create(
+    notification_crud.create_with_broadcast(
         db,
         obj_in=NotificationCreate(
             title="Order Cancelled",
             message=f"Order #{str(cancelled_order.id)[:8]} was cancelled by {current_user.email}",
             type="order_cancelled"
-        )
+        ),
+        background_tasks=background_tasks
     )
 
     return ApiResponse(message="Order cancelled successfully", data=cancelled_order)

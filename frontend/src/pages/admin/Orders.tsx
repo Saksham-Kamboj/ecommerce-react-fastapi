@@ -94,7 +94,12 @@ export default function AdminOrdersPage() {
         const skip = (page - 1) * limit
         const status = statusFilter === "all" ? undefined : statusFilter
         const search = debouncedSearch.trim() || undefined
-        const res = await ordersApi.getAllOrdersAdmin(skip, limit, status, search)
+        const res = await ordersApi.getAllOrdersAdmin(
+          skip,
+          limit,
+          status,
+          search
+        )
         if (!ignore) {
           setOrders(res.data)
           setPagination(res.pagination)

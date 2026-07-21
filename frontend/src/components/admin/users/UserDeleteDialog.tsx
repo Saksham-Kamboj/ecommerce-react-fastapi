@@ -8,10 +8,10 @@ import {
 import { Button } from "@/components/ui/button"
 
 interface UserDeleteDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
-  userName: string
+  readonly open: boolean
+  readonly onOpenChange: (open: boolean) => void
+  readonly onConfirm: () => void
+  readonly userName: string
 }
 
 export function UserDeleteDialog({
@@ -19,7 +19,7 @@ export function UserDeleteDialog({
   onOpenChange,
   onConfirm,
   userName,
-}: UserDeleteDialogProps) {
+}: Readonly<UserDeleteDialogProps>) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>

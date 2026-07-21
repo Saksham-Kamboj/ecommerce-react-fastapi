@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type SubmitEvent } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { reviewsApi } from "@/lib/api/reviews"
 import type { ReviewOut, ReviewCreate } from "@/types/review"
@@ -18,16 +18,16 @@ import { cn } from "@/lib/utils"
 import { useNavigate } from "react-router-dom"
 
 interface ProductReviewsProps {
-  productId: string
-  reviews: ReviewOut[]
-  onReviewsChange: (reviews: ReviewOut[]) => void
+  readonly productId: string
+  readonly reviews: ReviewOut[]
+  readonly onReviewsChange: (reviews: ReviewOut[]) => void
 }
 
 export function ProductReviews({
   productId,
   reviews,
   onReviewsChange,
-}: ProductReviewsProps) {
+}: Readonly<ProductReviewsProps>) {
   const { user } = useAuth()
   const navigate = useNavigate()
 
@@ -44,7 +44,7 @@ export function ProductReviews({
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [reviewToDelete, setReviewToDelete] = useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!user) {
       toast.error("Please login to submit a review")
@@ -100,8 +100,9 @@ export function ProductReviews({
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Customer Reviews</h2>
-        {!isAdmin && reviews.length > 0 && (
-          user ? (
+        {!isAdmin &&
+          reviews.length > 0 &&
+          (user ? (
             !userReview && (
               <Button
                 onClick={() => {
@@ -118,8 +119,7 @@ export function ProductReviews({
             <Button variant="outline" onClick={() => navigate("/login")}>
               Login to Review
             </Button>
-          )
-        )}
+          ))}
       </div>
 
       <div className="flex flex-col gap-4">
@@ -132,8 +132,8 @@ export function ProductReviews({
             <p className="mt-1 mb-6 text-sm text-muted-foreground">
               Be the first to review this product!
             </p>
-            {!isAdmin && (
-              user ? (
+            {!isAdmin &&
+              (user ? (
                 <Button
                   onClick={() => {
                     setIsEditing(false)
@@ -148,8 +148,7 @@ export function ProductReviews({
                 <Button variant="outline" onClick={() => navigate("/login")}>
                   Login to Review
                 </Button>
-              )
-            )}
+              ))}
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -206,7 +205,10 @@ export function ProductReviews({
                   </div>
                 </div>
 
-                <StarRating rating={review.rating} iconClassName="h-3.5 w-3.5" />
+                <StarRating
+                  rating={review.rating}
+                  iconClassName="h-3.5 w-3.5"
+                />
 
                 {review.comment && (
                   <blockquote className="relative mt-1 rounded-r-md border-l-4 border-amber-400 bg-muted/30 py-2 pr-3 pl-4 text-sm whitespace-pre-wrap text-foreground italic">
@@ -227,17 +229,21 @@ export function ProductReviews({
 
       {/* Review Modal Form */}
       <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
-            <DialogTitle>{isEditing ? "Edit Review" : "Write a Review"}</DialogTitle>
+            <DialogTitle>
+              {isEditing ? "Edit Review" : "Write a Review"}
+            </DialogTitle>
             <DialogDescription>
               Share your experience with this product.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-2">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Rating</label>
-              <div className="flex items-center gap-1">
+              <label htmlFor="rating" className="text-sm font-medium">
+                Rating
+              </label>
+              <div id="rating" className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
@@ -250,7 +256,7 @@ export function ProductReviews({
                         "h-8 w-8 transition-colors",
                         star <= rating
                           ? "fill-amber-400 text-amber-400"
-                          : "text-muted-foreground/40 fill-transparent"
+                          : "fill-transparent text-muted-foreground/40"
                       )}
                     />
                   </button>
@@ -259,8 +265,11 @@ export function ProductReviews({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Comment (Optional)</label>
+              <label htmlFor="comment" className="text-sm font-medium">
+                Comment (Optional)
+              </label>
               <textarea
+                id="comment"
                 rows={4}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 placeholder="What did you like or dislike?"
@@ -270,11 +279,17 @@ export function ProductReviews({
             </div>
 
             <DialogFooter className="mt-4 sm:justify-end">
-              <Button type="button" variant="outline" onClick={() => setIsReviewModalOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsReviewModalOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 {isEditing ? "Update Review" : "Submit Review"}
               </Button>
             </DialogFooter>

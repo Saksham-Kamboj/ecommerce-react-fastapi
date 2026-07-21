@@ -3,7 +3,7 @@ import { toast } from "sonner"
 import { productsApi } from "@/lib/api/products"
 import type { ProductOut } from "@/types/product"
 import { ProductCard } from "@/components/user/ProductCard"
-import { Filter, Loader2 } from "lucide-react"
+import { Filter } from "lucide-react"
 import { categoriesApi } from "@/lib/api/categories"
 import type { CategoryOut } from "@/types/category"
 import { Button } from "@/components/ui/button"
@@ -24,6 +24,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { SearchInput } from "@/components/ui/search-input"
+import PageLoading from "@/components/custom/PageLoading"
 
 export function UserProducts() {
   const [products, setProducts] = useState<ProductOut[]>([])
@@ -31,8 +32,10 @@ export function UserProducts() {
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalItems, setTotalItems] = useState(0)
+  const [pagination, setPagination] = useState<{
+    totalPages: number
+    totalItems: number
+  } | null>(null)
   const [categories, setCategories] = useState<CategoryOut[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const ITEMS_PER_PAGE = 10
@@ -74,8 +77,10 @@ export function UserProducts() {
           // Only show active products to normal users
           const activeProducts = response.data.filter((p) => p.is_active)
           setProducts(activeProducts)
-          setTotalPages(response.pagination.totalPages || 1)
-          setTotalItems(response.pagination.totalItems || 0)
+          setPagination({
+            totalPages: response.pagination.totalPages,
+            totalItems: response.pagination.totalItems,
+          })
         }
       } catch (err) {
         if (!ignore) {
@@ -169,14 +174,10 @@ export function UserProducts() {
         </div>
       </div>
 
-      {isLoading && (
-        <div className="flex min-h-[400px] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      )}
+      {isLoading && <PageLoading minHeight="min-h-135" />}
 
       {!isLoading && products.length === 0 && (
-        <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border border-dashed text-center">
+        <div className="flex min-h-100 flex-col items-center justify-center rounded-lg border border-dashed text-center">
           <h2 className="mb-2 text-xl font-semibold">No products found</h2>
           <p className="text-muted-foreground">
             Check back later for new arrivals.
@@ -192,7 +193,7 @@ export function UserProducts() {
             ))}
           </div>
 
-          {totalPages > 1 && (
+          {(pagination?.totalPages ?? 1) > 1 && (
             <div className="flex w-full items-center justify-center">
               <p className="w-full text-sm text-muted-foreground">
                 Showing{" "}
@@ -201,11 +202,11 @@ export function UserProducts() {
                 </span>{" "}
                 to{" "}
                 <span className="font-medium text-foreground">
-                  {Math.min(page * ITEMS_PER_PAGE, totalItems)}
+                  {Math.min(page * ITEMS_PER_PAGE, pagination?.totalItems ?? 0)}
                 </span>{" "}
                 of{" "}
                 <span className="font-medium text-foreground">
-                  {totalItems}
+                  {pagination?.totalItems ?? 0}
                 </span>{" "}
                 products
               </p>
@@ -227,7 +228,7 @@ export function UserProducts() {
                   </PaginationItem>
                   <PaginationItem>
                     <div className="flex h-10 items-center px-4 text-sm font-medium">
-                      Page {page} of {totalPages}
+                      Page {page} of {pagination?.totalPages ?? 1}
                     </div>
                   </PaginationItem>
                   <PaginationItem>
@@ -235,10 +236,11 @@ export function UserProducts() {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault()
-                        if (page < totalPages) setPage(page + 1)
+                        if (page < (pagination?.totalPages ?? 1))
+                          setPage(page + 1)
                       }}
                       className={
-                        page >= totalPages
+                        page >= (pagination?.totalPages ?? 1)
                           ? "pointer-events-none opacity-50"
                           : "cursor-pointer"
                       }

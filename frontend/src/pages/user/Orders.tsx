@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { ordersApi } from "@/lib/api/orders"
@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { SearchInput } from "@/components/ui/search-input"
-import { Loader2, PackageSearch, ShoppingBag, ChevronRight } from "lucide-react"
+import { PackageSearch, ShoppingBag, ChevronRight } from "lucide-react"
+import PageLoading from "@/components/custom/PageLoading"
 
 // ── Status config ──────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
@@ -78,14 +79,11 @@ export function UserOrders() {
     return () => clearTimeout(handler)
   }, [searchQuery])
 
-  const fetchOrders = useCallback((currentPage: number, search?: string) => {
-    const skip = (currentPage - 1) * LIMIT
-    return ordersApi.getMyOrders(skip, LIMIT, search || undefined)
-  }, [])
-
   useEffect(() => {
     let cancelled = false
-    fetchOrders(page, debouncedSearch)
+    const skip = (page - 1) * LIMIT
+    ordersApi
+      .getMyOrders(skip, LIMIT, debouncedSearch || undefined)
       .then((res) => {
         if (!cancelled) {
           setOrders(res.data)
@@ -104,7 +102,7 @@ export function UserOrders() {
     return () => {
       cancelled = true
     }
-  }, [fetchOrders, page, debouncedSearch])
+  }, [page, debouncedSearch])
 
   return (
     <div className="flex flex-col gap-3">
@@ -117,14 +115,14 @@ export function UserOrders() {
             Track and manage your purchase history.
           </p>
         </div>
-        <div className="flex items-center gap-3 w-auto">
+        <div className="flex w-auto items-center gap-3">
           <SearchInput
             placeholder="Search by Order ID..."
             className="w-full sm:w-80"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <p className="text-sm text-muted-foreground whitespace-nowrap">
+          <p className="text-sm whitespace-nowrap text-muted-foreground">
             {pagination?.totalItems || 0} total orders
           </p>
         </div>
@@ -132,14 +130,10 @@ export function UserOrders() {
 
       <Separator />
 
-      {isLoading && (
-        <div className="flex min-h-[300px] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      )}
+      {isLoading && <PageLoading minHeight="min-h-135" />}
 
       {!isLoading && orders.length === 0 && (
-        <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">
+        <div className="flex min-h-90 flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <PackageSearch className="h-8 w-8 text-muted-foreground/40" />
           </div>

@@ -1,6 +1,7 @@
 import { apiClient } from "./client"
 import type { ApiResponse, PaginatedApiResponse } from "@/types/api"
 import type { UserOut, UserCreate, UserUpdate } from "@/types/auth"
+import type { UserDetailOut } from "@/types/admin"
 
 export const usersApi = {
   getUsers: async (
@@ -28,6 +29,12 @@ export const usersApi = {
 
   getUser: async (userId: string): Promise<ApiResponse<UserOut>> => {
     return apiClient<UserOut>(`/users/${userId}`, {
+      method: "GET",
+    })
+  },
+
+  getUserDetails: async (userId: string): Promise<ApiResponse<UserDetailOut>> => {
+    return apiClient<UserDetailOut>(`/users/${userId}/details`, {
       method: "GET",
     })
   },

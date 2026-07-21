@@ -21,6 +21,7 @@ import {
   ShoppingCart,
   XCircle,
 } from "lucide-react"
+import PageLoading from "@/components/custom/PageLoading"
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
   {
@@ -218,16 +219,12 @@ export function OrderDetailPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
+    return <PageLoading minHeight="min-h-135" />
   }
 
   if (!order) {
     return (
-      <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 text-center">
+      <div className="flex min-h-75 flex-col items-center justify-center gap-4 text-center">
         <p className="text-destructive">Order not found</p>
         <Button variant="outline" onClick={() => navigate("/orders")}>
           Back to Orders
@@ -253,38 +250,38 @@ export function OrderDetailPage() {
         </div>
         <div className="flex items-center gap-3">
           {order.status === "pending" && (
-            <>
-              <Button
-                className="gap-2 bg-emerald-600 hover:bg-emerald-700"
-                onClick={handlePayNow}
-                disabled={isPayingNow || isCancelling}
-              >
-                {isPayingNow ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <CreditCard className="h-4 w-4" />
-                )}
-                {isPayingNow ? "Processing..." : "Pay Now"}
-              </Button>
-              <Button
-                variant="outline"
-                className="text-destructive hover:text-destructive"
-                onClick={handleCancel}
-                disabled={isCancelling || isPayingNow}
-              >
-                {isCancelling ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Cancelling...
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="mr-2 h-4 w-4" />
-                    Cancel Order
-                  </>
-                )}
-              </Button>
-            </>
+            <Button
+              className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+              onClick={handlePayNow}
+              disabled={isPayingNow || isCancelling}
+            >
+              {isPayingNow ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="h-4 w-4" />
+              )}
+              {isPayingNow ? "Processing..." : "Pay Now"}
+            </Button>
+          )}
+          {order.status !== "delivered" && order.status !== "cancelled" && (
+            <Button
+              variant="outline"
+              className="text-destructive hover:text-destructive"
+              onClick={handleCancel}
+              disabled={isCancelling || isPayingNow}
+            >
+              {isCancelling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Cancelling...
+                </>
+              ) : (
+                <>
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Cancel Order
+                </>
+              )}
+            </Button>
           )}
           <Button variant="outline" onClick={() => navigate("/orders")}>
             <ArrowLeft className="mr-1 h-4 w-4" />
@@ -328,6 +325,7 @@ export function OrderDetailPage() {
                         src={item.product.image_url}
                         alt={item.product.name}
                         className="h-full w-full object-contain p-1 mix-blend-multiply"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-muted/50">

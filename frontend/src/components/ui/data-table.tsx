@@ -17,6 +17,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { Pagination as PaginationType } from "@/types/api"
 import { cn } from "@/lib/utils"
 
@@ -132,17 +133,23 @@ export function DataTable<T>({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-32 text-center text-muted-foreground"
-                >
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-primary"></div>
-                    <p>Loading...</p>
-                  </div>
-                </TableCell>
-              </TableRow>
+              <>
+                {/* Skeleton table rows */}
+                {Array.from({ length: 10 }).map((_, index) => (
+                  <TableRow key={index} className="hover:bg-transparent">
+                    {showIndex && (
+                      <TableCell className="w-[50px] pl-4">
+                        <Skeleton className="h-6 w-6" />
+                      </TableCell>
+                    )}
+                    {columns.map((_, colIndex) => (
+                      <TableCell key={colIndex}>
+                        <Skeleton className="h-6 w-full" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </>
             ) : error ? (
               <TableRow>
                 <TableCell

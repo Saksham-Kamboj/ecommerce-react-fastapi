@@ -33,7 +33,7 @@ export function UserWishlist() {
 
       {/* Empty state */}
       {items.length === 0 && (
-        <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">
+        <div className="flex min-h-100 flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <Heart className="h-8 w-8 text-muted-foreground/50" />
           </div>

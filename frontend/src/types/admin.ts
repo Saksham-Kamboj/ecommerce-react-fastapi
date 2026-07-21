@@ -1,3 +1,5 @@
+import type { UserOut } from "./auth"
+
 export interface DailyRevenue {
   date: string
   revenue: number
@@ -9,14 +11,21 @@ export interface RecentOrderBrief {
   created_at: string
   total_amount: number
   status: string
-  user_email: string
+  payment_status: string | null
+  items_count: number
+  user_name: string
 }
 
 export interface AdminStatsOut {
   total_users: number
   total_products: number
+  total_categories: number
   total_orders: number
   total_revenue: number
   recent_orders: RecentOrderBrief[]
   revenue_chart: DailyRevenue[]
+}
+
+export interface UserDetailOut extends UserOut {
+  recent_orders: RecentOrderBrief[]
 }

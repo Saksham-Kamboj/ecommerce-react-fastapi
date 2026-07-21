@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { MoreHorizontal, Plus, Pencil, Trash2 } from "lucide-react"
 import { format } from "date-fns"
 
@@ -24,6 +25,7 @@ import { UserFormDialog } from "@/components/admin/users/UserFormDialog"
 import { UserDeleteDialog } from "@/components/admin/users/UserDeleteDialog"
 
 export function UsersPage() {
+  const navigate = useNavigate()
   const [users, setUsers] = useState<UserOut[]>([])
   const [pagination, setPagination] = useState<PaginationType | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -189,11 +191,7 @@ export function UsersPage() {
       cell: (user) => (
         <Badge
           variant={user.role === "superadmin" ? "default" : "secondary"}
-          className={
-            user.role === "superadmin"
-              ? "bg-indigo-500 shadow-xs hover:bg-indigo-600"
-              : ""
-          }
+          className="capitalize"
         >
           {user.role}
         </Badge>
@@ -270,9 +268,16 @@ export function UsersPage() {
               <span className="sr-only">Open menu</span>
               <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[160px]">
+            <DropdownMenuContent align="end" className="w-40">
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                {user.role === "user" && (
+                  <DropdownMenuItem
+                    onClick={() => navigate(`/users/${user.id}`)}
+                  >
+                    View Details
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   onClick={() => navigator.clipboard.writeText(user.id)}
                 >

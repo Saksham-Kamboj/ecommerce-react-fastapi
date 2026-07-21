@@ -156,7 +156,7 @@ export default function AdminOrderDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
+      <div className="flex min-h-100 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
@@ -164,7 +164,7 @@ export default function AdminOrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 text-center">
+      <div className="flex min-h-75 flex-col items-center justify-center gap-4 text-center">
         <p className="text-destructive">Order not found</p>
         <Button variant="outline" onClick={() => navigate("/orders")}>
           Back to Orders
@@ -201,52 +201,50 @@ export default function AdminOrderDetailPage() {
       <Separator />
 
       {/* Admin Action Panel */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base text-primary">
-            Admin Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-3 px-6">
-          <Button
-            onClick={() => handleUpdateStatus("confirmed")}
-            disabled={isUpdating || order.status !== "pending"}
-            variant={order.status === "pending" ? "default" : "outline"}
-          >
-            Confirm Order
-          </Button>
-          <Button
-            onClick={() => handleUpdateStatus("shipped")}
-            disabled={isUpdating || order.status !== "confirmed"}
-            variant={order.status === "confirmed" ? "default" : "outline"}
-          >
-            Mark as Shipped
-          </Button>
-          <Button
-            onClick={() => handleUpdateStatus("delivered")}
-            disabled={isUpdating || order.status !== "shipped"}
-            variant={order.status === "shipped" ? "default" : "outline"}
-          >
-            Mark as Delivered
-          </Button>
-          <Separator
-            orientation="vertical"
-            className="mx-2 hidden h-10 sm:block"
-          />
-          <Button
-            onClick={() => handleUpdateStatus("cancelled")}
-            disabled={
-              isUpdating ||
-              order.status === "cancelled" ||
-              order.status === "delivered"
-            }
-            variant="destructive"
-            className="sm:ml-auto"
-          >
-            Cancel Order
-          </Button>
-        </CardContent>
-      </Card>
+      {order.status !== "cancelled" && order.status !== "delivered" && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base text-primary">
+              Admin Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3 px-6">
+            <Button
+              onClick={() => handleUpdateStatus("confirmed")}
+              disabled={isUpdating || order.status !== "pending"}
+              variant={order.status === "pending" ? "default" : "outline"}
+            >
+              Confirm Order
+            </Button>
+            <Button
+              onClick={() => handleUpdateStatus("shipped")}
+              disabled={isUpdating || order.status !== "confirmed"}
+              variant={order.status === "confirmed" ? "default" : "outline"}
+            >
+              Mark as Shipped
+            </Button>
+            <Button
+              onClick={() => handleUpdateStatus("delivered")}
+              disabled={isUpdating || order.status !== "shipped"}
+              variant={order.status === "shipped" ? "default" : "outline"}
+            >
+              Mark as Delivered
+            </Button>
+            <Separator
+              orientation="vertical"
+              className="mx-2 hidden h-10 sm:block"
+            />
+            <Button
+              onClick={() => handleUpdateStatus("cancelled")}
+              disabled={isUpdating}
+              variant="destructive"
+              className="sm:ml-auto"
+            >
+              Cancel Order
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Progress tracker */}
       {order.status !== "cancelled" && (
@@ -282,6 +280,7 @@ export default function AdminOrderDetailPage() {
                         src={item.product.image_url}
                         alt={item.product.name}
                         className="h-full w-full object-contain p-1 mix-blend-multiply"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-muted/50">
