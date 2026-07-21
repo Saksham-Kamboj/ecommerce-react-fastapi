@@ -114,7 +114,13 @@ export function AdminProductDetailPage() {
           setReviews(res.data)
         }
       })
-      .catch(() => {})
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error ? err.message : "Failed to load reviews"
+          )
+        }
+      })
     return () => {
       cancelled = true
     }
@@ -141,7 +147,15 @@ export function AdminProductDetailPage() {
           setRelatedProducts(shuffled)
         }
       })
-      .catch(() => {})
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error
+              ? err.message
+              : "Failed to load related products"
+          )
+        }
+      })
     return () => {
       cancelled = true
     }

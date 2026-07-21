@@ -32,8 +32,10 @@ export function UserProducts() {
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalItems, setTotalItems] = useState(0)
+  const [pagination, setPagination] = useState<{
+    totalPages: number
+    totalItems: number
+  } | null>(null)
   const [categories, setCategories] = useState<CategoryOut[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const ITEMS_PER_PAGE = 10
@@ -75,8 +77,10 @@ export function UserProducts() {
           // Only show active products to normal users
           const activeProducts = response.data.filter((p) => p.is_active)
           setProducts(activeProducts)
-          setTotalPages(response.pagination.totalPages || 1)
-          setTotalItems(response.pagination.totalItems || 0)
+          setPagination({
+            totalPages: response.pagination.totalPages,
+            totalItems: response.pagination.totalItems,
+          })
         }
       } catch (err) {
         if (!ignore) {
@@ -189,7 +193,7 @@ export function UserProducts() {
             ))}
           </div>
 
-          {totalPages > 1 && (
+          {(pagination?.totalPages ?? 1) > 1 && (
             <div className="flex w-full items-center justify-center">
               <p className="w-full text-sm text-muted-foreground">
                 Showing{" "}
@@ -198,11 +202,11 @@ export function UserProducts() {
                 </span>{" "}
                 to{" "}
                 <span className="font-medium text-foreground">
-                  {Math.min(page * ITEMS_PER_PAGE, totalItems)}
+                  {Math.min(page * ITEMS_PER_PAGE, pagination?.totalItems ?? 0)}
                 </span>{" "}
                 of{" "}
                 <span className="font-medium text-foreground">
-                  {totalItems}
+                  {pagination?.totalItems ?? 0}
                 </span>{" "}
                 products
               </p>
@@ -224,7 +228,7 @@ export function UserProducts() {
                   </PaginationItem>
                   <PaginationItem>
                     <div className="flex h-10 items-center px-4 text-sm font-medium">
-                      Page {page} of {totalPages}
+                      Page {page} of {pagination?.totalPages ?? 1}
                     </div>
                   </PaginationItem>
                   <PaginationItem>
@@ -232,10 +236,11 @@ export function UserProducts() {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault()
-                        if (page < totalPages) setPage(page + 1)
+                        if (page < (pagination?.totalPages ?? 1))
+                          setPage(page + 1)
                       }}
                       className={
-                        page >= totalPages
+                        page >= (pagination?.totalPages ?? 1)
                           ? "pointer-events-none opacity-50"
                           : "cursor-pointer"
                       }

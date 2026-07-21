@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { ordersApi } from "@/lib/api/orders"
@@ -79,14 +79,12 @@ export function UserOrders() {
     return () => clearTimeout(handler)
   }, [searchQuery])
 
-  const fetchOrders = useCallback((currentPage: number, search?: string) => {
-    const skip = (currentPage - 1) * LIMIT
-    return ordersApi.getMyOrders(skip, LIMIT, search || undefined)
-  }, [])
-
   useEffect(() => {
     let cancelled = false
-    fetchOrders(page, debouncedSearch)
+    setIsLoading(true)
+    const skip = (page - 1) * LIMIT
+    ordersApi
+      .getMyOrders(skip, LIMIT, debouncedSearch || undefined)
       .then((res) => {
         if (!cancelled) {
           setOrders(res.data)
@@ -105,7 +103,7 @@ export function UserOrders() {
     return () => {
       cancelled = true
     }
-  }, [fetchOrders, page, debouncedSearch])
+  }, [page, debouncedSearch])
 
   return (
     <div className="flex flex-col gap-3">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 import { productsApi } from "@/lib/api/products"
 import { reviewsApi } from "@/lib/api/reviews"
 import { useCart } from "@/contexts/CartContext"
@@ -79,7 +80,13 @@ export function ProductDetailPage() {
           setReviews(res.data)
         }
       })
-      .catch(() => {})
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error ? err.message : "Failed to load reviews"
+          )
+        }
+      })
     return () => {
       cancelled = true
     }
@@ -106,7 +113,15 @@ export function ProductDetailPage() {
           setRelatedProducts(shuffled)
         }
       })
-      .catch(() => {})
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error
+              ? err.message
+              : "Failed to load related products"
+          )
+        }
+      })
     return () => {
       cancelled = true
     }
