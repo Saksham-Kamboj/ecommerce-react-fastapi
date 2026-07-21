@@ -187,14 +187,7 @@ export function UsersPage() {
     {
       header: "Role",
       cell: (user) => (
-        <Badge
-          variant={user.role === "superadmin" ? "default" : "secondary"}
-          className={
-            user.role === "superadmin"
-              ? "bg-indigo-500 shadow-xs hover:bg-indigo-600"
-              : ""
-          }
-        >
+        <Badge variant={user.role === "superadmin" ? "default" : "secondary"} className="capitalize">
           {user.role}
         </Badge>
       ),
