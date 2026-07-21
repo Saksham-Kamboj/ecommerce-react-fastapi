@@ -1,4 +1,4 @@
-import logo from "../../public/e-com-logo.png"
+import logo from "../assets/e-com-logo.png"
 
 export const appConfig = {
   name: "E-Commerce Platform",
