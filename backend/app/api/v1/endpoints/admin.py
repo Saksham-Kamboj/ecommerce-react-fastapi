@@ -7,6 +7,7 @@ from sqlalchemy import func
 from app.api.deps import get_db, get_current_active_admin
 from app.models.user import User
 from app.models.product import Product
+from app.models.category import Category
 from app.models.order import Order, OrderStatus
 from app.schemas.response import ApiResponse
 from app.schemas.admin import AdminStatsOut, DailyRevenue, RecentOrderBrief
@@ -21,6 +22,7 @@ def get_admin_stats(
     # 1. Counts
     total_users = db.query(func.count(User.id)).scalar() or 0
     total_products = db.query(func.count(Product.id)).scalar() or 0
+    total_categories = db.query(func.count(Category.id)).scalar() or 0
     total_orders = db.query(func.count(Order.id)).scalar() or 0
     
     # 2. Revenue (only delivered orders)
@@ -81,6 +83,7 @@ def get_admin_stats(
     stats = AdminStatsOut(
         total_users=total_users,
         total_products=total_products,
+        total_categories=total_categories,
         total_orders=total_orders,
         total_revenue=float(total_revenue),
         recent_orders=recent_orders,

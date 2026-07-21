@@ -15,6 +15,7 @@ export interface RecentOrderBrief {
 export interface AdminStatsOut {
   total_users: number
   total_products: number
+  total_categories: number
   total_orders: number
   total_revenue: number
   recent_orders: RecentOrderBrief[]

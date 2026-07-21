@@ -17,6 +17,7 @@ class RecentOrderBrief(BaseModel):
 class AdminStatsOut(BaseModel):
     total_users: int
     total_products: int
+    total_categories: int
     total_orders: int
     total_revenue: float
     recent_orders: list[RecentOrderBrief]

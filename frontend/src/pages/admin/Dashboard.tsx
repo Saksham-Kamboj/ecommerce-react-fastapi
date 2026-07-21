@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { adminApi } from "@/lib/api/admin"
 import type { AdminStatsOut } from "@/types/admin"
-import { Users, ShoppingBag, ShoppingCart, IndianRupee } from "lucide-react"
+import { Users, ShoppingBag, ShoppingCart, IndianRupee, Layers } from "lucide-react"
 import { format } from "date-fns"
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 import {
@@ -81,10 +81,10 @@ export function AdminDashboard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
         {/* Total Revenue */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="cursor-pointer" onClick={() => navigate("/sales")}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Revenue
             </CardTitle>
@@ -103,8 +103,8 @@ export function AdminDashboard() {
         </Card>
 
         {/* Total Orders */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="cursor-pointer" onClick={() => navigate("/orders")}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Orders
             </CardTitle>
@@ -120,8 +120,8 @@ export function AdminDashboard() {
         </Card>
 
         {/* Total Products */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="cursor-pointer" onClick={() => navigate("/products")}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Products
             </CardTitle>
@@ -137,8 +137,8 @@ export function AdminDashboard() {
         </Card>
 
         {/* Total Users */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="cursor-pointer" onClick={() => navigate("/users")}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Users
             </CardTitle>
@@ -149,6 +149,23 @@ export function AdminDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">
               {stats.total_users.toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Total Categories */}
+        <Card className="cursor-pointer" onClick={() => navigate("/categories")}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Categories
+            </CardTitle>
+            <div className="rounded-full bg-primary/10 p-3 text-primary">
+              <Layers className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {stats.total_categories.toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -195,15 +212,14 @@ export function AdminDashboard() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={`${
-                            order.status === "delivered"
-                              ? "border-green-200 bg-green-100 text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-400"
-                              : order.status === "cancelled"
-                                ? "border-red-200 bg-red-100 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400"
-                                : order.status === "shipped"
-                                  ? "border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-                                  : "border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-                          }`}
+                          className={`${order.status === "delivered"
+                            ? "border-green-200 bg-green-100 text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-400"
+                            : order.status === "cancelled"
+                              ? "border-red-200 bg-red-100 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400"
+                              : order.status === "shipped"
+                                ? "border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                                : "border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                            }`}
                         >
                           {order.status.charAt(0).toUpperCase() +
                             order.status.slice(1)}
@@ -289,7 +305,7 @@ function DashboardSkeleton() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Revenue Card */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <Skeleton className="h-4 w-24" />
             <div className="rounded-full bg-muted p-3">
               <Skeleton className="h-4 w-4" />
@@ -302,7 +318,7 @@ function DashboardSkeleton() {
 
         {/* Total Orders Card */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <Skeleton className="h-4 w-24" />
             <div className="rounded-full bg-muted p-3">
               <Skeleton className="h-4 w-4" />
@@ -315,7 +331,7 @@ function DashboardSkeleton() {
 
         {/* Total Products Card */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <Skeleton className="h-4 w-24" />
             <div className="rounded-full bg-muted p-3">
               <Skeleton className="h-4 w-4" />
@@ -328,7 +344,7 @@ function DashboardSkeleton() {
 
         {/* Total Users Card */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <Skeleton className="h-4 w-24" />
             <div className="rounded-full bg-muted p-3">
               <Skeleton className="h-4 w-4" />
