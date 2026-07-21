@@ -117,14 +117,14 @@ export function UserOrders() {
             Track and manage your purchase history.
           </p>
         </div>
-        <div className="flex items-center gap-3 w-auto">
+        <div className="flex w-auto items-center gap-3">
           <SearchInput
             placeholder="Search by Order ID..."
             className="w-full sm:w-80"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <p className="text-sm text-muted-foreground whitespace-nowrap">
+          <p className="text-sm whitespace-nowrap text-muted-foreground">
             {pagination?.totalItems || 0} total orders
           </p>
         </div>

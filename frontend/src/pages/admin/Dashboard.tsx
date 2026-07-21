@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { adminApi } from "@/lib/api/admin"
@@ -273,13 +273,10 @@ export function AdminDashboard() {
   )
 }
 
-function DashboardSkeleton() {
-  // Pre-calculate random heights to avoid calling Math.random during render
-  const barHeights = React.useMemo(
-    () => Array.from({ length: 12 }, () => Math.floor(Math.random() * 60 + 20)),
-    []
-  )
+// Static heights for skeleton chart bars (in pixels)
+const SKELETON_BAR_HEIGHTS = [35, 55, 40, 70, 45, 60, 30, 50, 65, 25, 45, 55]
 
+function DashboardSkeleton() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header Skeleton */}
@@ -416,7 +413,7 @@ function DashboardSkeleton() {
                 ))}
               </div>
               <div className="relative flex h-40 items-end justify-between">
-                {barHeights.map((height, i) => (
+                {SKELETON_BAR_HEIGHTS.map((height, i) => (
                   <div key={i} className="flex flex-col items-center">
                     <Skeleton className="mb-1 h-4 w-8" />
                     <Skeleton

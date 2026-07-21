@@ -71,7 +71,7 @@ export function AdminNotifications() {
       >
         <Bell className="h-[1.2rem] w-[1.2rem]" />
         {unreadCount > 0 && (
-          <span className="text-white pointer-events-none absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold">
+          <span className="pointer-events-none absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
@@ -117,10 +117,10 @@ export function AdminNotifications() {
                         <Check className="h-3 w-3" />
                       </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                       {notification.message}
                     </p>
-                    <p className="text-[10px] text-muted-foreground mt-2">
+                    <p className="mt-2 text-[10px] text-muted-foreground">
                       {new Date(notification.created_at).toLocaleString()}
                     </p>
                   </div>

@@ -253,12 +253,12 @@ function ChartTooltipContent({
                         </span>
                       </div>
                       {item.value != null && (
-                        <span className="font-mono font-medium text-foreground tabular-nums ml-4">
+                        <span className="ml-4 font-mono font-medium text-foreground tabular-nums">
                           {valueFormatter
                             ? valueFormatter(item.value)
                             : typeof item.value === "number"
-                            ? item.value.toLocaleString()
-                            : String(item.value)}
+                              ? item.value.toLocaleString()
+                              : String(item.value)}
                         </span>
                       )}
                     </div>

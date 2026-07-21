@@ -80,11 +80,7 @@ export function AdminProductDetailPage() {
   ) => {
     if (!product) return
     try {
-      const res = await productsApi.updateProduct(
-        product.id,
-        data,
-        imageFile
-      )
+      const res = await productsApi.updateProduct(product.id, data, imageFile)
       toast.success(res.message)
       setProduct(res.data)
       setIsFormOpen(false)
@@ -118,7 +114,7 @@ export function AdminProductDetailPage() {
           setReviews(res.data)
         }
       })
-      .catch(() => { })
+      .catch(() => {})
     return () => {
       cancelled = true
     }
@@ -145,7 +141,7 @@ export function AdminProductDetailPage() {
           setRelatedProducts(shuffled)
         }
       })
-      .catch(() => { })
+      .catch(() => {})
     return () => {
       cancelled = true
     }
@@ -174,8 +170,8 @@ export function AdminProductDetailPage() {
   const rating =
     reviews.length > 0
       ? (
-        reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
-      ).toFixed(1)
+          reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+        ).toFixed(1)
       : "0.0"
   const reviewsCount = reviews.length
 
@@ -217,7 +213,11 @@ export function AdminProductDetailPage() {
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      />
                     }
                   >
                     <MoreVertical className="h-4 w-4" />

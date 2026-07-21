@@ -75,9 +75,7 @@ export function AppLayout() {
             )}
 
             {/* Admin Notifications */}
-            {isSuperAdmin && (
-              <AdminNotifications />
-            )}
+            {isSuperAdmin && <AdminNotifications />}
 
             <ModeToggle />
           </div>

@@ -100,8 +100,9 @@ export function ProductReviews({
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Customer Reviews</h2>
-        {!isAdmin && reviews.length > 0 && (
-          user ? (
+        {!isAdmin &&
+          reviews.length > 0 &&
+          (user ? (
             !userReview && (
               <Button
                 onClick={() => {
@@ -118,8 +119,7 @@ export function ProductReviews({
             <Button variant="outline" onClick={() => navigate("/login")}>
               Login to Review
             </Button>
-          )
-        )}
+          ))}
       </div>
 
       <div className="flex flex-col gap-4">
@@ -132,8 +132,8 @@ export function ProductReviews({
             <p className="mt-1 mb-6 text-sm text-muted-foreground">
               Be the first to review this product!
             </p>
-            {!isAdmin && (
-              user ? (
+            {!isAdmin &&
+              (user ? (
                 <Button
                   onClick={() => {
                     setIsEditing(false)
@@ -148,8 +148,7 @@ export function ProductReviews({
                 <Button variant="outline" onClick={() => navigate("/login")}>
                   Login to Review
                 </Button>
-              )
-            )}
+              ))}
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -206,7 +205,10 @@ export function ProductReviews({
                   </div>
                 </div>
 
-                <StarRating rating={review.rating} iconClassName="h-3.5 w-3.5" />
+                <StarRating
+                  rating={review.rating}
+                  iconClassName="h-3.5 w-3.5"
+                />
 
                 {review.comment && (
                   <blockquote className="relative mt-1 rounded-r-md border-l-4 border-amber-400 bg-muted/30 py-2 pr-3 pl-4 text-sm whitespace-pre-wrap text-foreground italic">
@@ -229,7 +231,9 @@ export function ProductReviews({
       <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{isEditing ? "Edit Review" : "Write a Review"}</DialogTitle>
+            <DialogTitle>
+              {isEditing ? "Edit Review" : "Write a Review"}
+            </DialogTitle>
             <DialogDescription>
               Share your experience with this product.
             </DialogDescription>
@@ -250,7 +254,7 @@ export function ProductReviews({
                         "h-8 w-8 transition-colors",
                         star <= rating
                           ? "fill-amber-400 text-amber-400"
-                          : "text-muted-foreground/40 fill-transparent"
+                          : "fill-transparent text-muted-foreground/40"
                       )}
                     />
                   </button>
@@ -270,11 +274,17 @@ export function ProductReviews({
             </div>
 
             <DialogFooter className="mt-4 sm:justify-end">
-              <Button type="button" variant="outline" onClick={() => setIsReviewModalOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsReviewModalOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 {isEditing ? "Update Review" : "Submit Review"}
               </Button>
             </DialogFooter>

@@ -78,7 +78,7 @@ export function ProductDetailPage() {
           setReviews(res.data)
         }
       })
-      .catch(() => { })
+      .catch(() => {})
     return () => {
       cancelled = true
     }
@@ -105,7 +105,7 @@ export function ProductDetailPage() {
           setRelatedProducts(shuffled)
         }
       })
-      .catch(() => { })
+      .catch(() => {})
     return () => {
       cancelled = true
     }
@@ -134,8 +134,8 @@ export function ProductDetailPage() {
   const rating =
     reviews.length > 0
       ? (
-        reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
-      ).toFixed(1)
+          reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+        ).toFixed(1)
       : "0.0"
   const reviewsCount = reviews.length
 

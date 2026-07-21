@@ -25,8 +25,6 @@ function getGradientFromName(name: string) {
   return colors[charSum % colors.length]
 }
 
-
-
 export function ProductCard({ product }: Readonly<ProductCardProps>) {
   const gradientClass = getGradientFromName(product.name)
   const { cart, addToCart, updateQuantity } = useCart()
@@ -112,8 +110,12 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
 
             <div className="flex items-center gap-1 text-sm">
               <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-              <span className="font-medium text-foreground">{product.rating.toFixed(1)}</span>
-              <span className="text-xs text-muted-foreground">({product.reviews_count})</span>
+              <span className="font-medium text-foreground">
+                {product.rating.toFixed(1)}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                ({product.reviews_count})
+              </span>
             </div>
           </div>
 
