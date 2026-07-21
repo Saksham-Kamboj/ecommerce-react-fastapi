@@ -5,7 +5,7 @@ import type { UserDetailOut } from "@/types/admin"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { User, Phone, MapPin, Calendar, Clock, ShoppingBag } from "lucide-react"
+import { User, Phone, MapPin, Calendar, Clock, ShoppingBag, Mail } from "lucide-react"
 import { format } from "date-fns"
 import {
   Table,
@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import PageLoading from "@/components/custom/PageLoading"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export function UserDetailPage() {
   const { userId } = useParams<{ userId: string }>()
@@ -50,101 +51,145 @@ export function UserDetailPage() {
     )
   }
 
+  const getInitials = (name?: string | null, email?: string | null) => {
+    if (name) {
+      return name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()
+    }
+    if (email) {
+      return email.substring(0, 2).toUpperCase()
+    }
+    return "??"
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-primary">User Details</h1>
-        <p className="text-sm text-muted-foreground">ID: {user.id}</p>
-      </div>
+    <div className="space-y-8 pb-10">
+      {/* Header / Hero Section */}
+      <div className="relative overflow-hidden rounded-2xl border bg-card shadow-sm">
+        {/* Gradient Banner */}
+        <div className="h-32 w-full bg-gradient-to-r from-primary/10 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10" />
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {/* Profile Card */}
-        <Card className="md:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
-              Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="mb-1 text-sm font-medium text-muted-foreground">Name</div>
-              <div className="text-lg font-semibold">{user.full_name || "N/A"}</div>
+        <div className="relative px-6 pb-6 pt-2 sm:px-10">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end">
+            {/* Avatar */}
+            <Avatar className="-mt-16 h-24 w-24 rounded-2xl border-4 border-card shadow-lg ring-1 ring-border sm:-mt-20 sm:h-32 sm:w-32">
+              <AvatarImage src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user.email}`} />
+              <AvatarFallback className="bg-primary/5 text-2xl font-bold text-primary">
+                {getInitials(user.full_name, user.email)}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="flex-1 space-y-1 sm:pb-2">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">{user.full_name || "Unknown User"}</h1>
+              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1.5"><Mail className="h-4 w-4" />{user.email}</span>
+                <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" />Joined {format(new Date(user.created_at), "MMM d, yyyy")}</span>
+                <span className="flex items-center gap-1.5 text-xs font-mono">ID: {user.id.split("-")[0]}</span>
+              </div>
             </div>
-            <div>
-              <div className="mb-1 text-sm font-medium text-muted-foreground">Email</div>
-              <div>{user.email}</div>
-            </div>
-            <div>
-              <div className="mb-1 text-sm font-medium text-muted-foreground">Status</div>
-              <Badge variant={user.is_active ? "default" : "secondary"}>
+
+            <div className="flex items-center gap-3 sm:pb-4">
+              <Badge variant={user.is_active ? "default" : "secondary"} className="px-3 py-1 text-sm shadow-sm">
                 {user.is_active ? "Active" : "Inactive"}
               </Badge>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              Joined {format(new Date(user.created_at), "MMM d, yyyy")}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Contact Info Card */}
+        <Card className="overflow-hidden transition-all hover:shadow-md lg:col-span-1">
+          <CardHeader className="bg-muted/50 pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <User className="h-5 w-5 text-primary" />
+              Contact Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6 pt-6">
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Phone className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Phone Number</p>
+                <p className="font-medium text-foreground">{user.phone || "Not provided"}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Date of Birth</p>
+                <p className="font-medium text-foreground">{user.date_of_birth ? format(new Date(user.date_of_birth), "MMM d, yyyy") : "Not provided"}</p>
+              </div>
+            </div>
+
+            <div className="space-y-2 rounded-xl border border-dashed bg-muted/30 p-4">
+              <p className="text-sm font-medium text-muted-foreground">Bio</p>
+              <p className="text-sm text-foreground">{user.bio || "No bio available for this user."}</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Contact & Address Card */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        {/* Shipping Address Card */}
+        <Card className="overflow-hidden transition-all hover:shadow-md lg:col-span-2">
+          <CardHeader className="bg-muted/50 pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <MapPin className="h-5 w-5 text-primary" />
-              Contact & Address
+              Shipping Address
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div className="space-y-4">
-              <div>
-                <div className="mb-1 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <Phone className="h-4 w-4" /> Phone
-                </div>
-                <div>{user.phone || "Not provided"}</div>
-              </div>
-              <div>
-                <div className="mb-1 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <Calendar className="h-4 w-4" /> Date of Birth
-                </div>
-                <div>{user.date_of_birth ? format(new Date(user.date_of_birth), "MMM d, yyyy") : "Not provided"}</div>
-              </div>
-              <div>
-                <div className="mb-1 text-sm font-medium text-muted-foreground">Bio</div>
-                <div className="text-sm">{user.bio || "No bio available."}</div>
-              </div>
-            </div>
-
-            <div>
-              <div className="mb-1 text-sm font-medium text-muted-foreground">Shipping Address</div>
-              {user.address_line1 || user.city || user.country ? (
-                <address className="not-italic text-sm leading-relaxed">
-                  {user.address_line1 && <div>{user.address_line1}</div>}
-                  {user.address_line2 && <div>{user.address_line2}</div>}
+          <CardContent className="pt-6">
+            {user.address_line1 || user.city || user.country ? (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div className="space-y-4">
                   <div>
-                    {user.city} {user.state ? `, ${user.state}` : ""} {user.postal_code}
+                    <p className="text-sm font-medium text-muted-foreground">Street Address</p>
+                    <p className="mt-1 font-medium text-foreground">
+                      {user.address_line1}
+                      {user.address_line2 && <><br />{user.address_line2}</>}
+                    </p>
                   </div>
-                  {user.country && <div>{user.country}</div>}
-                </address>
-              ) : (
-                <div className="text-sm text-muted-foreground">No address provided</div>
-              )}
-            </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">City & State</p>
+                    <p className="mt-1 font-medium text-foreground">{user.city}{user.state ? `, ${user.state}` : ""}</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Postal Code</p>
+                    <p className="mt-1 font-medium text-foreground">{user.postal_code || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Country</p>
+                    <p className="mt-1 font-medium text-foreground">{user.country || "—"}</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                  <MapPin className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold">No Address Provided</h3>
+                <p className="mt-1 text-sm text-muted-foreground">This user hasn't added a shipping address yet.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Recent Orders */}
+      {/* All Orders */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5 text-primary" />
-            Recent Orders
+            User Orders
           </CardTitle>
           <CardDescription>
-            The most recent orders placed by this user.
+            All orders placed by this user.
           </CardDescription>
         </CardHeader>
         <CardContent>
