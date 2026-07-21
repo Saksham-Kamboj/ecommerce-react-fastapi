@@ -38,7 +38,7 @@ def get_admin_stats(
             created_at=o.created_at,
             total_amount=float(o.total_amount),
             status=o.status,
-            user_email=o.user.email if o.user else "Unknown"
+            user_name=o.user.full_name if o.user else "Unknown"
         ))
 
     # 4. Chart Data (last 30 days)

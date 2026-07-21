@@ -3,7 +3,13 @@ import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { adminApi } from "@/lib/api/admin"
 import type { AdminStatsOut } from "@/types/admin"
-import { Users, ShoppingBag, ShoppingCart, IndianRupee, Layers } from "lucide-react"
+import {
+  Users,
+  ShoppingBag,
+  ShoppingCart,
+  IndianRupee,
+  Layers,
+} from "lucide-react"
 import { format } from "date-fns"
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 import {
@@ -149,7 +155,7 @@ export function AdminDashboard() {
                       <TableCell className="font-mono text-xs">
                         {order.id.split("-")[0]}
                       </TableCell>
-                      <TableCell>{order.user_email}</TableCell>
+                      <TableCell>{order.user_name}</TableCell>
                       <TableCell className="text-muted-foreground">
                         {format(new Date(order.created_at), "MMM d, yyyy")}
                       </TableCell>
@@ -159,14 +165,15 @@ export function AdminDashboard() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={`${order.status === "delivered"
-                            ? "border-green-200 bg-green-100 text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-400"
-                            : order.status === "cancelled"
-                              ? "border-red-200 bg-red-100 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400"
-                              : order.status === "shipped"
-                                ? "border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-                                : "border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-                            }`}
+                          className={`${
+                            order.status === "delivered"
+                              ? "border-green-200 bg-green-100 text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-400"
+                              : order.status === "cancelled"
+                                ? "border-red-200 bg-red-100 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                : order.status === "shipped"
+                                  ? "border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                                  : "border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                          }`}
                         >
                           {order.status.charAt(0).toUpperCase() +
                             order.status.slice(1)}

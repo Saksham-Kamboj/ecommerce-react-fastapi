@@ -12,7 +12,7 @@ class RecentOrderBrief(BaseModel):
     created_at: datetime
     total_amount: float
     status: str
-    user_email: str
+    user_name: str
 
 class AdminStatsOut(BaseModel):
     total_users: int

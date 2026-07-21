@@ -201,7 +201,7 @@ export default function AdminOrderDetailPage() {
       <Separator />
 
       {/* Admin Action Panel */}
-      {order.status !== "cancelled" && (
+      {order.status !== "cancelled" && order.status !== "delivered" && (
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="pb-3">
             <CardTitle className="text-base text-primary">
@@ -236,7 +236,7 @@ export default function AdminOrderDetailPage() {
             />
             <Button
               onClick={() => handleUpdateStatus("cancelled")}
-              disabled={isUpdating || order.status === "delivered"}
+              disabled={isUpdating}
               variant="destructive"
               className="sm:ml-auto"
             >

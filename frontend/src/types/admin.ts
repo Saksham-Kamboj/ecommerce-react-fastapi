@@ -9,7 +9,7 @@ export interface RecentOrderBrief {
   created_at: string
   total_amount: number
   status: string
-  user_email: string
+  user_name: string
 }
 
 export interface AdminStatsOut {
