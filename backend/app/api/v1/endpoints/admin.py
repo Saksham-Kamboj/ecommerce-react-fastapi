@@ -42,13 +42,13 @@ def get_admin_stats(
     # 4. Chart Data (last 30 days)
     thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
     
-    # Fetch orders in last 30 days in memory to group them safely across dialects
-    recent_all_orders = db.query(Order)\
+    # Fetch only delivered orders in last 30 days for revenue chart
+    recent_delivered_orders = db.query(Order)\
         .filter(Order.created_at >= thirty_days_ago)\
-        .filter(Order.status != OrderStatus.cancelled).all()
+        .filter(Order.status == OrderStatus.delivered).all()
     
     daily_map = {}
-    for o in recent_all_orders:
+    for o in recent_delivered_orders:
         # Some DBs return naive datetimes, some aware. Handle gracefully.
         if o.created_at.tzinfo is None:
             o.created_at = o.created_at.replace(tzinfo=timezone.utc)
