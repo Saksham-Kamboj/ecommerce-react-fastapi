@@ -651,6 +651,7 @@ function WishlistCard({
                           src={item.product.image_url}
                           alt={item.product.name}
                           className="h-full w-full object-contain p-1 mix-blend-multiply"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-muted/50">
@@ -758,6 +759,7 @@ function CartSummaryCard({
                         src={item.product.image_url}
                         alt={item.product.name}
                         className="h-full w-full object-contain p-1 mix-blend-multiply"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-muted/50">

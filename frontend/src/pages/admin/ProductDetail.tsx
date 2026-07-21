@@ -200,6 +200,7 @@ export function AdminProductDetailPage() {
                 src={product.image_url}
                 alt={product.name}
                 className="h-full w-full object-contain mix-blend-multiply"
+                loading="lazy"
               />
             </div>
           ) : (
@@ -328,6 +329,7 @@ export function AdminProductDetailPage() {
                       src={rp.image_url}
                       alt={rp.name}
                       className="h-full w-full rounded-sm object-contain mix-blend-multiply"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center rounded-sm bg-muted p-6 text-muted-foreground">

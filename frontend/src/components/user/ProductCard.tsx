@@ -53,6 +53,7 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
               src={product.image_url}
               alt={product.name}
               className="h-full w-full rounded-sm object-contain mix-blend-multiply shadow-inner transition-transform duration-300 group-hover:scale-102"
+              loading="lazy"
             />
           </Link>
         ) : (

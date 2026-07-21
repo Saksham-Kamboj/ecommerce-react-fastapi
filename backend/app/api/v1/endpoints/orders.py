@@ -98,13 +98,14 @@ def cancel_my_order(
     )
     
     # Create notification
-    notification_crud.create(
+    notification_crud.create_with_broadcast(
         db,
         obj_in=NotificationCreate(
             title="Order Cancelled",
             message=f"Order #{str(cancelled_order.id)[:8]} was cancelled by {current_user.email}",
             type="order_cancelled"
-        )
+        ),
+        background_tasks=background_tasks
     )
 
     return ApiResponse(message="Order cancelled successfully", data=cancelled_order)

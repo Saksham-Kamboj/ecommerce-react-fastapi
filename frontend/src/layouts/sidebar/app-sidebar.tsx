@@ -166,7 +166,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link to="/" />}>
               <div className="flex aspect-square size-10 items-center justify-center overflow-hidden rounded-lg">
-                <img src={logo} alt="Logo" className="size-full object-cover" />
+                <img
+                  src={logo}
+                  alt="Logo"
+                  className="size-full object-cover"
+                  loading="lazy"
+                />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{appConfig.name}</span>

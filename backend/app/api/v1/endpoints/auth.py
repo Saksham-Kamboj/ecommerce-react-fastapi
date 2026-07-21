@@ -80,8 +80,10 @@ def swagger_login(
         "token_type": "bearer",
     }
 
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+
 @router.post("/register", response_model=ApiResponse[UserOut])
-def register_user(user_in: UserRegister, db: Session = Depends(get_db)) -> Any:
+def register_user(user_in: UserRegister, background_tasks: BackgroundTasks, db: Session = Depends(get_db)) -> Any:
     """
     Register a new user.
     """
@@ -101,13 +103,14 @@ def register_user(user_in: UserRegister, db: Session = Depends(get_db)) -> Any:
     cart_crud.get_or_create_cart(db, user_id=new_user.id)
 
     # Create a notification for admins
-    notification_crud.create(
+    notification_crud.create_with_broadcast(
         db,
         obj_in=NotificationCreate(
             title="New User Registration",
             message=f"A new user registered: {new_user.email}",
             type="user_created"
-        )
+        ),
+        background_tasks=background_tasks
     )
 
     return ApiResponse(message="User registered successfully", data=new_user)

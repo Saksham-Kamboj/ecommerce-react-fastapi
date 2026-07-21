@@ -199,13 +199,14 @@ def verify_payment(
     )
 
     # Create notification
-    notification_crud.create(
+    notification_crud.create_with_broadcast(
         db,
         obj_in=NotificationCreate(
             title="Payment Successful",
             message=f"Payment for order #{str(order.id)[:8]} was successful",
             type="payment_success"
-        )
+        ),
+        background_tasks=background_tasks
     )
 
     db.refresh(order)

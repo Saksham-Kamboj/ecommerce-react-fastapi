@@ -255,6 +255,7 @@ export function ProductFormDialog({
                     src={previewUrl}
                     alt="Product preview"
                     className="h-full w-full object-cover"
+                    loading="lazy"
                   />
                 ) : (
                   <span className="px-2 text-center text-xs text-muted-foreground">

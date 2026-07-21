@@ -21,6 +21,7 @@ export function AuthLayout() {
               src={appConfig.logo}
               alt={appConfig.name}
               className="h-16 w-16"
+              loading="lazy"
             />
             <Link
               to="/"

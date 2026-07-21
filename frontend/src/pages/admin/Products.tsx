@@ -202,6 +202,7 @@ export default function ProductsPage() {
               }
               alt={product.name}
               className="h-full w-full object-contain p-1 mix-blend-multiply"
+              loading="lazy"
             />
           </Link>
           <div className="flex max-w-75 flex-col">

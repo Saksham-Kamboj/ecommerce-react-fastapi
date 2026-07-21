@@ -182,6 +182,7 @@ export function ProductDetailPage() {
                 src={product.image_url}
                 alt={product.name}
                 className="h-full w-full object-contain mix-blend-multiply"
+                loading="lazy"
               />
             </div>
           ) : (

@@ -8,10 +8,12 @@ import {
 } from "@/components/ui/popover"
 import { notificationsApi } from "@/lib/api/notifications"
 import type { Notification } from "@/types/notification"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function AdminNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
+  const { token } = useAuth()
 
   useEffect(() => {
     let isMounted = true
@@ -29,12 +31,32 @@ export function AdminNotifications() {
 
     void fetchNotifications()
 
-    const interval = setInterval(() => void fetchNotifications(), 30000)
+    // Establish WebSocket connection
+    if (!token) return
+
+    const baseUrl = import.meta.env.VITE_API_BASE_URL
+    const wsUrl = `${baseUrl.replace(/^http/, "ws")}/api/v1/ws/notifications?token=${token}`
+
+    const ws = new WebSocket(wsUrl)
+
+    ws.onmessage = (event) => {
+      try {
+        const newNotification = JSON.parse(event.data) as Notification
+        setNotifications((prev) => [newNotification, ...prev])
+      } catch (error) {
+        console.error("Error parsing websocket message", error)
+      }
+    }
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error)
+    }
+
     return () => {
       isMounted = false
-      clearInterval(interval)
+      ws.close()
     }
-  }, [])
+  }, [token])
 
   const handleMarkAsRead = async (id: string) => {
     try {
