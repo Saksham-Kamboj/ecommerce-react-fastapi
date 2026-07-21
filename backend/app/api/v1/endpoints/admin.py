@@ -23,9 +23,9 @@ def get_admin_stats(
     total_products = db.query(func.count(Product.id)).scalar() or 0
     total_orders = db.query(func.count(Order.id)).scalar() or 0
     
-    # 2. Revenue (exclude cancelled)
+    # 2. Revenue (only delivered orders)
     total_revenue = db.query(func.sum(Order.total_amount))\
-        .filter(Order.status != OrderStatus.cancelled).scalar() or 0.0
+        .filter(Order.status == OrderStatus.delivered).scalar() or 0.0
 
     # 3. Recent Orders
     recent_db_orders = db.query(Order).order_by(Order.created_at.desc()).limit(5).all()

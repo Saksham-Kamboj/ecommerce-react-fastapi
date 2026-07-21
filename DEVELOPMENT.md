@@ -338,21 +338,50 @@ Admin routes:
 
 ---
 
+### Phase 12 — Admin Real-Time Notifications
+
+**Backend:**
+
+- Added `Notification` model — id (UUID), user_id (FK), type, title, message, is_read, created_at
+- Added Alembic migration: `add_notifications_table`
+- Added `NotificationService` — creates notifications for key events:
+  - User registered
+  - User deleted
+  - Order placed (by any user)
+  - Order payment completed
+  - Order cancelled
+- Notifications are created for all users with `superadmin` role on each event
+- Added `GET /notifications/` — paginated list of current admin's notifications (unread first, then by date)
+- Added `POST /notifications/{id}/read` — mark a single notification as read
+- Added `POST /notifications/read-all` — mark all notifications as read
+- Added `GET /notifications/unread-count` — returns unread count for badge
+
+**Frontend:**
+
+- Added `notificationsApi` client and `Notification` TypeScript types
+- Added `NotificationContext` — fetches unread count on mount, polls every 30s, exposes `unreadCount`, `notifications`, `markRead()`, `markAllRead()`, `refresh()`
+- Added `NotificationDropdown` in admin header — bell icon with live unread badge, dropdown list of recent notifications, "Mark all as read" action, link to full notifications page
+- Added `/admin/notifications` page — full paginated notification history with read/unread state, timestamps, and mark-read actions
+- Sidebar route added for admin notification management
+- Unread badge on bell icon uses same `<span>` pattern as cart/wishlist badges
+
+---
+
 ## Known Technical Decisions
 
-| Decision                           | Reason                                     |
-| ---------------------------------- | ------------------------------------------ |
-| JWT stored in DB (`access_token`)  | Allows server-side token revocation        |
-| Debounced cart updates (500ms)     | Prevents API spam on rapid +/- clicks      |
-| Optimistic UI for cart/wishlist    | Instant feedback, rollback on error        |
-| `useRef` guard for wishlist load   | Avoids `set-state-in-effect` ESLint rule   |
-| `@base-ui` instead of Radix        | Shadcn v4 uses Base UI as primitive layer  |
-| Cart items ordered by `created_at` | Prevents items jumping on quantity update  |
-| First user = superadmin            | Simplifies initial setup                   |
-| Plain `<span>` for header badges   | Badge component padding makes it too large |
+| Decision                           | Reason                                            |
+| ---------------------------------- | ------------------------------------------------- |
+| JWT stored in DB (`access_token`)  | Allows server-side token revocation               |
+| Debounced cart updates (500ms)     | Prevents API spam on rapid +/- clicks             |
+| Optimistic UI for cart/wishlist    | Instant feedback, rollback on error               |
+| `useRef` guard for wishlist load   | Avoids `set-state-in-effect` ESLint rule          |
+| `@base-ui` instead of Radix        | Shadcn v4 uses Base UI as primitive layer         |
+| Cart items ordered by `created_at` | Prevents items jumping on quantity update         |
+| First user = superadmin            | Simplifies initial setup                          |
+| Plain `<span>` for header badges   | Badge component padding makes it too large        |
 | Order prices snapshotted           | Product price changes should not alter old orders |
-| Shipping address snapshotted       | Orders keep delivery details as placed     |
-| Product category `SET NULL`        | Deleting a category should not delete products |
+| Shipping address snapshotted       | Orders keep delivery details as placed            |
+| Product category `SET NULL`        | Deleting a category should not delete products    |
 
 ---
 
@@ -370,10 +399,8 @@ Admin routes:
 
 ---
 
-
 ### 🔵 Future / Nice to Have
 
-- Admin Header notifications for user trackink like (user create , delete), (user order placed, payment, cancel)
 - Coupon / discount codes
 - Address book (multiple saved addresses per user)
 - Search suggestions / autocomplete
@@ -383,19 +410,20 @@ Admin routes:
 
 ## Migration History
 
-| Migration                    | Description                      |
-| ---------------------------- | -------------------------------- |
-| init                         | Initial tables (users, products) |
-| add_product_model            | Product table                    |
-| add_cart_and_cartitem_models | Cart and CartItem tables         |
-| add_role_column_to_user      | role field on User               |
-| move_otp_to_user_table       | OTP fields on User               |
-| add_updated_at               | updated_at fields                |
-| add_profile_fields_to_user   | phone, DOB, bio, address fields  |
-| add_wishlist_items_table     | WishlistItem table               |
-| create_orders_system         | Order and OrderItem tables       |
-| add_categories_and_product_category_id | Categories table and product category FK |
-| remove_category_description  | Removed unused category description field |
+| Migration                              | Description                               |
+| -------------------------------------- | ----------------------------------------- |
+| init                                   | Initial tables (users, products)          |
+| add_product_model                      | Product table                             |
+| add_cart_and_cartitem_models           | Cart and CartItem tables                  |
+| add_role_column_to_user                | role field on User                        |
+| move_otp_to_user_table                 | OTP fields on User                        |
+| add_updated_at                         | updated_at fields                         |
+| add_profile_fields_to_user             | phone, DOB, bio, address fields           |
+| add_wishlist_items_table               | WishlistItem table                        |
+| create_orders_system                   | Order and OrderItem tables                |
+| add_categories_and_product_category_id | Categories table and product category FK  |
+| remove_category_description            | Removed unused category description field |
+| add_notifications_table                | Notification table for admin events       |
 
 ---
 
