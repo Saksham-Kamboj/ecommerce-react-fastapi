@@ -19,6 +19,9 @@ import {
   Clock,
   ShoppingBag,
   Mail,
+  Building2,
+  Hash,
+  Globe,
 } from "lucide-react"
 import { format } from "date-fns"
 import {
@@ -148,10 +151,10 @@ export function UserDetailPage() {
                   <Phone className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-xs font-medium text-muted-foreground">
                     Phone Number
                   </p>
-                  <p className="font-medium text-foreground">
+                  <p className="mt-0.5 text-sm font-medium text-foreground">
                     {user.phone || "Not provided"}
                   </p>
                 </div>
@@ -162,10 +165,10 @@ export function UserDetailPage() {
                   <Calendar className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-xs font-medium text-muted-foreground">
                     Date of Birth
                   </p>
-                  <p className="font-medium text-foreground">
+                  <p className="mt-0.5 text-sm font-medium text-foreground">
                     {user.date_of_birth
                       ? format(new Date(user.date_of_birth), "MMM d, yyyy")
                       : "Not provided"}
@@ -174,7 +177,7 @@ export function UserDetailPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-dashed bg-muted/20 p-3">
+            <div className="rounded-lg border border-dashed bg-muted/20 p-3 mb-2">
               <p className="mb-1 text-xs font-medium text-muted-foreground">
                 Bio
               </p>
@@ -196,47 +199,70 @@ export function UserDetailPage() {
           <CardContent className="">
             {user.address_line1 || user.city || user.country ? (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Street Address
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-foreground">
-                      {user.address_line1}
-                      {user.address_line2 && (
-                        <>
-                          <br />
-                          {user.address_line2}
-                        </>
-                      )}
-                    </p>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <MapPin className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Street Address
+                      </p>
+                      <p className="mt-0.5 text-sm font-medium text-foreground">
+                        {user.address_line1}
+                        {user.address_line2 && (
+                          <>
+                            <br />
+                            {user.address_line2}
+                          </>
+                        )}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">
-                      City & State
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-foreground">
-                      {user.city}
-                      {user.state ? `, ${user.state}` : ""}
-                    </p>
+
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <Building2 className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        City & State
+                      </p>
+                      <p className="mt-0.5 text-sm font-medium text-foreground">
+                        {user.city}
+                        {user.state ? `, ${user.state}` : ""}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Postal Code
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-foreground">
-                      {user.postal_code || "—"}
-                    </p>
+
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <Hash className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Postal Code
+                      </p>
+                      <p className="mt-0.5 text-sm font-medium text-foreground">
+                        {user.postal_code || "—"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Country
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-foreground">
-                      {user.country || "—"}
-                    </p>
+
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <Globe className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Country
+                      </p>
+                      <p className="mt-0.5 text-sm font-medium text-foreground">
+                        {user.country || "—"}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -257,7 +283,7 @@ export function UserDetailPage() {
 
       {/* All Orders */}
       <Card>
-        <CardHeader>
+        <CardHeader className="border-b">
           <CardTitle className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5 text-primary" />
             User Orders
@@ -316,7 +342,7 @@ export function UserDetailPage() {
                             ? "Paid"
                             : order.payment_status
                               ? order.payment_status.charAt(0).toUpperCase() +
-                                order.payment_status.slice(1)
+                              order.payment_status.slice(1)
                               : "Pending"}
                         </Badge>
                       </TableCell>
