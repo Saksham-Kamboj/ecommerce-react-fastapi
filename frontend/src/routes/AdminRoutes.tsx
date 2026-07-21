@@ -10,6 +10,9 @@ const AdminDashboard = lazy(() =>
 const UsersPage = lazy(() =>
   import("@/pages/admin/Users").then((m) => ({ default: m.UsersPage }))
 )
+const UserDetailPage = lazy(() =>
+  import("@/pages/admin/UserDetail").then((m) => ({ default: m.UserDetailPage }))
+)
 const ProductsPage = lazy(() => import("@/pages/admin/Products"))
 const CategoriesPage = lazy(() => import("@/pages/admin/Categories"))
 const AdminOrdersPage = lazy(() => import("@/pages/admin/Orders"))
@@ -37,6 +40,14 @@ export function AdminRoutes() {
           element={
             <Suspense fallback={<PageLoading />}>
               <UsersPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/users/:userId"
+          element={
+            <Suspense fallback={<PageLoading />}>
+              <UserDetailPage />
             </Suspense>
           }
         />

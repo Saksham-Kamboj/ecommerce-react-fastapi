@@ -1,6 +1,7 @@
 from datetime import date, datetime
 import uuid
 from pydantic import BaseModel
+from app.schemas.user import UserOut
 
 class DailyRevenue(BaseModel):
     date: date | str
@@ -12,6 +13,8 @@ class RecentOrderBrief(BaseModel):
     created_at: datetime
     total_amount: float
     status: str
+    payment_status: str | None = None
+    items_count: int = 0
     user_name: str
 
 class AdminStatsOut(BaseModel):
@@ -22,3 +25,6 @@ class AdminStatsOut(BaseModel):
     total_revenue: float
     recent_orders: list[RecentOrderBrief]
     revenue_chart: list[DailyRevenue]
+
+class UserDetailOut(UserOut):
+    recent_orders: list[RecentOrderBrief] = []
