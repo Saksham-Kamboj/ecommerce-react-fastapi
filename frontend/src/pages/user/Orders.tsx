@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { SearchInput } from "@/components/ui/search-input"
-import { Loader2, PackageSearch, ShoppingBag, ChevronRight } from "lucide-react"
+import { PackageSearch, ShoppingBag, ChevronRight } from "lucide-react"
+import PageLoading from "@/components/custom/PageLoading"
 
 // ── Status config ──────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
@@ -132,11 +133,7 @@ export function UserOrders() {
 
       <Separator />
 
-      {isLoading && (
-        <div className="flex min-h-[300px] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      )}
+      {isLoading && <PageLoading minHeight="min-h-135" />}
 
       {!isLoading && orders.length === 0 && (
         <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">

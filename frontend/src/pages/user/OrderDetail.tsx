@@ -21,6 +21,7 @@ import {
   ShoppingCart,
   XCircle,
 } from "lucide-react"
+import PageLoading from "@/components/custom/PageLoading"
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
   {
@@ -218,11 +219,7 @@ export function OrderDetailPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
+    return <PageLoading minHeight="min-h-135" />
   }
 
   if (!order) {

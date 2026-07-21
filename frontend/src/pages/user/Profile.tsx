@@ -1,10 +1,11 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/AuthContext"
 import { useCart } from "@/contexts/CartContext"
 import { useWishlist } from "@/contexts/WishlistContext"
 import { profileApi } from "@/lib/api/profile"
+import { ordersApi } from "@/lib/api/orders"
 import type { UserUpdateSelf, ChangePasswordRequest } from "@/types/auth"
 import type { WishlistItemOut } from "@/types/wishlist"
 
@@ -98,6 +99,14 @@ export function UserProfile() {
   const { user, updateUser } = useAuth()
   const { cart } = useCart()
   const { items: wishlistItems, toggle: toggleWishlist } = useWishlist()
+  const [totalOrders, setTotalOrders] = useState<number | null>(null)
+
+  useEffect(() => {
+    ordersApi
+      .getMyOrders(0, 1)
+      .then((res) => setTotalOrders(res.pagination?.totalItems ?? 0))
+      .catch(() => setTotalOrders(0))
+  }, [])
 
   if (!user) return null
 
@@ -154,8 +163,14 @@ export function UserProfile() {
         <StatCard
           icon={PackageIcon}
           label="Total Orders"
-          value="0"
-          sub="No orders yet"
+          value={totalOrders === null ? "—" : String(totalOrders)}
+          sub={
+            totalOrders === null
+              ? "Loading..."
+              : totalOrders === 0
+                ? "No orders yet"
+                : `${totalOrders} order${totalOrders !== 1 ? "s" : ""} placed`
+          }
         />
         <StatCard
           icon={ShoppingCartIcon}

@@ -3,7 +3,7 @@ import { toast } from "sonner"
 import { productsApi } from "@/lib/api/products"
 import type { ProductOut } from "@/types/product"
 import { ProductCard } from "@/components/user/ProductCard"
-import { Filter, Loader2 } from "lucide-react"
+import { Filter } from "lucide-react"
 import { categoriesApi } from "@/lib/api/categories"
 import type { CategoryOut } from "@/types/category"
 import { Button } from "@/components/ui/button"
@@ -24,6 +24,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { SearchInput } from "@/components/ui/search-input"
+import PageLoading from "@/components/custom/PageLoading"
 
 export function UserProducts() {
   const [products, setProducts] = useState<ProductOut[]>([])
@@ -169,11 +170,7 @@ export function UserProducts() {
         </div>
       </div>
 
-      {isLoading && (
-        <div className="flex min-h-[400px] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      )}
+      {isLoading && <PageLoading minHeight="min-h-135" />}
 
       {!isLoading && products.length === 0 && (
         <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border border-dashed text-center">

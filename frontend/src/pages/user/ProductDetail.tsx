@@ -9,12 +9,13 @@ import type { ProductOut } from "@/types/product"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Heart, Loader2, Minus, Plus, ShoppingCart } from "lucide-react"
+import { Heart, Minus, Plus, ShoppingCart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductCard } from "@/components/user/ProductCard"
 import { ProductReviews } from "@/components/user/ProductReviews"
 import { StarRating } from "@/components/ui/star-rating"
 import type { ReviewOut } from "@/types/review"
+import PageLoading from "@/components/custom/PageLoading"
 
 const GRADIENT_COLORS = [
   "from-blue-500 to-indigo-600",
@@ -112,11 +113,7 @@ export function ProductDetailPage() {
   }, [product])
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
+    return <PageLoading minHeight="min-h-135" />
   }
 
   if (error || !product) {
