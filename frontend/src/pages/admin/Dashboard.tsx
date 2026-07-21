@@ -82,93 +82,40 @@ export function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
-        {/* Total Revenue */}
-        <Card className="cursor-pointer" onClick={() => navigate("/sales")}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Revenue
-            </CardTitle>
-            <div className="rounded-full bg-primary/10 p-3 text-primary">
-              <IndianRupee className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ₹
-              {stats.total_revenue.toLocaleString("en-IN", {
-                maximumFractionDigits: 0,
-              })}
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Total Revenue"
+          value={`₹${stats.total_revenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`}
+          icon={<IndianRupee className="h-4 w-4" />}
+          onClick={() => navigate("/sales")}
+        />
 
-        {/* Total Orders */}
-        <Card className="cursor-pointer" onClick={() => navigate("/orders")}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Orders
-            </CardTitle>
-            <div className="rounded-full bg-primary/10 p-3 text-primary">
-              <ShoppingCart className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.total_orders.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Total Orders"
+          value={stats.total_orders.toLocaleString()}
+          icon={<ShoppingCart className="h-4 w-4" />}
+          onClick={() => navigate("/orders")}
+        />
 
-        {/* Total Products */}
-        <Card className="cursor-pointer" onClick={() => navigate("/products")}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Products
-            </CardTitle>
-            <div className="rounded-full bg-primary/10 p-3 text-primary">
-              <ShoppingBag className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.total_products.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Total Products"
+          value={stats.total_products.toLocaleString()}
+          icon={<ShoppingBag className="h-4 w-4" />}
+          onClick={() => navigate("/products")}
+        />
 
-        {/* Total Users */}
-        <Card className="cursor-pointer" onClick={() => navigate("/users")}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Users
-            </CardTitle>
-            <div className="rounded-full bg-primary/10 p-3 text-primary">
-              <Users className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.total_users.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Total Users"
+          value={stats.total_users.toLocaleString()}
+          icon={<Users className="h-4 w-4" />}
+          onClick={() => navigate("/users")}
+        />
 
-        {/* Total Categories */}
-        <Card className="cursor-pointer" onClick={() => navigate("/categories")}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Categories
-            </CardTitle>
-            <div className="rounded-full bg-primary/10 p-3 text-primary">
-              <Layers className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.total_categories.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Total Categories"
+          value={stats.total_categories.toLocaleString()}
+          icon={<Layers className="h-4 w-4" />}
+          onClick={() => navigate("/categories")}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -289,6 +236,47 @@ export function AdminDashboard() {
   )
 }
 
+interface StatCardProps {
+  title: string
+  value: React.ReactNode
+  icon: React.ReactNode
+  onClick?: () => void
+}
+
+function StatCard({ title, value, icon, onClick }: StatCardProps) {
+  return (
+    <Card className={onClick ? "cursor-pointer" : ""} onClick={onClick}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {title}
+        </CardTitle>
+        <div className="rounded-full bg-primary/10 p-3 text-primary">
+          {icon}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function StatCardSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <Skeleton className="h-4 w-24" />
+        <div className="rounded-full bg-muted p-3">
+          <Skeleton className="h-4 w-4" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-7 w-20" />
+      </CardContent>
+    </Card>
+  )
+}
+
 // Static heights for skeleton chart bars (in pixels)
 const SKELETON_BAR_HEIGHTS = [35, 55, 40, 70, 45, 60, 30, 50, 65, 25, 45, 55]
 
@@ -302,58 +290,12 @@ function DashboardSkeleton() {
       </div>
 
       {/* Stats Cards Skeleton */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Total Revenue Card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <Skeleton className="h-4 w-24" />
-            <div className="rounded-full bg-muted p-3">
-              <Skeleton className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-7 w-32" />
-          </CardContent>
-        </Card>
-
-        {/* Total Orders Card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <Skeleton className="h-4 w-24" />
-            <div className="rounded-full bg-muted p-3">
-              <Skeleton className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-7 w-20" />
-          </CardContent>
-        </Card>
-
-        {/* Total Products Card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <Skeleton className="h-4 w-24" />
-            <div className="rounded-full bg-muted p-3">
-              <Skeleton className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-7 w-20" />
-          </CardContent>
-        </Card>
-
-        {/* Total Users Card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <Skeleton className="h-4 w-24" />
-            <div className="rounded-full bg-muted p-3">
-              <Skeleton className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-7 w-16" />
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+        <StatCardSkeleton />
       </div>
 
       {/* Recent Orders and Chart Skeleton */}
