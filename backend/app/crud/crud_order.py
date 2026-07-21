@@ -143,7 +143,7 @@ class CRUDOrder:
                 detail=f"Cannot cancel order with status '{order.status}'",
             )
         
-        # Restore stock if payment was confirmed (was confirmed or shipped before cancellation)
+        # Restore stock if payment was confirmed (or shipped before cancellation)
         if order.status in [OrderStatus.confirmed, OrderStatus.shipped]:
             for item in order.items:
                 item.product.stock_quantity += item.quantity
@@ -154,6 +154,12 @@ class CRUDOrder:
         return order
 
     def update_status(self, db: Session, order: Order, new_status: OrderStatus) -> Order:
+        if new_status == OrderStatus.cancelled and order.status not in [OrderStatus.cancelled, OrderStatus.delivered]:
+            # Restore stock if payment was confirmed (or shipped before cancellation)
+            if order.status in [OrderStatus.confirmed, OrderStatus.shipped]:
+                for item in order.items:
+                    item.product.stock_quantity += item.quantity
+
         order.status = new_status
         db.commit()
         db.refresh(order)

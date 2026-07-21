@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+import uuid
 from typing import Any
 
 import razorpay
@@ -11,9 +12,10 @@ from app.api.deps import get_current_active_user, get_db
 from app.core.config import settings
 from app.crud.crud_order import order_crud
 from app.crud.crud_cart import cart_crud
-from app.models.order import OrderStatus
+from app.models.order import Order, OrderItem, OrderStatus
 from app.models.payment import Payment, PaymentStatus
 from app.models.user import User
+from app.schemas.order import OrderOut
 from app.schemas.payment import PaymentCreate, PaymentCreateOut, PaymentOut, PaymentVerify
 from app.schemas.response import ApiResponse
 from app.utils.email import send_order_confirmation_email
@@ -43,41 +45,32 @@ def create_payment_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    order = order_crud.get_by_id(db, order_id=payment_in.order_id)
-    if not order or order.user_id != current_user.id:
-        raise HTTPException(status_code=404, detail="Order not found")
-    if order.status != OrderStatus.pending:
-        raise HTTPException(status_code=400, detail="Payment can be created only for pending orders")
+    """Create payment record without requiring existing order."""
+    cart = cart_crud.get_cart_by_user(db, user_id=current_user.id)
+    if not cart.items:
+        raise HTTPException(status_code=400, detail="Cart is empty")
 
-    # Cancel any previous non-captured payments for this order
-    previous_payments = (
-        db.query(Payment)
-        .filter(
-            Payment.order_id == order.id,
-            Payment.status == PaymentStatus.created,
-        )
-        .all()
-    )
-    for p in previous_payments:
-        p.status = PaymentStatus.cancelled
-    if previous_payments:
-        db.commit()
+    # Calculate total from cart
+    total = sum(item.product.price * item.quantity for item in cart.items)
 
-    amount = _amount_to_paise(order.total_amount)
+    amount = _amount_to_paise(total)
     razorpay_order = _get_razorpay_client().order.create(
         {
             "amount": amount,
             "currency": settings.RAZORPAY_CURRENCY,
-            "receipt": str(order.id)[:40],
+            "receipt": str(current_user.id)[:40],
             "payment_capture": 1,
-            "notes": {"order_id": str(order.id), "user_id": str(current_user.id)},
+            "notes": {
+                "user_id": str(current_user.id),
+                "shipping_address": payment_in.shipping_address.dict(),
+                "notes": payment_in.notes or "",
+            },
         }
     )
 
     payment = Payment(
-        order_id=order.id,
         user_id=current_user.id,
-        amount=order.total_amount,
+        amount=total,
         currency=settings.RAZORPAY_CURRENCY,
         provider_order_id=razorpay_order["id"],
         status=PaymentStatus.created,
@@ -89,7 +82,6 @@ def create_payment_order(
     return ApiResponse(
         message="Payment order created",
         data=PaymentCreateOut(
-            order_id=order.id,
             razorpay_order_id=razorpay_order["id"],
             amount=amount,
             currency=settings.RAZORPAY_CURRENCY,
@@ -98,21 +90,17 @@ def create_payment_order(
     )
 
 
-@router.post("/verify", response_model=ApiResponse[PaymentOut])
+@router.post("/verify", response_model=ApiResponse[OrderOut])
 def verify_payment(
     payment_in: PaymentVerify,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    order = order_crud.get_by_id(db, order_id=payment_in.order_id)
-    if not order or order.user_id != current_user.id:
-        raise HTTPException(status_code=404, detail="Order not found")
-
+    """Verify payment signature, then CREATE order from cart with confirmed status."""
     payment = (
         db.query(Payment)
         .filter(
-            Payment.order_id == order.id,
             Payment.user_id == current_user.id,
             Payment.provider_order_id == payment_in.razorpay_order_id,
         )
@@ -137,24 +125,65 @@ def verify_payment(
         db.commit()
         raise HTTPException(status_code=400, detail="Invalid payment signature")
 
+    # Get cart
+    cart = cart_crud.get_cart_by_user(db, user_id=current_user.id)
+    if not cart.items:
+        raise HTTPException(status_code=400, detail="Cart is empty")
+
+    # Get shipping address from payment notes
+    razorpay_data = json.loads(payment.raw_response)
+    shipping_notes = razorpay_data.get("notes", {})
+    shipping_addr = shipping_notes.get("shipping_address", {})
+    order_notes = shipping_notes.get("notes")
+
+    # CREATE ORDER from cart with CONFIRMED status
+    total = sum(item.product.price * item.quantity for item in cart.items)
+    order = Order(
+        user_id=current_user.id,
+        status=OrderStatus.confirmed,
+        total_amount=round(total, 2),
+        shipping_name=shipping_addr.get("name", ""),
+        shipping_phone=shipping_addr.get("phone"),
+        shipping_address_line1=shipping_addr.get("address_line1", ""),
+        shipping_address_line2=shipping_addr.get("address_line2"),
+        shipping_city=shipping_addr.get("city", ""),
+        shipping_state=shipping_addr.get("state", ""),
+        shipping_postal_code=shipping_addr.get("postal_code", ""),
+        shipping_country=shipping_addr.get("country", ""),
+        notes=order_notes,
+    )
+    db.add(order)
+    db.flush()  # Get order.id
+
+    # Add items from cart to order
+    for cart_item in cart.items:
+        order_item = OrderItem(
+            order_id=order.id,
+            product_id=cart_item.product_id,
+            quantity=cart_item.quantity,
+            unit_price=cart_item.product.price,
+        )
+        db.add(order_item)
+
+    db.commit()
+
+    # Update payment status + link to order
     payment.provider_payment_id = payment_in.razorpay_payment_id
     payment.provider_signature = payment_in.razorpay_signature
     payment.status = PaymentStatus.captured
-    order.status = OrderStatus.confirmed
-
+    payment.order_id = order.id
     db.add(payment)
-    db.add(order)
     db.commit()
 
-    # Decrement stock after payment confirmed
+    # Decrement stock (ONLY after order confirmed)
     for item in order.items:
         item.product.stock_quantity -= item.quantity
     db.commit()
 
-    # Clear cart only after payment is confirmed
-    cart = cart_crud.get_cart_by_user(db, user_id=current_user.id)
+    # Clear cart
     cart_crud.clear_cart(db, cart_id=cart.id)
-    
+
+    # Send confirmation email
     background_tasks.add_task(
         send_order_confirmation_email,
         email_to=current_user.email,
@@ -179,5 +208,5 @@ def verify_payment(
         )
     )
 
-    db.refresh(payment)
-    return ApiResponse(message="Payment verified successfully", data=payment)
+    db.refresh(order)
+    return ApiResponse(message="Payment verified. Order created.", data=order)

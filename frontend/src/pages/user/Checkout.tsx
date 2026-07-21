@@ -71,8 +71,8 @@ export function CheckoutPage() {
   const onSubmit = async (data: CheckoutForm) => {
     setIsProcessing(true)
     try {
-      // Step 1 — Create order (status: pending, cart cleared)
-      const orderRes = await ordersApi.placeOrder({
+      // Step 1 — Validate cart (no order created)
+      await ordersApi.placeOrder({
         shipping_address: {
           name: data.name,
           phone: data.phone || null,
@@ -85,11 +85,20 @@ export function CheckoutPage() {
         },
         notes: data.notes || null,
       })
-      const order = orderRes.data
 
-      // Step 2 — Create Razorpay payment order
+      // Step 2 — Create payment (no order_id needed)
       const payRes = await paymentsApi.createPaymentOrder({
-        order_id: order.id,
+        shipping_address: {
+          name: data.name,
+          phone: data.phone || null,
+          address_line1: data.address_line1,
+          address_line2: data.address_line2 || null,
+          city: data.city,
+          state: data.state,
+          postal_code: data.postal_code,
+          country: data.country,
+        },
+        notes: data.notes || null,
       })
       const { razorpay_order_id, amount, currency, key_id } = payRes.data
 
@@ -100,7 +109,7 @@ export function CheckoutPage() {
         currency: currency as "INR",
         order_id: razorpay_order_id,
         name: "E-Commerce Platform",
-        description: `Order #${order.id.slice(0, 8).toUpperCase()}`,
+        description: `Order Payment`,
         prefill: {
           name: data.name,
           email: user?.email ?? "",
@@ -108,32 +117,30 @@ export function CheckoutPage() {
         },
         theme: { color: "#0ea5e9" },
         handler: async (response) => {
-          // Step 4 — Verify payment on backend
+          // Step 4 — Verify payment (order created here)
           try {
             const verifyRes = await paymentsApi.verifyPayment({
-              order_id: order.id,
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             })
-            await refreshCart() // cart cleared on backend after verify — sync frontend
+            const order = verifyRes.data // Order created HERE on backend
+            await refreshCart() // cart cleared on backend
             toast.success(verifyRes.message)
             navigate(`/orders/${order.id}`)
           } catch (err) {
             toast.error(
               err instanceof Error ? err.message : "Payment verification failed"
             )
-            navigate(`/orders/${order.id}`)
+            navigate("/cart")
           } finally {
             setIsProcessing(false)
           }
         },
         modal: {
           ondismiss: () => {
-            toast.info(
-              "Payment cancelled. Your order is saved — you can pay from Orders page."
-            )
-            navigate(`/orders/${order.id}`)
+            toast.info("Payment cancelled. Try again.")
+            navigate("/cart")
             setIsProcessing(false)
           },
         },

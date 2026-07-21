@@ -3,9 +3,9 @@ import type { ApiResponse } from "@/types/api"
 import type {
   PaymentCreate,
   PaymentCreateOut,
-  PaymentOut,
   PaymentVerify,
 } from "@/types/payment"
+import type { OrderOut } from "@/types/order"
 
 export const paymentsApi = {
   createPaymentOrder: (
@@ -13,6 +13,6 @@ export const paymentsApi = {
   ): Promise<ApiResponse<PaymentCreateOut>> =>
     apiClient<PaymentCreateOut>("/payments/create", { method: "POST", data }),
 
-  verifyPayment: (data: PaymentVerify): Promise<ApiResponse<PaymentOut>> =>
-    apiClient<PaymentOut>("/payments/verify", { method: "POST", data }),
+  verifyPayment: (data: PaymentVerify): Promise<ApiResponse<OrderOut>> =>
+    apiClient<OrderOut>("/payments/verify", { method: "POST", data }),
 }
