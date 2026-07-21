@@ -33,7 +33,9 @@ export const usersApi = {
     })
   },
 
-  getUserDetails: async (userId: string): Promise<ApiResponse<UserDetailOut>> => {
+  getUserDetails: async (
+    userId: string
+  ): Promise<ApiResponse<UserDetailOut>> => {
     return apiClient<UserDetailOut>(`/users/${userId}/details`, {
       method: "GET",
     })

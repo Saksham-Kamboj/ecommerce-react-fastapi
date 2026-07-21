@@ -137,8 +137,8 @@ export function UserDetailPage() {
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         {/* Contact Info Card */}
-        <Card className="overflow-hidden transition-all hover:shadow-sm p-0">
-          <CardHeader className="bg-muted/30 border-b p-2">
+        <Card className="overflow-hidden p-0 transition-all hover:shadow-sm">
+          <CardHeader className="border-b bg-muted/30 p-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <User className="h-5 w-5 text-primary" />
               Contact Details
@@ -177,7 +177,7 @@ export function UserDetailPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-dashed bg-muted/20 p-3 mb-2">
+            <div className="mb-2 rounded-lg border border-dashed bg-muted/20 p-3">
               <p className="mb-1 text-xs font-medium text-muted-foreground">
                 Bio
               </p>
@@ -189,8 +189,8 @@ export function UserDetailPage() {
         </Card>
 
         {/* Shipping Address Card */}
-        <Card className="overflow-hidden transition-all hover:shadow-sm p-0">
-          <CardHeader className="bg-muted/30 border-b p-2">
+        <Card className="overflow-hidden p-0 transition-all hover:shadow-sm">
+          <CardHeader className="border-b bg-muted/30 p-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <MapPin className="h-4 w-4 text-primary" />
               Shipping Address
@@ -342,7 +342,7 @@ export function UserDetailPage() {
                             ? "Paid"
                             : order.payment_status
                               ? order.payment_status.charAt(0).toUpperCase() +
-                              order.payment_status.slice(1)
+                                order.payment_status.slice(1)
                               : "Pending"}
                         </Badge>
                       </TableCell>

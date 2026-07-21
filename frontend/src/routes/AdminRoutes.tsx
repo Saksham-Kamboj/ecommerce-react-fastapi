@@ -11,7 +11,9 @@ const UsersPage = lazy(() =>
   import("@/pages/admin/Users").then((m) => ({ default: m.UsersPage }))
 )
 const UserDetailPage = lazy(() =>
-  import("@/pages/admin/UserDetail").then((m) => ({ default: m.UserDetailPage }))
+  import("@/pages/admin/UserDetail").then((m) => ({
+    default: m.UserDetailPage,
+  }))
 )
 const ProductsPage = lazy(() => import("@/pages/admin/Products"))
 const CategoriesPage = lazy(() => import("@/pages/admin/Categories"))
