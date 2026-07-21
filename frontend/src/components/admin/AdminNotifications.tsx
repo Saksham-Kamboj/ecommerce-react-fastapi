@@ -76,7 +76,7 @@ export function AdminNotifications() {
           </span>
         )}
       </PopoverTrigger>
-      <PopoverContent className="w-80 gap-0 p-0" align="end">
+      <PopoverContent className="w-fit gap-0 p-0" align="end">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <h4 className="text-sm font-semibold">Notifications</h4>
           {unreadCount > 0 && (
