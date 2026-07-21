@@ -2,10 +2,24 @@ import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { usersApi } from "@/lib/api/users"
 import type { UserDetailOut } from "@/types/admin"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { User, Phone, MapPin, Calendar, Clock, ShoppingBag, Mail } from "lucide-react"
+import {
+  User,
+  Phone,
+  MapPin,
+  Calendar,
+  Clock,
+  ShoppingBag,
+  Mail,
+} from "lucide-react"
 import { format } from "date-fns"
 import {
   Table,
@@ -45,7 +59,9 @@ export function UserDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
         <h2 className="mb-2 text-2xl font-bold">User Not Found</h2>
-        <p className="mb-6 text-muted-foreground">The user you are looking for does not exist.</p>
+        <p className="mb-6 text-muted-foreground">
+          The user you are looking for does not exist.
+        </p>
         <Button onClick={() => navigate("/users")}>Back to Users</Button>
       </div>
     )
@@ -53,7 +69,12 @@ export function UserDetailPage() {
 
   const getInitials = (name?: string | null, email?: string | null) => {
     if (name) {
-      return name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()
+      return name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .substring(0, 2)
+        .toUpperCase()
     }
     if (email) {
       return email.substring(0, 2).toUpperCase()
@@ -62,33 +83,48 @@ export function UserDetailPage() {
   }
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-3">
       {/* Header / Hero Section */}
-      <div className="relative overflow-hidden rounded-2xl border bg-card shadow-sm">
+      <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
         {/* Gradient Banner */}
-        <div className="h-32 w-full bg-gradient-to-r from-primary/10 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10" />
+        <div className="h-20 w-full bg-gradient-to-r from-primary/10 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10" />
 
-        <div className="relative px-6 pb-6 pt-2 sm:px-10">
+        <div className="relative px-6 pt-2 pb-4">
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end">
             {/* Avatar */}
-            <Avatar className="-mt-16 h-24 w-24 rounded-2xl border-4 border-card shadow-lg ring-1 ring-border sm:-mt-20 sm:h-32 sm:w-32">
-              <AvatarImage src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user.email}`} />
-              <AvatarFallback className="bg-primary/5 text-2xl font-bold text-primary">
+            <Avatar className="-mt-12 h-20 w-20 rounded-xl border-4 border-card shadow-md ring-1 ring-border sm:-mt-14 sm:h-24 sm:w-24">
+              <AvatarImage
+                src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user.email}`}
+              />
+              <AvatarFallback className="bg-primary/5 text-xl font-bold text-primary">
                 {getInitials(user.full_name, user.email)}
               </AvatarFallback>
             </Avatar>
 
-            <div className="flex-1 space-y-1 sm:pb-2">
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">{user.full_name || "Unknown User"}</h1>
+            <div className="flex-1 space-y-1 sm:pb-1">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                {user.full_name || "Unknown User"}
+              </h1>
               <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5"><Mail className="h-4 w-4" />{user.email}</span>
-                <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" />Joined {format(new Date(user.created_at), "MMM d, yyyy")}</span>
-                <span className="flex items-center gap-1.5 text-xs font-mono">ID: {user.id.split("-")[0]}</span>
+                <span className="flex items-center gap-1.5">
+                  <Mail className="h-4 w-4" />
+                  {user.email}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4" />
+                  Joined {format(new Date(user.created_at), "MMM d, yyyy")}
+                </span>
+                <span className="flex items-center gap-1.5 font-mono text-xs">
+                  ID: {user.id}
+                </span>
               </div>
             </div>
 
             <div className="flex items-center gap-3 sm:pb-4">
-              <Badge variant={user.is_active ? "default" : "secondary"} className="px-3 py-1 text-sm shadow-sm">
+              <Badge
+                variant={user.is_active ? "default" : "secondary"}
+                className="px-3 py-1 text-sm shadow-sm"
+              >
                 {user.is_active ? "Active" : "Inactive"}
               </Badge>
             </div>
@@ -96,75 +132,111 @@ export function UserDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         {/* Contact Info Card */}
-        <Card className="overflow-hidden transition-all hover:shadow-md lg:col-span-1">
-          <CardHeader className="bg-muted/50 pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
+        <Card className="overflow-hidden transition-all hover:shadow-sm p-0">
+          <CardHeader className="bg-muted/30 border-b p-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <User className="h-5 w-5 text-primary" />
               Contact Details
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6 pt-6">
-            <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Phone className="h-5 w-5" />
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Phone className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Phone Number
+                  </p>
+                  <p className="font-medium text-foreground">
+                    {user.phone || "Not provided"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Phone Number</p>
-                <p className="font-medium text-foreground">{user.phone || "Not provided"}</p>
+
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Calendar className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Date of Birth
+                  </p>
+                  <p className="font-medium text-foreground">
+                    {user.date_of_birth
+                      ? format(new Date(user.date_of_birth), "MMM d, yyyy")
+                      : "Not provided"}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Calendar className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Date of Birth</p>
-                <p className="font-medium text-foreground">{user.date_of_birth ? format(new Date(user.date_of_birth), "MMM d, yyyy") : "Not provided"}</p>
-              </div>
-            </div>
-
-            <div className="space-y-2 rounded-xl border border-dashed bg-muted/30 p-4">
-              <p className="text-sm font-medium text-muted-foreground">Bio</p>
-              <p className="text-sm text-foreground">{user.bio || "No bio available for this user."}</p>
+            <div className="rounded-lg border border-dashed bg-muted/20 p-3">
+              <p className="mb-1 text-xs font-medium text-muted-foreground">
+                Bio
+              </p>
+              <p className="text-sm text-foreground">
+                {user.bio || "No bio available for this user."}
+              </p>
             </div>
           </CardContent>
         </Card>
 
         {/* Shipping Address Card */}
-        <Card className="overflow-hidden transition-all hover:shadow-md lg:col-span-2">
-          <CardHeader className="bg-muted/50 pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <MapPin className="h-5 w-5 text-primary" />
+        <Card className="overflow-hidden transition-all hover:shadow-sm p-0">
+          <CardHeader className="bg-muted/30 border-b p-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <MapPin className="h-4 w-4 text-primary" />
               Shipping Address
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="">
             {user.address_line1 || user.city || user.country ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-3">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Street Address</p>
-                    <p className="mt-1 font-medium text-foreground">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Street Address
+                    </p>
+                    <p className="mt-0.5 text-sm font-medium text-foreground">
                       {user.address_line1}
-                      {user.address_line2 && <><br />{user.address_line2}</>}
+                      {user.address_line2 && (
+                        <>
+                          <br />
+                          {user.address_line2}
+                        </>
+                      )}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">City & State</p>
-                    <p className="mt-1 font-medium text-foreground">{user.city}{user.state ? `, ${user.state}` : ""}</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      City & State
+                    </p>
+                    <p className="mt-0.5 text-sm font-medium text-foreground">
+                      {user.city}
+                      {user.state ? `, ${user.state}` : ""}
+                    </p>
                   </div>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Postal Code</p>
-                    <p className="mt-1 font-medium text-foreground">{user.postal_code || "—"}</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Postal Code
+                    </p>
+                    <p className="mt-0.5 text-sm font-medium text-foreground">
+                      {user.postal_code || "—"}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Country</p>
-                    <p className="mt-1 font-medium text-foreground">{user.country || "—"}</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Country
+                    </p>
+                    <p className="mt-0.5 text-sm font-medium text-foreground">
+                      {user.country || "—"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -174,7 +246,9 @@ export function UserDetailPage() {
                   <MapPin className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold">No Address Provided</h3>
-                <p className="mt-1 text-sm text-muted-foreground">This user hasn't added a shipping address yet.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  This user hasn't added a shipping address yet.
+                </p>
               </div>
             )}
           </CardContent>
@@ -188,9 +262,7 @@ export function UserDetailPage() {
             <ShoppingBag className="h-5 w-5 text-primary" />
             User Orders
           </CardTitle>
-          <CardDescription>
-            All orders placed by this user.
-          </CardDescription>
+          <CardDescription>All orders placed by this user.</CardDescription>
         </CardHeader>
         <CardContent>
           {!user.recent_orders || user.recent_orders.length === 0 ? (
@@ -214,36 +286,63 @@ export function UserDetailPage() {
                 <TableBody>
                   {user.recent_orders.map((order) => (
                     <TableRow key={order.id}>
-                      <TableCell className="font-mono text-xs">{order.id.split("-")[0]}</TableCell>
-                      <TableCell>{format(new Date(order.created_at), "MMM d, yyyy")}</TableCell>
-                      <TableCell>{order.items_count}</TableCell>
-                      <TableCell>₹{order.total_amount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {order.id.split("-")[0]}
+                      </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={
-                          order.payment_status === "captured" ? "border-green-200 bg-green-100 text-green-700" :
-                            order.payment_status === "failed" ? "border-red-200 bg-red-100 text-red-700" :
-                              order.payment_status === "refunded" ? "border-orange-200 bg-orange-100 text-orange-700" :
-                                "border-amber-200 bg-amber-100 text-amber-700"
-                        }>
+                        {format(new Date(order.created_at), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell>{order.items_count}</TableCell>
+                      <TableCell>
+                        ₹
+                        {order.total_amount.toLocaleString("en-IN", {
+                          maximumFractionDigits: 0,
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            order.payment_status === "captured"
+                              ? "border-green-200 bg-green-100 text-green-700"
+                              : order.payment_status === "failed"
+                                ? "border-red-200 bg-red-100 text-red-700"
+                                : order.payment_status === "refunded"
+                                  ? "border-orange-200 bg-orange-100 text-orange-700"
+                                  : "border-amber-200 bg-amber-100 text-amber-700"
+                          }
+                        >
                           {order.payment_status === "captured"
                             ? "Paid"
                             : order.payment_status
-                              ? order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)
+                              ? order.payment_status.charAt(0).toUpperCase() +
+                                order.payment_status.slice(1)
                               : "Pending"}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={
-                          order.status === "delivered" ? "border-green-200 bg-green-100 text-green-700" :
-                            order.status === "cancelled" ? "border-red-200 bg-red-100 text-red-700" :
-                              order.status === "shipped" ? "border-blue-200 bg-blue-100 text-blue-700" :
-                                "border-amber-200 bg-amber-100 text-amber-700"
-                        }>
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        <Badge
+                          variant="outline"
+                          className={
+                            order.status === "delivered"
+                              ? "border-green-200 bg-green-100 text-green-700"
+                              : order.status === "cancelled"
+                                ? "border-red-200 bg-red-100 text-red-700"
+                                : order.status === "shipped"
+                                  ? "border-blue-200 bg-blue-100 text-blue-700"
+                                  : "border-amber-200 bg-amber-100 text-amber-700"
+                          }
+                        >
+                          {order.status.charAt(0).toUpperCase() +
+                            order.status.slice(1)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => navigate(`/orders/${order.id}`)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/orders/${order.id}`)}
+                        >
                           View Details
                         </Button>
                       </TableCell>
