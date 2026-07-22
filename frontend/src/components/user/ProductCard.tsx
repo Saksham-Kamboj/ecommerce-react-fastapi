@@ -73,20 +73,20 @@ export function ProductCard({ product, hideActions = false }: Readonly<ProductCa
         {/* Wishlist Button */}
         {!hideActions && (
           <Button
-          variant="secondary"
-          size="icon"
-          onClick={() => toggle(product.id)}
-          className={cn(
-            "absolute top-3 right-3 h-8 w-8 rounded-full bg-background/80 shadow-sm backdrop-blur transition-all group-hover:opacity-100",
-            wishlisted
-              ? "text-red-500 opacity-100 hover:text-red-600"
-              : "text-muted-foreground opacity-0 hover:text-red-500"
-          )}
-        >
-          <Heart className={cn("h-4 w-4", wishlisted && "fill-red-500")} />
-          <span className="sr-only">
-            {wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          </span>
+            variant="secondary"
+            size="icon"
+            onClick={() => toggle(product.id)}
+            className={cn(
+              "absolute top-3 right-3 h-8 w-8 rounded-full bg-background/80 shadow-sm backdrop-blur transition-all group-hover:opacity-100",
+              wishlisted
+                ? "text-red-500 opacity-100 hover:text-red-600"
+                : "text-muted-foreground opacity-0 hover:text-red-500"
+            )}
+          >
+            <Heart className={cn("h-4 w-4", wishlisted && "fill-red-500")} />
+            <span className="sr-only">
+              {wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            </span>
           </Button>
         )}
       </div>
@@ -94,7 +94,7 @@ export function ProductCard({ product, hideActions = false }: Readonly<ProductCa
       {/* Content Area */}
       <div className="flex flex-1 flex-col gap-1 p-2">
         <Link to={`/products/${product.id}`}>
-          <h3 className="line-clamp-2 cursor-pointer leading-tight font-semibold tracking-tight hover:text-primary hover:underline">
+          <h3 className="line-clamp-1 cursor-pointer leading-tight font-semibold tracking-tight hover:text-primary hover:underline">
             {product.name}
           </h3>
         </Link>
@@ -139,13 +139,13 @@ export function ProductCard({ product, hideActions = false }: Readonly<ProductCa
       {!hideActions && (
         <div className="p-2 pt-0">
           <Button
-          className="w-full transition-all"
-          variant={isInCart ? "secondary" : "default"}
-          disabled={product.stock_quantity === 0}
-          onClick={handleCartClick}
-        >
-          <ShoppingCart className="mr-2 h-4 w-4" />
-          {isInCart ? `Added (${cartItem.quantity}) - Add More` : "Add to Cart"}
+            className="w-full transition-all"
+            variant={isInCart ? "secondary" : "default"}
+            disabled={product.stock_quantity === 0}
+            onClick={handleCartClick}
+          >
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            {isInCart ? `Added (${cartItem.quantity}) - Add More` : "Add to Cart"}
           </Button>
         </div>
       )}
