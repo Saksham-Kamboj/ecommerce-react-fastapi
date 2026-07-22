@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useParams, useNavigate, Link } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import { productsApi } from "@/lib/api/products"
 import { reviewsApi } from "@/lib/api/reviews"
 import type { ProductOut, ProductCreate, ProductUpdate } from "@/types/product"
@@ -19,6 +19,7 @@ import { Loader2, Package, MoreVertical, Pencil, Trash2 } from "lucide-react"
 import { ProductReviews } from "@/components/user/ProductReviews"
 import { StarRating } from "@/components/ui/star-rating"
 import { ProductImageGallery } from "@/components/ProductImageGallery"
+import { ProductCard } from "@/components/user/ProductCard"
 import { useAuth } from "@/contexts/AuthContext"
 import { ProductFormDialog } from "@/components/admin/products/ProductFormDialog"
 import { ProductDeleteDialog } from "@/components/admin/products/ProductDeleteDialog"
@@ -169,8 +170,8 @@ export function AdminProductDetailPage() {
   const rating =
     reviews.length > 0
       ? (
-          reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
-        ).toFixed(1)
+        reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+      ).toFixed(1)
       : "0.0"
   const reviewsCount = reviews.length
 
@@ -287,43 +288,7 @@ export function AdminProductDetailPage() {
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {relatedProducts.map((rp) => (
-              <Link
-                to={`/products/${rp.id}`}
-                key={rp.id}
-                className="group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md"
-              >
-                <div className="relative aspect-square w-full overflow-hidden bg-white p-2">
-                  {rp.image_url ? (
-                    <img
-                      src={rp.image_url}
-                      alt={rp.name}
-                      className="h-full w-full rounded-sm object-contain mix-blend-multiply"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center rounded-sm bg-muted p-6 text-muted-foreground">
-                      <Package className="h-10 w-10 opacity-50" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-1 flex-col gap-1 p-3">
-                  <h3 className="line-clamp-2 leading-tight font-semibold tracking-tight group-hover:text-primary group-hover:underline">
-                    {rp.name}
-                  </h3>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-lg font-bold">
-                      ₹{rp.price.toFixed(2)}
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className="flex items-center gap-1"
-                    >
-                      <Package className="h-3.5 w-3.5" />
-                      {rp.stock_quantity} in stock
-                    </Badge>
-                  </div>
-                </div>
-              </Link>
+              <ProductCard key={rp.id} product={rp} hideActions={true} />
             ))}
           </div>
         </div>
