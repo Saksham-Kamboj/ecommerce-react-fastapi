@@ -2,12 +2,9 @@ import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/AuthContext"
-import { useCart } from "@/contexts/CartContext"
-import { useWishlist } from "@/contexts/WishlistContext"
 import { profileApi } from "@/lib/api/profile"
 import { ordersApi } from "@/lib/api/orders"
 import type { UserUpdateSelf, ChangePasswordRequest } from "@/types/auth"
-import type { WishlistItemOut } from "@/types/wishlist"
 import { AddressManager } from "@/components/user/AddressManager"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -32,11 +29,13 @@ import {
   Loader2Icon,
   MapPinIcon,
   PackageIcon,
-  ShoppingCartIcon,
   UserIcon,
-  HeartIcon,
-  Trash2Icon,
   ShieldCheckIcon,
+  LayoutGridIcon,
+  WalletIcon,
+  TicketIcon,
+  ClockIcon,
+  CheckCircle2Icon,
 } from "lucide-react"
 import { ErrorMessage } from "@/components/ui/error-message"
 
@@ -57,31 +56,14 @@ function formatDate(iso: string) {
   })
 }
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  sub,
-}: Readonly<{
-  icon: React.ElementType
-  label: string
-  value: string
-  sub?: string
-}>) {
-  return (
-    <Card>
-      <CardContent className="flex items-center gap-4 p-5">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-          <Icon className="h-5 w-5 text-primary" />
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">{label}</p>
-          <p className="text-lg leading-tight font-semibold">{value}</p>
-          {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
-        </div>
-      </CardContent>
-    </Card>
-  )
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleString("en-IN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+  })
 }
 
 function FieldRow({
@@ -96,17 +78,166 @@ function FieldRow({
   )
 }
 
-function getOrdersSub(totalOrders: number | null): string {
-  if (totalOrders === null) return "Loading..."
-  if (totalOrders === 0) return "No orders yet"
-  return `${totalOrders} order${totalOrders !== 1 ? "s" : ""} placed`
+// ── Overview Bento Grid ────────────────────────────────────────────────────────
+function OverviewBento({
+  user,
+  totalOrders,
+  loginTime,
+}: Readonly<{
+  user: NonNullable<ReturnType<typeof useAuth>["user"]>
+  totalOrders: number | null
+  loginTime: string | null
+}>) {
+  let profileCompletion = 50
+
+  if (user.full_name && user.phone && user.date_of_birth) {
+    profileCompletion = 100
+  } else if (user.full_name && user.phone) {
+    profileCompletion = 75
+  }
+
+  return (
+    <div className="grid gap-4 md:grid-cols-4">
+      {/* Welcome Card (Hero) */}
+      <Card className="overflow-hidden rounded-lg border-primary/10 bg-primary/5 p-0 shadow-sm backdrop-blur-md md:col-span-3">
+        <CardContent className="p-5">
+          <div className="flex flex-col items-center gap-5 md:flex-row">
+            <Avatar className="h-24 w-24 border-4 border-background shadow-sm">
+              <AvatarFallback className="bg-primary text-3xl text-primary-foreground">
+                {getInitials(user.full_name || user.email)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-2 text-center md:text-left">
+              <h2 className="text-3xl font-bold tracking-tight">
+                Hello, {user.full_name?.split(" ")[0] || "User"} 👋
+              </h2>
+              <p className="text-muted-foreground">{user.email}</p>
+              <div className="mt-2 flex items-center justify-center gap-2 md:justify-start">
+                <Badge
+                  variant={user.role === "superadmin" ? "default" : "secondary"}
+                >
+                  {user.role === "superadmin" ? "Admin" : "Customer"}
+                </Badge>
+                {user.is_active && (
+                  <Badge
+                    variant="outline"
+                    className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  >
+                    Active
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Profile Completion */}
+      <Card className="rounded-lg p-0 shadow-sm">
+        <CardContent className="flex h-full flex-col justify-center gap-3 p-5">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Profile
+              </p>
+              <p className="text-2xl font-bold">{profileCompletion}%</p>
+            </div>
+            <UserIcon className="h-8 w-8 text-primary/30" />
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+            <div
+              className="h-full bg-primary transition-all duration-500"
+              style={{ width: `${profileCompletion}%` }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Stats Bento */}
+      <Card className="rounded-lg p-0 shadow-sm transition-shadow hover:shadow-md">
+        <CardContent className="flex h-full flex-col justify-between gap-2 p-5">
+          <div className="w-fit rounded-full bg-primary/10 p-2.5">
+            <PackageIcon className="h-5 w-5 text-primary" />
+          </div>
+          <div className="mt-1">
+            <p className="text-sm font-medium text-muted-foreground">
+              Total Orders
+            </p>
+            <p className="text-2xl font-bold">{totalOrders ?? "—"}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-lg p-0 shadow-sm transition-shadow hover:shadow-md">
+        <CardContent className="flex h-full flex-col justify-between gap-2 p-5">
+          <div className="w-fit rounded-full bg-primary/10 p-2.5">
+            <WalletIcon className="h-5 w-5 text-primary" />
+          </div>
+          <div className="mt-1">
+            <p className="text-sm font-medium text-muted-foreground">
+              Wallet Balance
+            </p>
+            <p className="text-2xl font-bold">₹0.00</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-lg p-0 shadow-sm transition-shadow hover:shadow-md">
+        <CardContent className="flex h-full flex-col justify-between gap-2 p-5">
+          <div className="w-fit rounded-full bg-primary/10 p-2.5">
+            <TicketIcon className="h-5 w-5 text-primary" />
+          </div>
+          <div className="mt-1">
+            <p className="text-sm font-medium text-muted-foreground">
+              Active Coupons
+            </p>
+            <p className="text-2xl font-bold">0</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Activity Timeline */}
+      <Card className="rounded-lg shadow-sm transition-shadow hover:shadow-md">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <ClockIcon className="h-5 w-5 text-primary" />
+            Recent Activity
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-5">
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="mt-1 rounded-full bg-primary/10 p-1.5">
+                <CheckCircle2Icon className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Logged in successfully</p>
+                <p className="text-xs text-muted-foreground">
+                  {loginTime ? formatDateTime(loginTime) : "Just now"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="mt-1 rounded-full bg-primary/10 p-1.5">
+                <UserIcon className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Profile Created</p>
+                <p className="text-xs text-muted-foreground">
+                  {formatDate(user.created_at)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export function UserProfile() {
-  const { user, updateUser, isAuthError } = useAuth()
-  const { cart } = useCart()
-  const { items: wishlistItems, toggle: toggleWishlist } = useWishlist()
+  const { user, updateUser, isAuthError, loginTime } = useAuth()
   const [totalOrders, setTotalOrders] = useState<number | null>(null)
 
   useEffect(() => {
@@ -118,238 +249,138 @@ export function UserProfile() {
 
   if (!user) return null
 
-  const displayName = user.full_name || user.email.split("@")[0]
-  const initials = getInitials(displayName)
-  const cartItemCount = cart?.items?.length ?? 0
-  const cartTotal = cart?.total_price ?? 0
-
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex w-full flex-col gap-4 pb-10">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-primary">
-          My Profile
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          My Account
         </h1>
-        <p className="text-muted-foreground">
-          View and manage your account details.
+        <p className="mt-1 text-muted-foreground">
+          Manage your profile, addresses, and security settings.
         </p>
       </div>
-
-      <Card>
-        <CardContent className="flex flex-col items-center gap-4 p-6 sm:flex-row sm:items-start">
-          <Avatar className="h-20 w-20">
-            <AvatarFallback className="rounded-full bg-primary/10 text-2xl font-bold text-primary">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 text-center sm:text-left">
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-              <h2 className="text-2xl font-bold">{displayName}</h2>
-              <Badge
-                variant={user.role === "superadmin" ? "default" : "secondary"}
-                className="capitalize"
-              >
-                {user.role === "superadmin" ? "Admin" : "Customer"}
-              </Badge>
-              {user.is_active && (
-                <Badge
-                  variant="outline"
-                  className="border-green-500 text-green-600 dark:text-green-400"
-                >
-                  Active
-                </Badge>
-              )}
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Member since {formatDate(user.created_at)}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
 
       {isAuthError ? (
         <ErrorMessage message={isAuthError} />
       ) : (
-        <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatCard
-              icon={PackageIcon}
-              label="Total Orders"
-              value={totalOrders === null ? "—" : String(totalOrders)}
-              sub={getOrdersSub(totalOrders)}
-            />
-            <StatCard
-              icon={ShoppingCartIcon}
-              label="Cart Items"
-              value={String(cartItemCount)}
-              sub={
-                cartItemCount > 0
-                  ? `₹${cartTotal.toFixed(2)} total`
-                  : "Cart is empty"
-              }
-            />
-            <StatCard
-              icon={HeartIcon}
-              label="Wishlist"
-              value={String(wishlistItems.length)}
-              sub={
-                wishlistItems.length > 0
-                  ? `${wishlistItems.length} saved`
-                  : "No items saved"
-              }
-            />
-            <StatCard
-              icon={MapPinIcon}
-              label="Addresses"
-              value="Manage"
-              sub="in Address tab"
-            />
-          </div>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="h-auto w-full flex-wrap justify-start gap-1 shadow-sm">
+            <TabsTrigger
+              value="overview"
+              className="flex items-center gap-1.5 rounded-lg px-4 py-2.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+            >
+              <LayoutGridIcon className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger
+              value="account"
+              className="flex items-center gap-1.5 rounded-lg px-4 py-2.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+            >
+              <UserIcon className="h-4 w-4" />
+              Account
+            </TabsTrigger>
+            <TabsTrigger
+              value="address"
+              className="flex items-center gap-1.5 rounded-lg px-4 py-2.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+            >
+              <MapPinIcon className="h-4 w-4" />
+              Addresses
+            </TabsTrigger>
+            <TabsTrigger
+              value="security"
+              className="flex items-center gap-1.5 rounded-lg px-4 py-2.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+            >
+              <KeyRoundIcon className="h-4 w-4" />
+              Security
+            </TabsTrigger>
+            <TabsTrigger
+              value="payment"
+              className="flex items-center gap-1.5 rounded-lg px-4 py-2.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+            >
+              <CreditCardIcon className="h-4 w-4" />
+              Payment
+            </TabsTrigger>
+          </TabsList>
 
-          <Tabs defaultValue="account">
-            <TabsList className="mb-2 w-full justify-start gap-1 p-1">
-              <TabsTrigger
-                value="account"
-                className="flex items-center gap-1.5"
-              >
-                <UserIcon className="h-3.5 w-3.5" />
-                Account
-              </TabsTrigger>
-              <TabsTrigger
-                value="address"
-                className="flex items-center gap-1.5"
-              >
-                <MapPinIcon className="h-3.5 w-3.5" />
-                Address
-              </TabsTrigger>
-              <TabsTrigger
-                value="wishlist"
-                className="flex items-center gap-1.5"
-              >
-                <HeartIcon className="h-3.5 w-3.5" />
-                Wishlist
-                {wishlistItems.length > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="ml-0.5 h-4 px-1 text-[10px]"
-                  >
-                    {wishlistItems.length}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="cart" className="flex items-center gap-1.5">
-                <ShoppingCartIcon className="h-3.5 w-3.5" />
-                Cart
-                {cartItemCount > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="ml-0.5 h-4 px-1 text-[10px]"
-                  >
-                    {cartItemCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger
-                value="security"
-                className="flex items-center gap-1.5"
-              >
-                <KeyRoundIcon className="h-3.5 w-3.5" />
-                Security
-              </TabsTrigger>
-              <TabsTrigger
-                value="payment"
-                className="flex items-center gap-1.5"
-              >
-                <CreditCardIcon className="h-3.5 w-3.5" />
-                Payment
-              </TabsTrigger>
-            </TabsList>
+          <TabsContent value="overview" className="focus-visible:outline-none">
+            <OverviewBento
+              user={user}
+              totalOrders={totalOrders}
+              loginTime={loginTime}
+            />
+          </TabsContent>
 
-            <TabsContent value="account">
-              <div className="grid gap-4 lg:grid-cols-2">
-                <AccountViewCard user={user} />
-                <AccountEditCard user={user} updateUser={updateUser} />
-              </div>
-            </TabsContent>
+          <TabsContent value="account" className="focus-visible:outline-none">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <AccountViewCard user={user} />
+              <AccountEditCard user={user} updateUser={updateUser} />
+            </div>
+          </TabsContent>
 
-            <TabsContent value="address">
+          <TabsContent value="address" className="focus-visible:outline-none">
+            <div className="rounded-lg bg-white/50 p-1 shadow-sm backdrop-blur-sm dark:bg-black/20">
               <AddressManager />
-            </TabsContent>
+            </div>
+          </TabsContent>
 
-            <TabsContent value="wishlist">
-              <WishlistCard items={wishlistItems} onRemove={toggleWishlist} />
-            </TabsContent>
+          <TabsContent value="security" className="focus-visible:outline-none">
+            <ChangePasswordCard />
+          </TabsContent>
 
-            <TabsContent value="cart">
-              <CartSummaryCard
-                cart={cart}
-                cartItemCount={cartItemCount}
-                cartTotal={cartTotal}
-              />
-            </TabsContent>
-
-            <TabsContent value="security">
-              <ChangePasswordCard />
-            </TabsContent>
-
-            <TabsContent value="payment">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <CreditCardIcon className="h-4 w-4" />
-                    Payment Settings
-                  </CardTitle>
-                  <CardDescription>
-                    Manage your payment methods and billing preferences securely
-                    via Razorpay.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="px-6 pb-5">
-                  <div className="flex flex-col gap-5 pt-2">
-                    <div className="flex flex-col gap-4 rounded-lg border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                          <ShieldCheckIcon className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold">
-                            Razorpay Secure
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Your transactions are secured with 256-bit
-                            encryption.
-                          </p>
-                        </div>
+          <TabsContent value="payment" className="focus-visible:outline-none">
+            <Card className="rounded-lg shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CreditCardIcon className="h-5 w-5 text-primary" />
+                  Payment Settings
+                </CardTitle>
+                <CardDescription>
+                  Manage your payment methods and billing preferences securely
+                  via Razorpay.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <div className="flex flex-col gap-5 pt-2">
+                  <div className="flex flex-col gap-4 rounded-lg border border-primary/20 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                        <ShieldCheckIcon className="h-6 w-6 text-primary" />
                       </div>
-                      <Badge
-                        variant="outline"
-                        className="w-fit border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      >
-                        Active
-                      </Badge>
+                      <div>
+                        <p className="text-sm font-bold">Razorpay Secure</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          Your transactions are secured with 256-bit encryption.
+                        </p>
+                      </div>
                     </div>
+                    <Badge
+                      variant="outline"
+                      className="w-fit border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    >
+                      Active
+                    </Badge>
+                  </div>
 
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-medium">
-                        Saved Payment Methods
-                      </h4>
-                      <div className="flex min-h-35 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
-                        <CreditCardIcon className="h-8 w-8 text-muted-foreground/40" />
-                        <p className="text-sm font-medium">
-                          No cards saved yet
-                        </p>
-                        <p className="max-w-xs text-xs text-muted-foreground">
-                          You can save a new card or UPI handle during your next
-                          checkout for faster payments.
-                        </p>
-                      </div>
+                  <div className="mt-4 space-y-3">
+                    <h4 className="text-sm font-semibold">
+                      Saved Payment Methods
+                    </h4>
+                    <div className="flex min-h-40 flex-col items-center justify-center gap-3 rounded-lg border border-dashed bg-muted/20 text-center">
+                      <CreditCardIcon className="h-8 w-8 text-muted-foreground/40" />
+                      <p className="text-sm font-semibold">
+                        No cards saved yet
+                      </p>
+                      <p className="max-w-xs text-xs text-muted-foreground">
+                        You can save a new card or UPI handle during your next
+                        checkout for faster payments.
+                      </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   )
@@ -360,12 +391,14 @@ function AccountViewCard({
   user,
 }: Readonly<{ user: NonNullable<ReturnType<typeof useAuth>["user"]> }>) {
   return (
-    <Card>
+    <Card className="rounded-lg shadow-sm">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Account Details</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <UserIcon className="h-5 w-5 text-primary" /> Account Details
+        </CardTitle>
         <CardDescription>Your current profile information.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-1 px-6 pb-5">
+      <CardContent className="space-y-1 px-6 pb-6">
         <FieldRow label="Full Name" value={user.full_name} />
         <Separator />
         <FieldRow label="Email" value={user.email} />
@@ -421,30 +454,32 @@ function AccountEditCard({
     }
   }
   return (
-    <Card>
-      <CardHeader className="pb-2">
+    <Card className="rounded-lg shadow-sm">
+      <CardHeader className="pb-4">
         <CardTitle className="text-base">Edit Account</CardTitle>
         <CardDescription>Update your personal information.</CardDescription>
       </CardHeader>
-      <CardContent className="px-6 pb-5">
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <div className="grid gap-1.5">
+      <CardContent className="px-6 pb-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+          <div className="grid gap-2">
             <Label htmlFor="full_name">Full Name</Label>
             <Input
               id="full_name"
               placeholder="John Doe"
+              className="rounded-lg"
               {...register("full_name")}
             />
           </div>
-          <div className="grid gap-1.5">
+          <div className="grid gap-2">
             <Label htmlFor="phone">Phone Number</Label>
             <Input
               id="phone"
               placeholder="+91 98765 43210"
+              className="rounded-lg"
               {...register("phone")}
             />
           </div>
-          <div className="grid gap-1.5">
+          <div className="grid gap-2">
             <Label
               htmlFor="date_of_birth"
               className="flex items-center gap-1.5"
@@ -455,232 +490,29 @@ function AccountEditCard({
             <Input
               id="date_of_birth"
               type="date"
+              className="rounded-lg"
               {...register("date_of_birth")}
             />
           </div>
-          <div className="grid gap-1.5">
+          <div className="grid gap-2">
             <Label htmlFor="bio">Bio</Label>
             <Textarea
               id="bio"
               placeholder="Tell us a bit about yourself..."
               rows={3}
+              className="resize-none rounded-lg"
               {...register("bio")}
             />
           </div>
           <Button
             type="submit"
             disabled={isSaving || !isDirty}
-            className="w-full sm:w-auto"
+            className="mt-2 w-full rounded-lg sm:w-auto"
           >
             {isSaving && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
             Save Changes
           </Button>
         </form>
-      </CardContent>
-    </Card>
-  )
-}
-
-// ── Wishlist Card ──────────────────────────────────────────────────────────────
-function WishlistCard({
-  items,
-  onRemove,
-}: Readonly<{
-  items: WishlistItemOut[]
-  onRemove: (productId: string) => Promise<void>
-}>) {
-  const { cart, addToCart, updateQuantity } = useCart()
-
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-base">My Wishlist</CardTitle>
-            <CardDescription>
-              Products you have saved for later.
-            </CardDescription>
-          </div>
-          {items.length > 0 && (
-            <Badge variant="secondary">{items.length} items</Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="px-6 pb-5">
-        {items.length === 0 ? (
-          <div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
-            <HeartIcon className="h-8 w-8 text-muted-foreground/40" />
-            <p className="text-sm font-medium">Your wishlist is empty</p>
-            <p className="text-xs text-muted-foreground">
-              Click the heart icon on any product to save it.
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-1">
-            {items.map((item) => {
-              const cartItem = cart?.items.find(
-                (c) => c.product.id === item.product_id
-              )
-              const isInCart = !!cartItem
-              return (
-                <div key={item.id}>
-                  <div className="flex items-center justify-between gap-3 py-2.5">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white">
-                      {item.product.image_url ? (
-                        <img
-                          src={item.product.image_url}
-                          alt={item.product.name}
-                          className="h-full w-full object-contain p-1 mix-blend-multiply"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-muted/50">
-                          <PackageIcon className="h-5 w-5 text-muted-foreground/30" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {item.product.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        ₹{item.product.price.toFixed(2)} ·{" "}
-                        {item.product.stock_quantity > 0 ? (
-                          <span className="text-emerald-500">
-                            {item.product.stock_quantity} in stock
-                          </span>
-                        ) : (
-                          <span className="text-destructive">Out of stock</span>
-                        )}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-1">
-                      <Button
-                        variant={isInCart ? "secondary" : "outline"}
-                        size="sm"
-                        className="h-7 gap-1 px-2 text-xs"
-                        disabled={item.product.stock_quantity === 0}
-                        onClick={() => {
-                          if (isInCart && cartItem) {
-                            updateQuantity(cartItem.id, cartItem.quantity + 1)
-                          } else {
-                            addToCart(item.product_id, 1)
-                          }
-                        }}
-                      >
-                        <ShoppingCartIcon className="h-3 w-3" />
-                        {isInCart
-                          ? `Add More (${cartItem.quantity})`
-                          : "Add to Cart"}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        onClick={() => onRemove(item.product_id)}
-                      >
-                        <Trash2Icon className="h-4 w-4" />
-                        <span className="sr-only">Remove from wishlist</span>
-                      </Button>
-                    </div>
-                  </div>
-                  <Separator />
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-// ── Cart Summary ───────────────────────────────────────────────────────────────
-function CartSummaryCard({
-  cart,
-  cartItemCount,
-  cartTotal,
-}: Readonly<{
-  cart: ReturnType<typeof useCart>["cart"]
-  cartItemCount: number
-  cartTotal: number
-}>) {
-  const { removeFromCart } = useCart()
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-base">Cart Summary</CardTitle>
-            <CardDescription>Items currently in your cart.</CardDescription>
-          </div>
-          {cartItemCount > 0 && (
-            <Badge variant="secondary">{cartItemCount} items</Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="px-6 pb-5">
-        {cartItemCount === 0 ? (
-          <div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
-            <ShoppingCartIcon className="h-8 w-8 text-muted-foreground/40" />
-            <p className="text-sm font-medium">Your cart is empty</p>
-            <p className="text-xs text-muted-foreground">
-              Add products to see them here.
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-1">
-            {cart?.items.map((item) => (
-              <div key={item.id}>
-                <div className="flex items-center justify-between gap-3 py-2.5">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white">
-                    {item.product.image_url ? (
-                      <img
-                        src={item.product.image_url}
-                        alt={item.product.name}
-                        className="h-full w-full object-contain p-1 mix-blend-multiply"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-muted/50">
-                        <ShoppingCartIcon className="h-5 w-5 text-muted-foreground/30" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
-                      {item.product.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Qty: {item.quantity} × ₹{item.product.price.toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="ml-4 flex shrink-0 items-center gap-3">
-                    <p className="text-sm font-semibold">
-                      ₹{(item.product.price * item.quantity).toFixed(2)}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeFromCart(item.id)}
-                    >
-                      <Trash2Icon className="h-4 w-4" />
-                      <span className="sr-only">Remove from cart</span>
-                    </Button>
-                  </div>
-                </div>
-                <Separator />
-              </div>
-            ))}
-            <div className="flex items-center justify-between pt-3">
-              <span className="text-sm font-medium">Subtotal</span>
-              <span className="text-base font-bold text-primary">
-                ₹{cartTotal.toFixed(2)}
-              </span>
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   )
@@ -711,27 +543,28 @@ function ChangePasswordCard() {
   }
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card>
-        <CardHeader className="pb-2">
+      <Card className="rounded-lg shadow-sm">
+        <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
-            <KeyRoundIcon className="h-4 w-4" />
+            <KeyRoundIcon className="h-5 w-5 text-primary" />
             Change Password
           </CardTitle>
           <CardDescription>
             Enter your current password and choose a new one.
           </CardDescription>
         </CardHeader>
-        <CardContent className="px-6 pb-5">
+        <CardContent className="px-6 pb-6">
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-5"
           >
-            <div className="grid gap-1.5">
+            <div className="grid gap-2">
               <Label htmlFor="current_password">Current Password</Label>
               <Input
                 id="current_password"
                 type="password"
                 placeholder="••••••••"
+                className="rounded-lg"
                 {...register("current_password", {
                   required: "Current password is required",
                 })}
@@ -742,12 +575,13 @@ function ChangePasswordCard() {
                 </p>
               )}
             </div>
-            <div className="grid gap-1.5">
+            <div className="grid gap-2">
               <Label htmlFor="new_password">New Password</Label>
               <Input
                 id="new_password"
                 type="password"
                 placeholder="••••••••"
+                className="rounded-lg"
                 {...register("new_password", {
                   required: "New password is required",
                   minLength: { value: 6, message: "Minimum 6 characters" },
@@ -762,7 +596,7 @@ function ChangePasswordCard() {
             <Button
               type="submit"
               disabled={isSaving}
-              className="w-full sm:w-auto"
+              className="mt-2 w-full rounded-lg sm:w-auto"
             >
               {isSaving && (
                 <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
@@ -772,17 +606,19 @@ function ChangePasswordCard() {
           </form>
         </CardContent>
       </Card>
-      <Card className="border-dashed opacity-70">
+      <Card className="rounded-lg border-dashed opacity-70 shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Two-Factor Authentication</CardTitle>
           <CardDescription>
             Add an extra layer of security to your account.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex min-h-40 flex-col items-center justify-center gap-2 text-center">
-          <KeyRoundIcon className="h-8 w-8 text-muted-foreground/30" />
-          <p className="text-sm font-medium">Coming Soon</p>
-          <p className="text-xs text-muted-foreground">
+        <CardContent className="flex min-h-50 flex-col items-center justify-center gap-3 text-center">
+          <div className="rounded-full bg-muted p-4">
+            <KeyRoundIcon className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <p className="text-sm font-semibold">Coming Soon</p>
+          <p className="max-w-xs text-xs text-muted-foreground">
             2FA via authenticator app or SMS will be available soon.
           </p>
         </CardContent>

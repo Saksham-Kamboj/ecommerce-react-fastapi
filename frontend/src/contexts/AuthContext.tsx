@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (token: string) => void
   logout: () => Promise<void>
   updateUser: (updated: UserOut) => void
+  loginTime: string | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -31,6 +32,9 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [user, setUser] = useState<UserOut | null>(() => {
     const saved = localStorage.getItem("user")
     return saved ? JSON.parse(saved) : null
+  })
+  const [loginTime, setLoginTime] = useState<string | null>(() => {
+    return localStorage.getItem("loginTime")
   })
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isAuthError, setIsAuthError] = useState<string | null>(null)
@@ -63,6 +67,10 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const login = useCallback((newToken: string) => {
     localStorage.setItem("token", newToken)
     setToken(newToken)
+
+    const now = new Date().toISOString()
+    localStorage.setItem("loginTime", now)
+    setLoginTime(now)
   }, [])
 
   const logout = useCallback(async () => {
@@ -73,8 +81,10 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     } finally {
       localStorage.removeItem("token")
       localStorage.removeItem("user")
+      localStorage.removeItem("loginTime")
       setToken(null)
       setUser(null)
+      setLoginTime(null)
     }
   }, [])
 
@@ -93,8 +103,9 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
       login,
       logout,
       updateUser,
+      loginTime,
     }),
-    [token, user, isAuthError, isLoading, login, logout, updateUser]
+    [token, user, isAuthError, isLoading, login, logout, updateUser, loginTime]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
