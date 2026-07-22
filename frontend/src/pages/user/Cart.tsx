@@ -12,9 +12,11 @@ import {
   ShoppingBag,
   ArrowRight,
 } from "lucide-react"
+import { ErrorMessage } from "@/components/ui/error-message"
 
 export function UserCart() {
-  const { cart, updateQuantity, removeFromCart, clearCart } = useCart()
+  const { cart, updateQuantity, removeFromCart, clearCart, isCartError } =
+    useCart()
   const navigate = useNavigate()
 
   const items = cart?.items ?? []
@@ -42,8 +44,11 @@ export function UserCart() {
 
       <Separator />
 
+      {/* Error state */}
+      {isCartError && <ErrorMessage message={isCartError} />}
+
       {/* Empty state */}
-      {!hasItems && (
+      {!hasItems && !isCartError && (
         <div className="flex min-h-100 flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <ShoppingCart className="h-8 w-8 text-muted-foreground/50" />

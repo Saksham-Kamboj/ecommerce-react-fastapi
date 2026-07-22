@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { toast } from "sonner"
 import { productsApi } from "@/lib/api/products"
 import type { ProductOut } from "@/types/product"
 import { ProductCard } from "@/components/user/ProductCard"
@@ -25,10 +24,12 @@ import {
 } from "@/components/ui/pagination"
 import { SearchInput } from "@/components/ui/search-input"
 import PageLoading from "@/components/custom/PageLoading"
+import { ErrorMessage } from "@/components/ui/error-message"
 
 export function UserProducts() {
   const [products, setProducts] = useState<ProductOut[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [page, setPage] = useState(1)
@@ -83,11 +84,8 @@ export function UserProducts() {
           })
         }
       } catch (err) {
-        if (!ignore) {
-          toast.error(
-            err instanceof Error ? err.message : "Failed to load products"
-          )
-        }
+        console.error("Failed to load products", err)
+        setError(err instanceof Error ? err.message : "Failed to load products")
       } finally {
         if (!ignore) {
           setIsLoading(false)
@@ -175,8 +173,9 @@ export function UserProducts() {
       </div>
 
       {isLoading && <PageLoading minHeight="min-h-135" />}
+      {error && <ErrorMessage message={error} />}
 
-      {!isLoading && products.length === 0 && (
+      {!isLoading && !error && products.length === 0 && (
         <div className="flex min-h-100 flex-col items-center justify-center rounded-lg border border-dashed text-center">
           <h2 className="mb-2 text-xl font-semibold">No products found</h2>
           <p className="text-muted-foreground">
@@ -185,7 +184,7 @@ export function UserProducts() {
         </div>
       )}
 
-      {!isLoading && products.length > 0 && (
+      {!isLoading && !error && products.length > 0 && (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {products.map((product) => (

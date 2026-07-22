@@ -5,9 +5,10 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ProductCard } from "@/components/user/ProductCard"
 import { Heart } from "lucide-react"
+import { ErrorMessage } from "@/components/ui/error-message"
 
 export function UserWishlist() {
-  const { items } = useWishlist()
+  const { items, isWishlistError } = useWishlist()
   const navigate = useNavigate()
 
   return (
@@ -31,8 +32,10 @@ export function UserWishlist() {
 
       <Separator />
 
+      {isWishlistError && <ErrorMessage message={isWishlistError} />}
+
       {/* Empty state */}
-      {items.length === 0 && (
+      {items.length === 0 && !isWishlistError && (
         <div className="flex min-h-100 flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <Heart className="h-8 w-8 text-muted-foreground/50" />

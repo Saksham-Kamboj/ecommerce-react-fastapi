@@ -22,6 +22,7 @@ import type { Pagination as PaginationType } from "@/types/api"
 import { cn } from "@/lib/utils"
 
 import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react"
+import { ErrorMessage } from "./error-message"
 
 export interface ColumnDef<T> {
   header: string | React.ReactNode
@@ -62,7 +63,7 @@ export function DataTable<T>({
   sortColumn,
   sortOrder,
   onSort,
-}: DataTableProps<T>) {
+}: Readonly<DataTableProps<T>>) {
   const getRowIndex = (rowIndex: number) => {
     if (pagination) {
       return (
@@ -78,7 +79,7 @@ export function DataTable<T>({
           <TableHeader className="sticky top-0 z-10 bg-card shadow-xs after:absolute after:right-0 after:bottom-0 after:left-0 after:h-px after:bg-border">
             <TableRow className="border-none hover:bg-transparent">
               {showIndex && (
-                <TableHead className="w-[50px] border-b pl-4 text-center font-semibold">
+                <TableHead className="w-12.5 border-b pl-4 text-center font-semibold">
                   #
                 </TableHead>
               )}
@@ -99,7 +100,7 @@ export function DataTable<T>({
 
                 return (
                   <TableHead
-                    key={index}
+                    key={index + 1}
                     className={cn(
                       col.className,
                       col.sortable &&
@@ -108,8 +109,7 @@ export function DataTable<T>({
                     )}
                     onClick={() =>
                       col.sortable &&
-                      onSort &&
-                      onSort(col.sortKey || (col.accessorKey as string))
+                      onSort?.(col.sortKey || (col.accessorKey as string))
                     }
                     title={titleText}
                   >
@@ -138,12 +138,12 @@ export function DataTable<T>({
                 {Array.from({ length: 10 }).map((_, index) => (
                   <TableRow key={index} className="hover:bg-transparent">
                     {showIndex && (
-                      <TableCell className="w-[50px] pl-4">
+                      <TableCell className="w-12.5 pl-4">
                         <Skeleton className="h-6 w-6" />
                       </TableCell>
                     )}
                     {columns.map((_, colIndex) => (
-                      <TableCell key={colIndex}>
+                      <TableCell key={colIndex + 1}>
                         <Skeleton className="h-6 w-full" />
                       </TableCell>
                     ))}
@@ -154,9 +154,11 @@ export function DataTable<T>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-32 text-center text-destructive"
+                  className="text-center text-destructive"
                 >
-                  <p>{error}</p>
+                  <ErrorMessage
+                    message={error || "An error occurred while loading data."}
+                  />
                 </TableCell>
               </TableRow>
             ) : data.length === 0 ? (

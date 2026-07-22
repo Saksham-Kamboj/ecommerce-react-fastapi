@@ -13,6 +13,7 @@ import type { UserOut } from "@/types/auth"
 interface AuthContextType {
   token: string | null
   user: UserOut | null
+  isAuthError: string | null
   isAuthenticated: boolean
   isLoading: boolean
   login: (token: string) => void
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     return saved ? JSON.parse(saved) : null
   })
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isAuthError, setIsAuthError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadUser() {
@@ -47,7 +49,8 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
         localStorage.setItem("user", JSON.stringify(response.data))
       } catch (err) {
         console.error("Failed to fetch user profile:", err)
-        // If backend returns 401 (e.g. token expired), we intentionally 
+        setIsAuthError(err instanceof Error ? err.message : "Unknown error")
+        // If backend returns 401 (e.g. token expired), we intentionally
         // do not clear the localStorage to keep the user "logged in" visually.
       } finally {
         setIsLoading(false)
@@ -84,13 +87,14 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     () => ({
       token,
       user,
+      isAuthError,
       isAuthenticated: !!token && !!user,
       isLoading,
       login,
       logout,
       updateUser,
     }),
-    [token, user, isLoading, login, logout, updateUser]
+    [token, user, isAuthError, isLoading, login, logout, updateUser]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

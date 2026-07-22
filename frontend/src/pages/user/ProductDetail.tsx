@@ -17,6 +17,7 @@ import { ProductReviews } from "@/components/user/ProductReviews"
 import { StarRating } from "@/components/ui/star-rating"
 import type { ReviewOut } from "@/types/review"
 import PageLoading from "@/components/custom/PageLoading"
+import { ErrorMessage } from "@/components/ui/error-message"
 
 const GRADIENT_COLORS = [
   "from-blue-500 to-indigo-600",
@@ -41,7 +42,7 @@ export function ProductDetailPage() {
 
   const [product, setProduct] = useState<ProductOut | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState("")
+  const [error, setError] = useState<string | null>(null)
   const [qty, setQty] = useState(1)
 
   // Load product
@@ -56,9 +57,9 @@ export function ProductDetailPage() {
           setIsLoading(false)
         }
       })
-      .catch(() => {
+      .catch((err) => {
         if (!cancelled) {
-          setError("Product not found")
+          setError(err instanceof Error ? err.message : "Product not found")
           setIsLoading(false)
         }
       })
@@ -131,10 +132,14 @@ export function ProductDetailPage() {
     return <PageLoading minHeight="min-h-135" />
   }
 
-  if (error || !product) {
+  if (error) {
+    return <ErrorMessage message={error} />
+  }
+
+  if (!product) {
     return (
       <div className="flex min-h-75 flex-col items-center justify-center gap-4 text-center">
-        <p className="text-destructive">{error || "Product not found"}</p>
+        <p className="text-destructive">Product not found</p>
         <Button variant="outline" onClick={() => navigate("/products")}>
           Back to Products
         </Button>

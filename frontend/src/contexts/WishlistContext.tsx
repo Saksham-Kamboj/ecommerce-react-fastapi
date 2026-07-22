@@ -16,6 +16,7 @@ interface WishlistContextType {
   items: WishlistItemOut[]
   isLoading: boolean
   isWishlistOpen: boolean
+  isWishlistError: string | null
   setIsWishlistOpen: (open: boolean) => void
   isWishlisted: (productId: string) => boolean
   toggle: (productId: string) => Promise<void>
@@ -30,6 +31,7 @@ export function WishlistProvider({
   const [items, setItems] = useState<WishlistItemOut[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isWishlistOpen, setIsWishlistOpen] = useState(false)
+  const [isWishlistError, setIsWishlistError] = useState<string | null>(null)
   const { isAuthenticated } = useAuth()
 
   // Track whether the initial load has been triggered
@@ -44,8 +46,11 @@ export function WishlistProvider({
     try {
       const res = await wishlistApi.getWishlist()
       setItems(res.data ?? [])
-    } catch {
+    } catch (err) {
       setItems([])
+      setIsWishlistError(
+        err instanceof Error ? err.message : "Failed to load wishlist"
+      )
     } finally {
       setIsLoading(false)
     }
@@ -106,8 +111,17 @@ export function WishlistProvider({
       isWishlisted,
       toggle,
       refresh,
+      isWishlistError,
     }),
-    [items, isLoading, isWishlistOpen, isWishlisted, toggle, refresh]
+    [
+      items,
+      isLoading,
+      isWishlistOpen,
+      isWishlisted,
+      toggle,
+      refresh,
+      isWishlistError,
+    ]
   )
 
   return (

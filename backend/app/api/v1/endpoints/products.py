@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db, get_current_active_admin
+from app.api.deps import get_db, get_current_active_admin, get_current_user
 from app.crud.crud_product import product as product_crud
 from app.schemas.product import ProductCreate, ProductOut, ProductUpdate
 from app.schemas.response import ApiResponse, PaginatedApiResponse, paginate
@@ -55,10 +55,11 @@ def list_products(
     category_id: uuid.UUID | None = Query(None),
     sort_by: str = Query("created_at"),
     sort_order: str = Query("desc"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """
-    Retrieve all active products. Publicly accessible.
+    Retrieve all active products. Requires authentication.
     """
     total_items = product_crud.count_active(db, search=search, category_id=category_id)
     products = product_crud.get_multi_active(db, skip=skip, limit=limit, search=search, category_id=category_id, sort_by=sort_by, sort_order=sort_order)
@@ -71,9 +72,13 @@ def list_products(
     )
 
 @router.get("/{product_id}", response_model=ApiResponse[ProductOut])
-def get_product(product_id: uuid.UUID, db: Session = Depends(get_db)):
+def get_product(
+    product_id: uuid.UUID, 
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
     """
-    Get a specific product by ID. Publicly accessible.
+    Get a specific product by ID. Requires authentication.
     """
     db_product = product_crud.get(db, id=product_id)
     if not db_product:

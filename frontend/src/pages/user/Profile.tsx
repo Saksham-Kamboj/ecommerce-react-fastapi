@@ -38,6 +38,7 @@ import {
   Trash2Icon,
   ShieldCheckIcon,
 } from "lucide-react"
+import { ErrorMessage } from "@/components/ui/error-message"
 
 function getInitials(name: string) {
   return name
@@ -103,7 +104,7 @@ function getOrdersSub(totalOrders: number | null): string {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export function UserProfile() {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, isAuthError } = useAuth()
   const { cart } = useCart()
   const { items: wishlistItems, toggle: toggleWishlist } = useWishlist()
   const [totalOrders, setTotalOrders] = useState<number | null>(null)
@@ -166,162 +167,190 @@ export function UserProfile() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard
-          icon={PackageIcon}
-          label="Total Orders"
-          value={totalOrders === null ? "—" : String(totalOrders)}
-          sub={getOrdersSub(totalOrders)}
-        />
-        <StatCard
-          icon={ShoppingCartIcon}
-          label="Cart Items"
-          value={String(cartItemCount)}
-          sub={
-            cartItemCount > 0
-              ? `₹${cartTotal.toFixed(2)} total`
-              : "Cart is empty"
-          }
-        />
-        <StatCard
-          icon={HeartIcon}
-          label="Wishlist"
-          value={String(wishlistItems.length)}
-          sub={
-            wishlistItems.length > 0
-              ? `${wishlistItems.length} saved`
-              : "No items saved"
-          }
-        />
-        <StatCard
-          icon={MapPinIcon}
-          label="Addresses"
-          value="Manage"
-          sub="in Address tab"
-        />
-      </div>
-
-      <Tabs defaultValue="account">
-        <TabsList className="mb-2 w-full justify-start gap-1 p-1">
-          <TabsTrigger value="account" className="flex items-center gap-1.5">
-            <UserIcon className="h-3.5 w-3.5" />
-            Account
-          </TabsTrigger>
-          <TabsTrigger value="address" className="flex items-center gap-1.5">
-            <MapPinIcon className="h-3.5 w-3.5" />
-            Address
-          </TabsTrigger>
-          <TabsTrigger value="wishlist" className="flex items-center gap-1.5">
-            <HeartIcon className="h-3.5 w-3.5" />
-            Wishlist
-            {wishlistItems.length > 0 && (
-              <Badge
-                variant="secondary"
-                className="ml-0.5 h-4 px-1 text-[10px]"
-              >
-                {wishlistItems.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="cart" className="flex items-center gap-1.5">
-            <ShoppingCartIcon className="h-3.5 w-3.5" />
-            Cart
-            {cartItemCount > 0 && (
-              <Badge
-                variant="secondary"
-                className="ml-0.5 h-4 px-1 text-[10px]"
-              >
-                {cartItemCount}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-1.5">
-            <KeyRoundIcon className="h-3.5 w-3.5" />
-            Security
-          </TabsTrigger>
-          <TabsTrigger value="payment" className="flex items-center gap-1.5">
-            <CreditCardIcon className="h-3.5 w-3.5" />
-            Payment
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="account">
-          <div className="grid gap-4 lg:grid-cols-2">
-            <AccountViewCard user={user} />
-            <AccountEditCard user={user} updateUser={updateUser} />
+      {isAuthError ? (
+        <ErrorMessage message={isAuthError} />
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatCard
+              icon={PackageIcon}
+              label="Total Orders"
+              value={totalOrders === null ? "—" : String(totalOrders)}
+              sub={getOrdersSub(totalOrders)}
+            />
+            <StatCard
+              icon={ShoppingCartIcon}
+              label="Cart Items"
+              value={String(cartItemCount)}
+              sub={
+                cartItemCount > 0
+                  ? `₹${cartTotal.toFixed(2)} total`
+                  : "Cart is empty"
+              }
+            />
+            <StatCard
+              icon={HeartIcon}
+              label="Wishlist"
+              value={String(wishlistItems.length)}
+              sub={
+                wishlistItems.length > 0
+                  ? `${wishlistItems.length} saved`
+                  : "No items saved"
+              }
+            />
+            <StatCard
+              icon={MapPinIcon}
+              label="Addresses"
+              value="Manage"
+              sub="in Address tab"
+            />
           </div>
-        </TabsContent>
 
-        <TabsContent value="address">
-          <AddressManager />
-        </TabsContent>
-
-        <TabsContent value="wishlist">
-          <WishlistCard items={wishlistItems} onRemove={toggleWishlist} />
-        </TabsContent>
-
-        <TabsContent value="cart">
-          <CartSummaryCard
-            cart={cart}
-            cartItemCount={cartItemCount}
-            cartTotal={cartTotal}
-          />
-        </TabsContent>
-
-        <TabsContent value="security">
-          <ChangePasswordCard />
-        </TabsContent>
-
-        <TabsContent value="payment">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <CreditCardIcon className="h-4 w-4" />
-                Payment Settings
-              </CardTitle>
-              <CardDescription>
-                Manage your payment methods and billing preferences securely via
-                Razorpay.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="px-6 pb-5">
-              <div className="flex flex-col gap-5 pt-2">
-                <div className="flex flex-col gap-4 rounded-lg border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <ShieldCheckIcon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold">Razorpay Secure</p>
-                      <p className="text-xs text-muted-foreground">
-                        Your transactions are secured with 256-bit encryption.
-                      </p>
-                    </div>
-                  </div>
+          <Tabs defaultValue="account">
+            <TabsList className="mb-2 w-full justify-start gap-1 p-1">
+              <TabsTrigger
+                value="account"
+                className="flex items-center gap-1.5"
+              >
+                <UserIcon className="h-3.5 w-3.5" />
+                Account
+              </TabsTrigger>
+              <TabsTrigger
+                value="address"
+                className="flex items-center gap-1.5"
+              >
+                <MapPinIcon className="h-3.5 w-3.5" />
+                Address
+              </TabsTrigger>
+              <TabsTrigger
+                value="wishlist"
+                className="flex items-center gap-1.5"
+              >
+                <HeartIcon className="h-3.5 w-3.5" />
+                Wishlist
+                {wishlistItems.length > 0 && (
                   <Badge
-                    variant="outline"
-                    className="w-fit border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    variant="secondary"
+                    className="ml-0.5 h-4 px-1 text-[10px]"
                   >
-                    Active
+                    {wishlistItems.length}
                   </Badge>
-                </div>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="cart" className="flex items-center gap-1.5">
+                <ShoppingCartIcon className="h-3.5 w-3.5" />
+                Cart
+                {cartItemCount > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="ml-0.5 h-4 px-1 text-[10px]"
+                  >
+                    {cartItemCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="security"
+                className="flex items-center gap-1.5"
+              >
+                <KeyRoundIcon className="h-3.5 w-3.5" />
+                Security
+              </TabsTrigger>
+              <TabsTrigger
+                value="payment"
+                className="flex items-center gap-1.5"
+              >
+                <CreditCardIcon className="h-3.5 w-3.5" />
+                Payment
+              </TabsTrigger>
+            </TabsList>
 
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium">Saved Payment Methods</h4>
-                  <div className="flex min-h-35 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
-                    <CreditCardIcon className="h-8 w-8 text-muted-foreground/40" />
-                    <p className="text-sm font-medium">No cards saved yet</p>
-                    <p className="max-w-xs text-xs text-muted-foreground">
-                      You can save a new card or UPI handle during your next
-                      checkout for faster payments.
-                    </p>
-                  </div>
-                </div>
+            <TabsContent value="account">
+              <div className="grid gap-4 lg:grid-cols-2">
+                <AccountViewCard user={user} />
+                <AccountEditCard user={user} updateUser={updateUser} />
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+
+            <TabsContent value="address">
+              <AddressManager />
+            </TabsContent>
+
+            <TabsContent value="wishlist">
+              <WishlistCard items={wishlistItems} onRemove={toggleWishlist} />
+            </TabsContent>
+
+            <TabsContent value="cart">
+              <CartSummaryCard
+                cart={cart}
+                cartItemCount={cartItemCount}
+                cartTotal={cartTotal}
+              />
+            </TabsContent>
+
+            <TabsContent value="security">
+              <ChangePasswordCard />
+            </TabsContent>
+
+            <TabsContent value="payment">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <CreditCardIcon className="h-4 w-4" />
+                    Payment Settings
+                  </CardTitle>
+                  <CardDescription>
+                    Manage your payment methods and billing preferences securely
+                    via Razorpay.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="px-6 pb-5">
+                  <div className="flex flex-col gap-5 pt-2">
+                    <div className="flex flex-col gap-4 rounded-lg border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                          <ShieldCheckIcon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">
+                            Razorpay Secure
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Your transactions are secured with 256-bit
+                            encryption.
+                          </p>
+                        </div>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="w-fit border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                      >
+                        Active
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-medium">
+                        Saved Payment Methods
+                      </h4>
+                      <div className="flex min-h-35 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
+                        <CreditCardIcon className="h-8 w-8 text-muted-foreground/40" />
+                        <p className="text-sm font-medium">
+                          No cards saved yet
+                        </p>
+                        <p className="max-w-xs text-xs text-muted-foreground">
+                          You can save a new card or UPI handle during your next
+                          checkout for faster payments.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </>
+      )}
     </div>
   )
 }
