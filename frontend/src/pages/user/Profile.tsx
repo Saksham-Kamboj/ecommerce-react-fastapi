@@ -8,6 +8,7 @@ import { profileApi } from "@/lib/api/profile"
 import { ordersApi } from "@/lib/api/orders"
 import type { UserUpdateSelf, ChangePasswordRequest } from "@/types/auth"
 import type { WishlistItemOut } from "@/types/wishlist"
+import { AddressManager } from "@/components/user/AddressManager"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -194,9 +195,9 @@ export function UserProfile() {
         />
         <StatCard
           icon={MapPinIcon}
-          label="Address"
-          value={user.city ?? "Not set"}
-          sub={user.country ?? undefined}
+          label="Addresses"
+          value="Manage"
+          sub="in Address tab"
         />
       </div>
 
@@ -252,10 +253,7 @@ export function UserProfile() {
         </TabsContent>
 
         <TabsContent value="address">
-          <div className="grid gap-4 lg:grid-cols-2">
-            <AddressViewCard user={user} />
-            <AddressEditCard user={user} updateUser={updateUser} />
-          </div>
+          <AddressManager />
         </TabsContent>
 
         <TabsContent value="wishlist">
@@ -447,153 +445,6 @@ function AccountEditCard({
           >
             {isSaving && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
             Save Changes
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
-  )
-}
-
-// ── Address View ───────────────────────────────────────────────────────────────
-function AddressViewCard({
-  user,
-}: Readonly<{ user: NonNullable<ReturnType<typeof useAuth>["user"]> }>) {
-  const hasAddress = user.address_line1 || user.city || user.country
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">Saved Address</CardTitle>
-        <CardDescription>Your default delivery address.</CardDescription>
-      </CardHeader>
-      <CardContent className="px-6 pb-5">
-        {hasAddress ? (
-          <div className="space-y-1">
-            <FieldRow label="Address Line 1" value={user.address_line1} />
-            <Separator />
-            <FieldRow label="Address Line 2" value={user.address_line2} />
-            <Separator />
-            <FieldRow label="City" value={user.city} />
-            <Separator />
-            <FieldRow label="State" value={user.state} />
-            <Separator />
-            <FieldRow label="Postal Code" value={user.postal_code} />
-            <Separator />
-            <FieldRow label="Country" value={user.country} />
-          </div>
-        ) : (
-          <div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center">
-            <MapPinIcon className="h-8 w-8 text-muted-foreground/40" />
-            <p className="text-sm font-medium">No address saved</p>
-            <p className="text-xs text-muted-foreground">
-              Add your delivery address on the right.
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-// ── Address Edit ───────────────────────────────────────────────────────────────
-function AddressEditCard({
-  user,
-  updateUser,
-}: Readonly<{
-  user: NonNullable<ReturnType<typeof useAuth>["user"]>
-  updateUser: (u: NonNullable<ReturnType<typeof useAuth>["user"]>) => void
-}>) {
-  const [isSaving, setIsSaving] = useState(false)
-  const {
-    register,
-    handleSubmit,
-    formState: { isDirty },
-  } = useForm<UserUpdateSelf>({
-    defaultValues: {
-      address_line1: user.address_line1 ?? "",
-      address_line2: user.address_line2 ?? "",
-      city: user.city ?? "",
-      state: user.state ?? "",
-      postal_code: user.postal_code ?? "",
-      country: user.country ?? "",
-    },
-  })
-  const onSubmit = async (data: UserUpdateSelf) => {
-    setIsSaving(true)
-    try {
-      const res = await profileApi.updateMe(data)
-      updateUser(res.data)
-      toast.success(res.message)
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to update address."
-      )
-    } finally {
-      setIsSaving(false)
-    }
-  }
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">Edit Address</CardTitle>
-        <CardDescription>Update your delivery address.</CardDescription>
-      </CardHeader>
-      <CardContent className="px-6 pb-5">
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <div className="grid gap-1.5">
-            <Label htmlFor="address_line1">Address Line 1</Label>
-            <Input
-              id="address_line1"
-              placeholder="123, Main Street"
-              {...register("address_line1")}
-            />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="address_line2">Address Line 2 (optional)</Label>
-            <Input
-              id="address_line2"
-              placeholder="Apartment, suite, etc."
-              {...register("address_line2")}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="city">City</Label>
-              <Input id="city" placeholder="Mumbai" {...register("city")} />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="state">State</Label>
-              <Input
-                id="state"
-                placeholder="Maharashtra"
-                {...register("state")}
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="postal_code">Postal Code</Label>
-              <Input
-                id="postal_code"
-                placeholder="400001"
-                {...register("postal_code")}
-              />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="country">Country</Label>
-              <Input
-                id="country"
-                placeholder="India"
-                {...register("country")}
-              />
-            </div>
-          </div>
-          <Button
-            type="submit"
-            disabled={isSaving || !isDirty}
-            className="w-full sm:w-auto"
-          >
-            {isSaving && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
-            Save Address
           </Button>
         </form>
       </CardContent>

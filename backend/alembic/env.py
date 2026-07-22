@@ -11,6 +11,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from app.core.config import settings  # noqa: E402
 from app.db.base import Base  # noqa: E402
 from app.models.user import User  # noqa: E402
+from app.models.address import Address  # noqa: E402
 from app.models.category import Category  # noqa: E402
 from app.models.product import Product  # noqa: E402
 from app.models.cart import Cart, CartItem  # noqa: E402

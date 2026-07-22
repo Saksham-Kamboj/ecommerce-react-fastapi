@@ -137,14 +137,14 @@ export function UserDetailPage() {
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         {/* Contact Info Card */}
-        <Card className="overflow-hidden transition-all hover:shadow-sm p-0">
-          <CardHeader className="bg-muted/30 border-b p-2">
+        <Card className="overflow-hidden p-0 transition-all hover:shadow-sm">
+          <CardHeader className="border-b bg-muted/30 p-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <User className="h-5 w-5 text-primary" />
               Contact Details
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-start gap-3">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -177,7 +177,7 @@ export function UserDetailPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-dashed bg-muted/20 p-3 mb-2">
+            <div className="mb-2 rounded-lg border border-dashed bg-muted/20 p-3">
               <p className="mb-1 text-xs font-medium text-muted-foreground">
                 Bio
               </p>
@@ -188,16 +188,16 @@ export function UserDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Shipping Address Card */}
-        <Card className="overflow-hidden transition-all hover:shadow-sm p-0">
-          <CardHeader className="bg-muted/30 border-b p-2">
+        {/* Default Address Card */}
+        <Card className="overflow-hidden p-0 transition-all hover:shadow-sm">
+          <CardHeader className="border-b bg-muted/30 p-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <MapPin className="h-4 w-4 text-primary" />
-              Shipping Address
+              Default Address
             </CardTitle>
           </CardHeader>
-          <CardContent className="">
-            {user.address_line1 || user.city || user.country ? (
+          <CardContent className="pt-4">
+            {user.default_address ? (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
@@ -209,11 +209,11 @@ export function UserDetailPage() {
                         Street Address
                       </p>
                       <p className="mt-0.5 text-sm font-medium text-foreground">
-                        {user.address_line1}
-                        {user.address_line2 && (
+                        {user.default_address.address_line1}
+                        {user.default_address.address_line2 && (
                           <>
                             <br />
-                            {user.address_line2}
+                            {user.default_address.address_line2}
                           </>
                         )}
                       </p>
@@ -229,8 +229,10 @@ export function UserDetailPage() {
                         City & State
                       </p>
                       <p className="mt-0.5 text-sm font-medium text-foreground">
-                        {user.city}
-                        {user.state ? `, ${user.state}` : ""}
+                        {user.default_address.city}
+                        {user.default_address.state
+                          ? `, ${user.default_address.state}`
+                          : ""}
                       </p>
                     </div>
                   </div>
@@ -246,7 +248,7 @@ export function UserDetailPage() {
                         Postal Code
                       </p>
                       <p className="mt-0.5 text-sm font-medium text-foreground">
-                        {user.postal_code || "—"}
+                        {user.default_address.postal_code || "—"}
                       </p>
                     </div>
                   </div>
@@ -260,7 +262,7 @@ export function UserDetailPage() {
                         Country
                       </p>
                       <p className="mt-0.5 text-sm font-medium text-foreground">
-                        {user.country || "—"}
+                        {user.default_address.country || "—"}
                       </p>
                     </div>
                   </div>
@@ -273,7 +275,7 @@ export function UserDetailPage() {
                 </div>
                 <h3 className="text-lg font-semibold">No Address Provided</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  This user hasn't added a shipping address yet.
+                  This user hasn't added any addresses yet.
                 </p>
               </div>
             )}
@@ -342,7 +344,7 @@ export function UserDetailPage() {
                             ? "Paid"
                             : order.payment_status
                               ? order.payment_status.charAt(0).toUpperCase() +
-                              order.payment_status.slice(1)
+                                order.payment_status.slice(1)
                               : "Pending"}
                         </Badge>
                       </TableCell>
