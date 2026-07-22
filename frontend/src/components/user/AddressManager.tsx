@@ -106,7 +106,7 @@ export function AddressManager() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="max-h-[600px] overflow-y-auto px-6 pb-5">
+        <CardContent className="max-h-150 overflow-y-auto px-6 pb-5">
           {loading ? (
             <div className="flex justify-center p-8">
               <Loader2Icon className="h-6 w-6 animate-spin text-muted-foreground" />
