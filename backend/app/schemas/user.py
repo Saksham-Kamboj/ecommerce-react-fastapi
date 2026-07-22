@@ -41,13 +41,7 @@ class UserUpdateSelf(BaseModel):
     date_of_birth: date | None = None
     bio: str | None = Field(None, max_length=500)
 
-    # Address
-    address_line1: str | None = Field(None, max_length=255)
-    address_line2: str | None = Field(None, max_length=255)
-    city: str | None = Field(None, max_length=100)
-    state: str | None = Field(None, max_length=100)
-    postal_code: str | None = Field(None, max_length=20)
-    country: str | None = Field(None, max_length=100)
+    # Address is now handled separately
 
 
 # Password change (separate endpoint for security)
@@ -68,12 +62,6 @@ class UserOut(BaseModel):
     phone: str | None = None
     date_of_birth: date | None = None
     bio: str | None = None
-    # Address
-    address_line1: str | None = None
-    address_line2: str | None = None
-    city: str | None = None
-    state: str | None = None
-    postal_code: str | None = None
-    country: str | None = None
+    # Address is now handled separately
     created_at: datetime
     updated_at: datetime

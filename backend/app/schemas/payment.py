@@ -5,20 +5,11 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class ShippingAddressIn(BaseModel):
-    name: str = Field(..., min_length=1, max_length=255)
-    phone: Optional[str] = Field(None, max_length=20)
-    address_line1: str = Field(..., min_length=1, max_length=255)
-    address_line2: Optional[str] = Field(None, max_length=255)
-    city: str = Field(..., min_length=1, max_length=100)
-    state: str = Field(..., min_length=1, max_length=100)
-    postal_code: str = Field(..., min_length=1, max_length=20)
-    country: str = Field(..., min_length=1, max_length=100)
-
-
 class PaymentCreate(BaseModel):
-    shipping_address: ShippingAddressIn
-    notes: Optional[str] = Field(None, max_length=500)
+    shipping_address_id: uuid.UUID
+    shipping_name: str = Field(..., min_length=1, max_length=255)
+    shipping_phone: str | None = Field(None, max_length=20)
+    notes: str | None = Field(None, max_length=500)
 
 
 class PaymentCreateOut(BaseModel):

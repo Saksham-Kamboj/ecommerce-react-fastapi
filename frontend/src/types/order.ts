@@ -1,19 +1,10 @@
 export type OrderStatus =
   "pending" | "confirmed" | "shipped" | "delivered" | "cancelled"
 
-export interface ShippingAddress {
-  name: string
-  phone?: string | null
-  address_line1: string
-  address_line2?: string | null
-  city: string
-  state: string
-  postal_code: string
-  country: string
-}
-
 export interface OrderCreate {
-  shipping_address: ShippingAddress
+  shipping_address_id: string
+  shipping_name: string
+  shipping_phone?: string | null
   notes?: string | null
 }
 

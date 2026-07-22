@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { toast } from "sonner"
-import { useRazorpay } from "react-razorpay"
 import { ordersApi } from "@/lib/api/orders"
-import { paymentsApi } from "@/lib/api/payments"
-import { useCart } from "@/contexts/CartContext"
 import type { OrderOut, OrderStatus } from "@/types/order"
 
 import { Badge } from "@/components/ui/badge"
@@ -115,13 +112,10 @@ function OrderProgress({ status }: Readonly<{ status: OrderStatus }>) {
 export function OrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
-  const { Razorpay } = useRazorpay()
-  const { refreshCart } = useCart()
 
   const [order, setOrder] = useState<OrderOut | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isCancelling, setIsCancelling] = useState(false)
-  const [isPayingNow, setIsPayingNow] = useState(false)
 
   useEffect(() => {
     if (!orderId) return
@@ -159,65 +153,6 @@ export function OrderDetailPage() {
     }
   }
 
-  const handlePayNow = async () => {
-    if (!order) return
-    setIsPayingNow(true)
-    try {
-      // 1. Create payment order on backend
-      const res = await paymentsApi.createPaymentOrder({ order_id: order.id })
-      const { razorpay_order_id, amount, currency, key_id } = res.data
-
-      // 2. Open Razorpay checkout via react-razorpay hook
-      const rzp = new Razorpay({
-        key: key_id,
-        amount,
-        currency: currency as "INR",
-        order_id: razorpay_order_id,
-        name: "E-Commerce Platform",
-        description: `Order #${order.id.slice(0, 8).toUpperCase()}`,
-        prefill: {
-          name: order.shipping_name,
-          email: "",
-          contact: order.shipping_phone ?? "",
-        },
-        theme: { color: "#0ea5e9" },
-        handler: async (response) => {
-          // 3. Verify payment signature on backend
-          try {
-            const verifyRes = await paymentsApi.verifyPayment({
-              order_id: order.id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            })
-            toast.success(verifyRes.message)
-            await refreshCart() // sync cart after backend clears it
-            const updated = await ordersApi.getOrder(order.id)
-            setOrder(updated.data)
-          } catch (err) {
-            toast.error(
-              err instanceof Error ? err.message : "Payment verification failed"
-            )
-          } finally {
-            setIsPayingNow(false)
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            toast.info("Payment cancelled")
-            setIsPayingNow(false)
-          },
-        },
-      })
-      rzp.open()
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to initiate payment"
-      )
-      setIsPayingNow(false)
-    }
-  }
-
   if (isLoading) {
     return <PageLoading minHeight="min-h-135" />
   }
@@ -249,26 +184,12 @@ export function OrderDetailPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {order.status === "pending" && (
-            <Button
-              className="gap-2 bg-emerald-600 hover:bg-emerald-700"
-              onClick={handlePayNow}
-              disabled={isPayingNow || isCancelling}
-            >
-              {isPayingNow ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <CreditCard className="h-4 w-4" />
-              )}
-              {isPayingNow ? "Processing..." : "Pay Now"}
-            </Button>
-          )}
           {order.status !== "delivered" && order.status !== "cancelled" && (
             <Button
               variant="outline"
               className="text-destructive hover:text-destructive"
               onClick={handleCancel}
-              disabled={isCancelling || isPayingNow}
+              disabled={isCancelling}
             >
               {isCancelling ? (
                 <>

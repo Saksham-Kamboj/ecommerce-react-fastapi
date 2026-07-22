@@ -7,6 +7,7 @@ from app.api.deps import get_db, get_current_active_user, get_current_active_adm
 from app.models.user import User
 from app.crud.crud_order import order_crud
 from app.crud.crud_cart import cart_crud
+from app.crud.crud_address import address as address_crud
 from app.schemas.order import OrderCreate, OrderOut, OrderStatusUpdate
 from app.schemas.response import ApiResponse, PaginatedApiResponse, paginate
 from app.utils.email import send_order_placed_email, send_order_cancellation_email, send_order_status_update_email
@@ -40,7 +41,12 @@ def place_order(
                 detail=f"Not enough stock for '{cart_item.product.name}'. Available: {cart_item.product.stock_quantity}",
             )
 
-    return ApiResponse(message="Cart validated. Proceed to payment.")
+    # Validate address
+    address = address_crud.get(db, id=order_in.shipping_address_id)
+    if not address or address.user_id != current_user.id:
+        raise HTTPException(status_code=400, detail="Invalid shipping address")
+
+    return ApiResponse(message="Cart and address validated. Proceed to payment.")
 
 
 @router.get("/", response_model=PaginatedApiResponse[OrderOut])

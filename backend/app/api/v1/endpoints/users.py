@@ -142,6 +142,12 @@ def get_user_details(
     user_detail = UserDetailOut.model_validate(db_user)
     user_detail.recent_orders = recent_orders
     
+    # Fetch default address or first address
+    default_address = next((a for a in db_user.addresses if a.is_default), None)
+    if not default_address and db_user.addresses:
+        default_address = db_user.addresses[0]
+    user_detail.default_address = default_address
+    
     return ApiResponse(message="User details retrieved successfully", data=user_detail)
 
 

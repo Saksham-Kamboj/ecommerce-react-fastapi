@@ -1,4 +1,5 @@
 import type { UserOut } from "./auth"
+import type { Address } from "./address"
 
 export interface DailyRevenue {
   date: string
@@ -28,4 +29,5 @@ export interface AdminStatsOut {
 
 export interface UserDetailOut extends UserOut {
   recent_orders: RecentOrderBrief[]
+  default_address: Address | null
 }

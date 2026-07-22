@@ -2,6 +2,7 @@ from datetime import date, datetime
 import uuid
 from pydantic import BaseModel
 from app.schemas.user import UserOut
+from app.schemas.address import AddressOut
 
 class DailyRevenue(BaseModel):
     date: date | str
@@ -28,3 +29,4 @@ class AdminStatsOut(BaseModel):
 
 class UserDetailOut(UserOut):
     recent_orders: list[RecentOrderBrief] = []
+    default_address: AddressOut | None = None

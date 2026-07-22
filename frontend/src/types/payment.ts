@@ -1,7 +1,7 @@
-import type { ShippingAddress } from "./order"
-
 export interface PaymentCreate {
-  shipping_address?: ShippingAddress
+  shipping_address_id: string
+  shipping_name: string
+  shipping_phone?: string | null
   notes?: string | null
   order_id?: string
 }

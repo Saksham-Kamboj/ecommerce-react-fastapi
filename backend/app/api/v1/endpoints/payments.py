@@ -12,6 +12,7 @@ from app.api.deps import get_current_active_user, get_db
 from app.core.config import settings
 from app.crud.crud_order import order_crud
 from app.crud.crud_cart import cart_crud
+from app.crud.crud_address import address as address_crud
 from app.models.order import Order, OrderItem, OrderStatus
 from app.models.payment import Payment, PaymentStatus
 from app.models.user import User
@@ -53,6 +54,11 @@ def create_payment_order(
     # Calculate total from cart
     total = sum(item.product.price * item.quantity for item in cart.items)
 
+    # Validate address
+    address = address_crud.get(db, id=payment_in.shipping_address_id)
+    if not address or address.user_id != current_user.id:
+        raise HTTPException(status_code=400, detail="Invalid shipping address")
+
     amount = _amount_to_paise(total)
     razorpay_order = _get_razorpay_client().order.create(
         {
@@ -62,7 +68,9 @@ def create_payment_order(
             "payment_capture": 1,
             "notes": {
                 "user_id": str(current_user.id),
-                "shipping_address": payment_in.shipping_address.dict(),
+                "address_id": str(address.id),
+                "shipping_name": payment_in.shipping_name,
+                "shipping_phone": payment_in.shipping_phone or "",
                 "notes": payment_in.notes or "",
             },
         }
@@ -130,11 +138,20 @@ def verify_payment(
     if not cart.items:
         raise HTTPException(status_code=400, detail="Cart is empty")
 
-    # Get shipping address from payment notes
+    # Get shipping details from payment notes
     razorpay_data = json.loads(payment.raw_response)
     shipping_notes = razorpay_data.get("notes", {})
-    shipping_addr = shipping_notes.get("shipping_address", {})
-    order_notes = shipping_notes.get("notes")
+    
+    address_id_str = shipping_notes.get("address_id")
+    address = None
+    if address_id_str:
+        try:
+            address = address_crud.get(db, id=uuid.UUID(address_id_str))
+        except ValueError:
+            pass
+
+    if not address:
+        raise HTTPException(status_code=400, detail="Shipping address not found in system")
 
     # CREATE ORDER from cart with CONFIRMED status
     total = sum(item.product.price * item.quantity for item in cart.items)
@@ -142,15 +159,15 @@ def verify_payment(
         user_id=current_user.id,
         status=OrderStatus.confirmed,
         total_amount=round(total, 2),
-        shipping_name=shipping_addr.get("name", ""),
-        shipping_phone=shipping_addr.get("phone"),
-        shipping_address_line1=shipping_addr.get("address_line1", ""),
-        shipping_address_line2=shipping_addr.get("address_line2"),
-        shipping_city=shipping_addr.get("city", ""),
-        shipping_state=shipping_addr.get("state", ""),
-        shipping_postal_code=shipping_addr.get("postal_code", ""),
-        shipping_country=shipping_addr.get("country", ""),
-        notes=order_notes,
+        shipping_name=shipping_notes.get("shipping_name", ""),
+        shipping_phone=shipping_notes.get("shipping_phone"),
+        shipping_address_line1=address.address_line1,
+        shipping_address_line2=address.address_line2,
+        shipping_city=address.city,
+        shipping_state=address.state,
+        shipping_postal_code=address.postal_code,
+        shipping_country=address.country,
+        notes=shipping_notes.get("notes"),
     )
     db.add(order)
     db.flush()  # Get order.id
@@ -210,4 +227,4 @@ def verify_payment(
     )
 
     db.refresh(order)
-    return ApiResponse(message="Payment verified. Order created.", data=order)
+    return ApiResponse(message="Payment verified. Order Confirmed.", data=order)

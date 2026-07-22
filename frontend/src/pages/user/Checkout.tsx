@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -7,7 +7,8 @@ import { useCart } from "@/contexts/CartContext"
 import { useAuth } from "@/contexts/AuthContext"
 import { ordersApi } from "@/lib/api/orders"
 import { paymentsApi } from "@/lib/api/payments"
-import type { ShippingAddress } from "@/types/order"
+import { addressApi } from "@/lib/api/addresses"
+import type { Address } from "@/types/address"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,9 +23,25 @@ import {
   MapPin,
   Package,
   ShoppingCart,
+  ChevronDown,
 } from "lucide-react"
 
-interface CheckoutForm extends ShippingAddress {
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+interface CheckoutForm {
+  name: string
+  phone: string
+  address_line1: string
+  address_line2?: string
+  city: string
+  state: string
+  postal_code: string
+  country: string
   notes?: string
 }
 
@@ -39,22 +56,64 @@ export function CheckoutPage() {
   const items = cart?.items ?? []
   const total = cart?.total_price ?? 0
 
+  const [addresses, setAddresses] = useState<Address[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("new")
+
+  useEffect(() => {
+    addressApi
+      .getAddresses()
+      .then((res) => {
+        const data = res.data
+        setAddresses(data)
+        const defaultAddr = data.find((a) => a.is_default)
+        if (defaultAddr) {
+          setSelectedAddressId(defaultAddr.id)
+        } else if (data.length > 0) {
+          setSelectedAddressId(data[0].id)
+        }
+      })
+      .catch(console.error)
+  }, [])
+
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<CheckoutForm>({
     defaultValues: {
       name: user?.full_name ?? "",
       phone: user?.phone ?? "",
-      address_line1: user?.address_line1 ?? "",
-      address_line2: user?.address_line2 ?? "",
-      city: user?.city ?? "",
-      state: user?.state ?? "",
-      postal_code: user?.postal_code ?? "",
-      country: user?.country ?? "India",
+      address_line1: "",
+      address_line2: "",
+      city: "",
+      state: "",
+      postal_code: "",
+      country: "India",
     },
   })
+
+  // Watch for selected address changes to populate form
+  useEffect(() => {
+    if (selectedAddressId !== "new") {
+      const addr = addresses.find((a) => a.id === selectedAddressId)
+      if (addr) {
+        setValue("address_line1", addr.address_line1)
+        setValue("address_line2", addr.address_line2 || "")
+        setValue("city", addr.city)
+        setValue("state", addr.state)
+        setValue("postal_code", addr.postal_code)
+        setValue("country", addr.country)
+      }
+    } else {
+      setValue("address_line1", "")
+      setValue("address_line2", "")
+      setValue("city", "")
+      setValue("state", "")
+      setValue("postal_code", "")
+      setValue("country", "India")
+    }
+  }, [selectedAddressId, addresses, setValue])
 
   if (items.length === 0) {
     return (
@@ -71,33 +130,36 @@ export function CheckoutPage() {
   const onSubmit = async (data: CheckoutForm) => {
     setIsProcessing(true)
     try {
-      // Step 1 — Validate cart (no order created)
-      await ordersApi.placeOrder({
-        shipping_address: {
-          name: data.name,
-          phone: data.phone || null,
+      let activeAddressId = selectedAddressId
+      if (activeAddressId === "new") {
+        const newAddr = await addressApi.createAddress({
+          title: "Delivery Address",
           address_line1: data.address_line1,
-          address_line2: data.address_line2 || null,
+          address_line2: data.address_line2 || "",
           city: data.city,
           state: data.state,
           postal_code: data.postal_code,
           country: data.country,
-        },
+        })
+        activeAddressId = newAddr.data.id
+        // optionally add it to local state so user doesn't have to save again if checkout fails
+        setAddresses((prev) => [...prev, newAddr.data])
+        setSelectedAddressId(newAddr.data.id)
+      }
+
+      // Step 1 — Validate cart (no order created)
+      await ordersApi.placeOrder({
+        shipping_address_id: activeAddressId,
+        shipping_name: data.name,
+        shipping_phone: data.phone || null,
         notes: data.notes || null,
       })
 
       // Step 2 — Create payment (no order_id needed)
       const payRes = await paymentsApi.createPaymentOrder({
-        shipping_address: {
-          name: data.name,
-          phone: data.phone || null,
-          address_line1: data.address_line1,
-          address_line2: data.address_line2 || null,
-          city: data.city,
-          state: data.state,
-          postal_code: data.postal_code,
-          country: data.country,
-        },
+        shipping_address_id: activeAddressId,
+        shipping_name: data.name,
+        shipping_phone: data.phone || null,
         notes: data.notes || null,
       })
       const { razorpay_order_id, amount, currency, key_id } = payRes.data
@@ -178,9 +240,47 @@ export function CheckoutPage() {
           <div className="flex flex-col gap-4 lg:col-span-2">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <MapPin className="h-4 w-4" />
-                  Delivery Address
+                <CardTitle className="flex items-center justify-between text-base">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Delivery Address
+                  </div>
+                  {addresses.length > 0 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button
+                            variant="outline"
+                            className="h-9 w-fit justify-between text-xs font-normal"
+                          />
+                        }
+                      >
+                        {selectedAddressId === "new"
+                          ? "+ Use a new address"
+                          : addresses.find((a) => a.id === selectedAddressId)
+                              ?.title || "Select an address"}
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-fit">
+                        {addresses.map((a) => (
+                          <DropdownMenuItem
+                            key={a.id}
+                            onClick={() => setSelectedAddressId(a.id)}
+                            className="cursor-pointer"
+                          >
+                            {a.title} - {a.address_line1.substring(0, 20)}
+                            {a.address_line1.length > 20 ? "..." : ""}
+                          </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuItem
+                          onClick={() => setSelectedAddressId("new")}
+                          className="cursor-pointer font-semibold text-primary"
+                        >
+                          + Use a new address
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4 px-6 pb-6">

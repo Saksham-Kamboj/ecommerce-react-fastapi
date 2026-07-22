@@ -7,21 +7,11 @@ from app.models.order import OrderStatus
 from app.schemas.product import ProductCartOut
 
 
-class ShippingAddress(BaseModel):
-    """Shipping address submitted at checkout time."""
-    name: str = Field(..., min_length=1, max_length=255)
-    phone: str | None = Field(None, max_length=20)
-    address_line1: str = Field(..., min_length=1, max_length=255)
-    address_line2: str | None = Field(None, max_length=255)
-    city: str = Field(..., min_length=1, max_length=100)
-    state: str = Field(..., min_length=1, max_length=100)
-    postal_code: str = Field(..., min_length=1, max_length=20)
-    country: str = Field(..., min_length=1, max_length=100)
-
-
 class OrderCreate(BaseModel):
     """Request body for placing a new order."""
-    shipping_address: ShippingAddress
+    shipping_address_id: uuid.UUID
+    shipping_name: str = Field(..., min_length=1, max_length=255)
+    shipping_phone: str | None = Field(None, max_length=20)
     notes: str | None = Field(None, max_length=500)
 
 

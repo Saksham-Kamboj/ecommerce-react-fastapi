@@ -25,13 +25,7 @@ class User(Base):
     date_of_birth: Mapped[date] = mapped_column(Date, nullable=True)
     bio: Mapped[str] = mapped_column(Text, nullable=True)
 
-    # Address fields
-    address_line1: Mapped[str] = mapped_column(String(255), nullable=True)
-    address_line2: Mapped[str] = mapped_column(String(255), nullable=True)
-    city: Mapped[str] = mapped_column(String(100), nullable=True)
-    state: Mapped[str] = mapped_column(String(100), nullable=True)
-    postal_code: Mapped[str] = mapped_column(String(20), nullable=True)
-    country: Mapped[str] = mapped_column(String(100), nullable=True)
+    # Removed Address fields in favor of addresses table
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
@@ -41,3 +35,4 @@ class User(Base):
     wishlist_items = relationship("WishlistItem", back_populates="user", cascade="all, delete-orphan", order_by="WishlistItem.created_at")
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan", order_by="Order.created_at.desc()")
     reviews = relationship("Review", back_populates="user", cascade="all, delete-orphan", order_by="Review.created_at.desc()")
+    addresses = relationship("Address", back_populates="user", cascade="all, delete-orphan", order_by="Address.created_at.desc()")
