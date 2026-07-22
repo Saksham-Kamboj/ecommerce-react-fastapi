@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 
 interface ProductCardProps {
   product: ProductOut
+  hideActions?: boolean
 }
 
 // Helper to generate a consistent gradient based on a string
@@ -25,7 +26,7 @@ function getGradientFromName(name: string) {
   return colors[charSum % colors.length]
 }
 
-export function ProductCard({ product }: Readonly<ProductCardProps>) {
+export function ProductCard({ product, hideActions = false }: Readonly<ProductCardProps>) {
   const gradientClass = getGradientFromName(product.name)
   const { cart, addToCart, updateQuantity } = useCart()
   const { isWishlisted, toggle } = useWishlist()
@@ -70,7 +71,8 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
         )}
 
         {/* Wishlist Button */}
-        <Button
+        {!hideActions && (
+          <Button
           variant="secondary"
           size="icon"
           onClick={() => toggle(product.id)}
@@ -85,7 +87,8 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
           <span className="sr-only">
             {wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           </span>
-        </Button>
+          </Button>
+        )}
       </div>
 
       {/* Content Area */}
@@ -133,8 +136,9 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
       </div>
 
       {/* Footer Area */}
-      <div className="p-2 pt-0">
-        <Button
+      {!hideActions && (
+        <div className="p-2 pt-0">
+          <Button
           className="w-full transition-all"
           variant={isInCart ? "secondary" : "default"}
           disabled={product.stock_quantity === 0}
@@ -142,8 +146,9 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
         >
           <ShoppingCart className="mr-2 h-4 w-4" />
           {isInCart ? `Added (${cartItem.quantity}) - Add More` : "Add to Cart"}
-        </Button>
-      </div>
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
