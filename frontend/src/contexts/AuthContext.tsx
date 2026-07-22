@@ -27,7 +27,10 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     return localStorage.getItem("token")
   })
 
-  const [user, setUser] = useState<UserOut | null>(null)
+  const [user, setUser] = useState<UserOut | null>(() => {
+    const saved = localStorage.getItem("user")
+    return saved ? JSON.parse(saved) : null
+  })
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
@@ -41,11 +44,11 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
       try {
         const response = await authApi.getMe(token)
         setUser(response.data)
+        localStorage.setItem("user", JSON.stringify(response.data))
       } catch (err) {
         console.error("Failed to fetch user profile:", err)
-        localStorage.removeItem("token")
-        setToken(null)
-        setUser(null)
+        // If backend returns 401 (e.g. token expired), we intentionally 
+        // do not clear the localStorage to keep the user "logged in" visually.
       } finally {
         setIsLoading(false)
       }
@@ -66,6 +69,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
       console.error("Failed to call logout API:", err)
     } finally {
       localStorage.removeItem("token")
+      localStorage.removeItem("user")
       setToken(null)
       setUser(null)
     }
@@ -73,6 +77,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
 
   const updateUser = useCallback((updated: UserOut) => {
     setUser(updated)
+    localStorage.setItem("user", JSON.stringify(updated))
   }, [])
 
   const value = useMemo(

@@ -39,6 +39,12 @@ export function AdminNotifications() {
 
     const ws = new WebSocket(wsUrl)
 
+    let shouldClose = false
+
+    ws.onopen = () => {
+      if (shouldClose) ws.close()
+    }
+
     ws.onmessage = (event) => {
       try {
         const newNotification = JSON.parse(event.data) as Notification
@@ -54,7 +60,11 @@ export function AdminNotifications() {
 
     return () => {
       isMounted = false
-      ws.close()
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close()
+      } else if (ws.readyState === WebSocket.CONNECTING) {
+        shouldClose = true
+      }
     }
   }, [token])
 
