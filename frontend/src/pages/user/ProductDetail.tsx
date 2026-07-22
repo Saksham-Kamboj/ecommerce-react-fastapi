@@ -15,24 +15,10 @@ import { cn } from "@/lib/utils"
 import { ProductCard } from "@/components/user/ProductCard"
 import { ProductReviews } from "@/components/user/ProductReviews"
 import { StarRating } from "@/components/ui/star-rating"
+import { ProductImageGallery } from "@/components/ProductImageGallery"
 import type { ReviewOut } from "@/types/review"
 import PageLoading from "@/components/custom/PageLoading"
 import { ErrorMessage } from "@/components/ui/error-message"
-
-const GRADIENT_COLORS = [
-  "from-blue-500 to-indigo-600",
-  "from-emerald-400 to-teal-600",
-  "from-orange-400 to-rose-500",
-  "from-purple-500 to-fuchsia-600",
-  "from-cyan-500 to-blue-600",
-]
-
-function getGradient(name: string): string {
-  const sum = name
-    .split("")
-    .reduce((acc, char) => acc + (char.codePointAt(0) ?? 0), 0)
-  return GRADIENT_COLORS[sum % GRADIENT_COLORS.length]
-}
 
 export function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>()
@@ -147,7 +133,6 @@ export function ProductDetailPage() {
     )
   }
 
-  const gradient = getGradient(product.name)
   const rating =
     reviews.length > 0
       ? (
@@ -180,28 +165,12 @@ export function ProductDetailPage() {
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* ── Left: visual ── */}
-        <div className="flex flex-col gap-4">
-          {product.image_url ? (
-            <div className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-2xl border bg-white p-4 shadow-lg">
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="h-full w-full object-contain mix-blend-multiply"
-                loading="lazy"
-              />
-            </div>
-          ) : (
-            <div
-              className={cn(
-                "flex aspect-3/2 w-full items-center justify-center rounded-2xl bg-linear-to-br p-12 text-center text-white shadow-lg",
-                gradient
-              )}
-            >
-              <span className="font-serif text-3xl font-bold tracking-tight drop-shadow-lg">
-                {product.name}
-              </span>
-            </div>
-          )}
+        <div className="flex w-full flex-col">
+          <ProductImageGallery
+            images={product.image_url ? [product.image_url] : []}
+            zoom={4}
+            showZoomWindow={true}
+          />
         </div>
 
         {/* ── Right: info ── */}
