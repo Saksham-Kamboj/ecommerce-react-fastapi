@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ErrorMessage } from "@/components/ui/error-message"
 
 const chartConfig = {
   revenue: {
@@ -48,6 +49,7 @@ export function AdminDashboard() {
   const navigate = useNavigate()
   const [stats, setStats] = useState<AdminStatsOut | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadStats() {
@@ -56,6 +58,7 @@ export function AdminDashboard() {
         setStats(response.data)
       } catch (err) {
         console.error("Failed to fetch admin stats:", err)
+        setError(String(err))
       } finally {
         setLoading(false)
       }
@@ -67,11 +70,12 @@ export function AdminDashboard() {
     return <DashboardSkeleton />
   }
 
-  if (!stats) {
+  if (error || !stats) {
     return (
-      <div className="flex h-64 items-center justify-center text-destructive">
-        Failed to load dashboard metrics.
-      </div>
+      <ErrorMessage
+        message={error || "Failed to load dashboard data."}
+        onRetry={() => window.location.reload()}
+      />
     )
   }
 

@@ -19,6 +19,7 @@ import {
   XCircle,
 } from "lucide-react"
 import PageLoading from "@/components/custom/PageLoading"
+import { ErrorMessage } from "@/components/ui/error-message"
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
   {
@@ -114,6 +115,7 @@ export function OrderDetailPage() {
   const navigate = useNavigate()
 
   const [order, setOrder] = useState<OrderOut | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isCancelling, setIsCancelling] = useState(false)
 
@@ -128,10 +130,13 @@ export function OrderDetailPage() {
           setIsLoading(false)
         }
       })
-      .catch(() => {
+      .catch((err) => {
         if (!cancelled) {
-          toast.error("Order not found")
+          console.error("Failed to load order details", err)
           setIsLoading(false)
+          setError(
+            err instanceof Error ? err.message : "Failed to load order details"
+          )
         }
       })
     return () => {
@@ -155,6 +160,10 @@ export function OrderDetailPage() {
 
   if (isLoading) {
     return <PageLoading minHeight="min-h-135" />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} />
   }
 
   if (!order) {

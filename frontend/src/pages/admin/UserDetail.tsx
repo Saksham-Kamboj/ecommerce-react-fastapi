@@ -34,12 +34,14 @@ import {
 } from "@/components/ui/table"
 import PageLoading from "@/components/custom/PageLoading"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ErrorMessage } from "@/components/ui/error-message"
 
 export function UserDetailPage() {
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
   const [user, setUser] = useState<UserDetailOut | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadUser() {
@@ -49,6 +51,7 @@ export function UserDetailPage() {
         setUser(response.data)
       } catch (error) {
         console.error("Failed to load user details", error)
+        setError(String(error))
       } finally {
         setLoading(false)
       }
@@ -57,6 +60,10 @@ export function UserDetailPage() {
   }, [userId])
 
   if (loading) return <PageLoading />
+
+  if (error) {
+    return <ErrorMessage message={error} />
+  }
 
   if (!user) {
     return (
@@ -90,7 +97,7 @@ export function UserDetailPage() {
       {/* Header / Hero Section */}
       <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
         {/* Gradient Banner */}
-        <div className="h-20 w-full bg-gradient-to-r from-primary/10 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10" />
+        <div className="h-20 w-full bg-linear-to-r from-primary/10 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10" />
 
         <div className="relative px-6 pt-2 pb-4">
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end">

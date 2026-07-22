@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { toast } from "sonner"
 import { ordersApi } from "@/lib/api/orders"
 import type { OrderOut, OrderStatus } from "@/types/order"
 import type { Pagination } from "@/types/api"
@@ -12,6 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { SearchInput } from "@/components/ui/search-input"
 import { PackageSearch, ShoppingBag, ChevronRight } from "lucide-react"
 import PageLoading from "@/components/custom/PageLoading"
+import { ErrorMessage } from "@/components/ui/error-message"
 
 // ── Status config ──────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> =
@@ -64,6 +64,7 @@ export function UserOrders() {
   const navigate = useNavigate()
   const [orders, setOrders] = useState<OrderOut[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [page, setPage] = useState(1)
   const LIMIT = 10
@@ -93,10 +94,9 @@ export function UserOrders() {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          toast.error(
-            err instanceof Error ? err.message : "Failed to load orders"
-          )
+          console.error("Failed to load orders", err)
           setIsLoading(false)
+          setError(err instanceof Error ? err.message : "Failed to load orders")
         }
       })
     return () => {
@@ -131,8 +131,9 @@ export function UserOrders() {
       <Separator />
 
       {isLoading && <PageLoading minHeight="min-h-135" />}
+      {error && <ErrorMessage message={error} />}
 
-      {!isLoading && orders.length === 0 && (
+      {!isLoading && !error && orders.length === 0 && (
         <div className="flex min-h-90 flex-col items-center justify-center gap-4 rounded-xl border border-dashed text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <PackageSearch className="h-8 w-8 text-muted-foreground/40" />

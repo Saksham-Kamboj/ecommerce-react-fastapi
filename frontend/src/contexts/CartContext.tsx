@@ -16,6 +16,7 @@ import { useAuth } from "./AuthContext"
 interface CartContextType {
   cart: CartOut | null
   isLoading: boolean
+  isCartError: string | null
   isCartOpen: boolean
   setIsCartOpen: (open: boolean) => void
   addToCart: (productId: string, quantity?: number) => void
@@ -33,6 +34,7 @@ export function CartProvider({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const [cart, setCart] = useState<CartOut | null>(null)
+  const [isCartError, setIsCartError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const { isAuthenticated } = useAuth()
@@ -50,8 +52,9 @@ export function CartProvider({
       setIsLoading(true)
       const response = await cartApi.getCart()
       setCart(response.data)
-    } catch {
+    } catch (err) {
       setCart(null)
+      setIsCartError(err instanceof Error ? err.message : "Failed to load cart")
     } finally {
       setIsLoading(false)
     }
@@ -181,6 +184,7 @@ export function CartProvider({
     () => ({
       cart,
       isLoading,
+      isCartError,
       isCartOpen,
       setIsCartOpen,
       addToCart,
@@ -192,6 +196,7 @@ export function CartProvider({
     [
       cart,
       isLoading,
+      isCartError,
       isCartOpen,
       addToCart,
       updateQuantity,
