@@ -42,19 +42,20 @@ export function FullscreenViewer({
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-sm">
       {/* Top Bar */}
-      <div className="absolute top-0 left-0 flex w-full justify-between p-4 text-white">
-        <p className="text-sm text-gray-400">
+      <div className="absolute top-0 left-0 z-50 p-6 text-white">
+        <p className="text-sm font-medium text-gray-400">
           {activeIndex + 1} / {images.length}
         </p>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="text-white hover:bg-white/20"
-        >
-          <X className="h-6 w-6" />
-        </Button>
       </div>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onClose}
+        className="absolute right-6 top-6 z-50 rounded-full bg-white/10 text-white hover:bg-white/20"
+      >
+        <X className="h-6 w-6" />
+      </Button>
 
       {/* Main Image */}
       <div className="relative flex h-[80vh] w-full items-center justify-center p-4">
