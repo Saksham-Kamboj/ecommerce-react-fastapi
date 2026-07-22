@@ -10,6 +10,7 @@ class PaymentCreate(BaseModel):
     shipping_name: str = Field(..., min_length=1, max_length=255)
     shipping_phone: str | None = Field(None, max_length=20)
     notes: str | None = Field(None, max_length=500)
+    coupon_code: str | None = Field(None, max_length=50)
 
 
 class PaymentCreateOut(BaseModel):

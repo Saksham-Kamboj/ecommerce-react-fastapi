@@ -6,6 +6,7 @@ export interface OrderCreate {
   shipping_name: string
   shipping_phone?: string | null
   notes?: string | null
+  coupon_code?: string
 }
 
 export interface OrderItemOut {
@@ -40,6 +41,8 @@ export interface OrderOut {
   user_id: string
   status: OrderStatus
   total_amount: number
+  coupon_id?: string | null
+  discount_amount: number
   shipping_name: string
   shipping_phone: string | null
   shipping_address_line1: string

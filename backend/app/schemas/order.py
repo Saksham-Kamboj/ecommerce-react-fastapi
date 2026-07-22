@@ -13,6 +13,7 @@ class OrderCreate(BaseModel):
     shipping_name: str = Field(..., min_length=1, max_length=255)
     shipping_phone: str | None = Field(None, max_length=20)
     notes: str | None = Field(None, max_length=500)
+    coupon_code: str | None = Field(None, max_length=50)
 
 
 class OrderItemOut(BaseModel):
@@ -46,6 +47,9 @@ class OrderOut(BaseModel):
     user_id: uuid.UUID
     status: OrderStatus
     total_amount: float
+    
+    coupon_id: uuid.UUID | None = None
+    discount_amount: float = 0.0
 
     # Shipping snapshot
     shipping_name: str

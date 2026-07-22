@@ -20,6 +20,7 @@ from app.models.order import Order, OrderItem  # noqa: E402
 from app.models.payment import Payment  # noqa: E402
 from app.models.review import Review  # noqa: E402
 from app.models.notification import Notification  # noqa: E402
+from app.models.coupon import Coupon  # noqa: E402
 
 # this is the Alembic Config object, which provides access to values within the .ini file
 config = context.config

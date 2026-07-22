@@ -22,6 +22,9 @@ from app.schemas.response import ApiResponse
 from app.utils.email import send_order_confirmation_email
 from app.crud.crud_notification import notification_crud
 from app.schemas.notification import NotificationCreate
+from app.crud.crud_coupon import coupon as coupon_crud
+from app.models.coupon import DiscountType
+from datetime import datetime, timezone
 
 router = APIRouter()
 
@@ -59,7 +62,34 @@ def create_payment_order(
     if not address or address.user_id != current_user.id:
         raise HTTPException(status_code=400, detail="Invalid shipping address")
 
-    amount = _amount_to_paise(total)
+    discount_amount = 0.0
+    if payment_in.coupon_code:
+        coupon = coupon_crud.get_by_code(db, code=payment_in.coupon_code)
+        if not coupon or not coupon.is_active:
+            raise HTTPException(status_code=400, detail="Invalid or inactive coupon code")
+        
+        now = datetime.now(timezone.utc)
+        if coupon.valid_from and coupon.valid_from > now:
+            raise HTTPException(status_code=400, detail="Coupon is not valid yet")
+        if coupon.valid_until and coupon.valid_until < now:
+            raise HTTPException(status_code=400, detail="Coupon has expired")
+        if coupon.usage_limit and coupon.usage_count >= coupon.usage_limit:
+            raise HTTPException(status_code=400, detail="Coupon usage limit reached")
+        if coupon.min_order_value and total < float(coupon.min_order_value):
+            raise HTTPException(status_code=400, detail=f"Minimum order value of ₹{coupon.min_order_value} required")
+            
+        if coupon.discount_type == DiscountType.fixed:
+            discount_amount = float(coupon.discount_value)
+        else:
+            discount_amount = total * (float(coupon.discount_value) / 100)
+            if coupon.max_discount:
+                discount_amount = min(discount_amount, float(coupon.max_discount))
+        
+        discount_amount = min(discount_amount, total)
+        
+    final_total = max(0.0, total - discount_amount)
+
+    amount = _amount_to_paise(final_total)
     razorpay_order = _get_razorpay_client().order.create(
         {
             "amount": amount,
@@ -72,6 +102,7 @@ def create_payment_order(
                 "shipping_name": payment_in.shipping_name,
                 "shipping_phone": payment_in.shipping_phone or "",
                 "notes": payment_in.notes or "",
+                "coupon_code": payment_in.coupon_code or "",
             },
         }
     )
@@ -153,12 +184,35 @@ def verify_payment(
     if not address:
         raise HTTPException(status_code=400, detail="Shipping address not found in system")
 
-    # CREATE ORDER from cart with CONFIRMED status
     total = sum(item.product.price * item.quantity for item in cart.items)
+    
+    # Process Coupon again for safety
+    coupon_code = shipping_notes.get("coupon_code")
+    discount_amount = 0.0
+    coupon = None
+    if coupon_code:
+        coupon = coupon_crud.get_by_code(db, code=coupon_code)
+        if coupon:
+            if coupon.discount_type == DiscountType.fixed:
+                discount_amount = float(coupon.discount_value)
+            else:
+                discount_amount = total * (float(coupon.discount_value) / 100)
+                if coupon.max_discount:
+                    discount_amount = min(discount_amount, float(coupon.max_discount))
+            discount_amount = min(discount_amount, total)
+            
+            # Increment coupon usage
+            coupon.usage_count += 1
+            db.add(coupon)
+    
+    final_total = max(0.0, total - discount_amount)
+    
     order = Order(
         user_id=current_user.id,
         status=OrderStatus.confirmed,
-        total_amount=round(total, 2),
+        total_amount=round(final_total, 2),
+        coupon_id=coupon.id if coupon else None,
+        discount_amount=round(discount_amount, 2),
         shipping_name=shipping_notes.get("shipping_name", ""),
         shipping_phone=shipping_notes.get("shipping_phone"),
         shipping_address_line1=address.address_line1,
