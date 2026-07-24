@@ -34,9 +34,7 @@ export const couponsApi = {
     return apiClient<CouponOut>(`/coupons/${id}`, { method: "GET" })
   },
 
-  createCoupon: async (
-    data: CouponCreate
-  ): Promise<ApiResponse<CouponOut>> => {
+  createCoupon: async (data: CouponCreate): Promise<ApiResponse<CouponOut>> => {
     return apiClient<CouponOut>("/coupons/", { method: "POST", data })
   },
 

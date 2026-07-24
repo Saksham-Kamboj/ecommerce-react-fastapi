@@ -42,6 +42,8 @@ export interface OrderOut {
   status: OrderStatus
   total_amount: number
   coupon_id?: string | null
+  coupon_code?: string | null
+  subtotal_amount: number
   discount_amount: number
   shipping_name: string
   shipping_phone: string | null

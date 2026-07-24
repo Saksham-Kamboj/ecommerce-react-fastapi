@@ -160,7 +160,10 @@ export function CouponFormDialog({
                       : "Select type"}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-(--anchor-width)">
+                <DropdownMenuContent
+                  align="start"
+                  className="w-(--anchor-width)"
+                >
                   <DropdownMenuItem
                     onClick={() => setValue("discount_type", "percentage")}
                   >
@@ -176,9 +179,7 @@ export function CouponFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="discount_value">
-                Discount Value *
-              </Label>
+              <Label htmlFor="discount_value">Discount Value *</Label>
               <Input
                 id="discount_value"
                 type="number"
@@ -257,7 +258,9 @@ export function CouponFormDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {coupon ? "Update Coupon" : "Create Coupon"}
             </Button>
           </div>

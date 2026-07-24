@@ -169,7 +169,9 @@ export function CheckoutPage() {
         handleRemoveCoupon()
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to validate coupon")
+      toast.error(
+        err instanceof Error ? err.message : "Failed to validate coupon"
+      )
       handleRemoveCoupon()
     } finally {
       setIsApplyingCoupon(false)
@@ -340,7 +342,7 @@ export function CheckoutPage() {
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col gap-4 px-6 pb-6">
+              <CardContent className="flex flex-col gap-4 px-6">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="grid gap-1.5">
                     <Label htmlFor="name">Full Name *</Label>
@@ -478,7 +480,7 @@ export function CheckoutPage() {
                   Order Summary
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col gap-4 px-6 pb-6">
+              <CardContent className="flex flex-col gap-4 px-6">
                 <div className="flex flex-col gap-2 text-sm">
                   {items.map((item) => (
                     <div key={item.id} className="flex justify-between">
@@ -492,9 +494,18 @@ export function CheckoutPage() {
                   ))}
                 </div>
 
+                <div className="flex items-center justify-between border-t border-border/50 pt-2 text-sm font-medium">
+                  <span>Subtotal</span>
+                  <span>₹{total.toFixed(2)}</span>
+                </div>
+
                 {appliedCoupon && (
-                  <div className="flex items-center justify-between text-sm text-emerald-600 dark:text-emerald-400 font-medium">
-                    <span>Discount ({appliedCoupon.code})</span>
+                  <div className="flex items-center justify-between text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    <span>
+                      Discount ({appliedCoupon.code})
+                      {total > 0 &&
+                        ` (${Math.round((discountAmount / total) * 100)}%)`}
+                    </span>
                     <span>-₹{discountAmount.toFixed(2)}</span>
                   </div>
                 )}
@@ -520,7 +531,9 @@ export function CheckoutPage() {
                       placeholder="Enter code"
                       className="h-9 text-sm"
                       value={couponCodeInput}
-                      onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
+                      onChange={(e) =>
+                        setCouponCodeInput(e.target.value.toUpperCase())
+                      }
                       disabled={!!appliedCoupon || isApplyingCoupon}
                     />
                     {appliedCoupon ? (
@@ -548,7 +561,7 @@ export function CheckoutPage() {
                       </Button>
                     )}
                   </div>
-                  
+
                   {/* See All Coupons Button */}
                   {!appliedCoupon && activeCoupons.length > 0 && (
                     <Button
@@ -603,8 +616,8 @@ export function CheckoutPage() {
           <div className="mt-4 flex max-h-[60vh] flex-col gap-3 overflow-y-auto pr-2">
             {activeCoupons.map((coupon) => {
               const isValidForCart =
-                !coupon.min_order_value || total >= coupon.min_order_value;
-                
+                !coupon.min_order_value || total >= coupon.min_order_value
+
               return (
                 <div
                   key={coupon.id}
@@ -633,7 +646,9 @@ export function CheckoutPage() {
                   </div>
                   <div className="font-bold text-emerald-600">
                     {coupon.discount_type === "percentage"
-                      ? `${coupon.discount_value}% OFF`
+                      ? coupon.max_discount
+                        ? `Up to ₹${coupon.max_discount} OFF`
+                        : `${coupon.discount_value}% OFF`
                       : `₹${coupon.discount_value} OFF`}
                   </div>
                 </div>

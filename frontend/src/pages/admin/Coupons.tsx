@@ -270,9 +270,7 @@ export function AdminCouponsPage() {
       setError(null)
       setRefreshTrigger((prev) => prev + 1)
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to save coupon"
-      )
+      toast.error(err instanceof Error ? err.message : "Failed to save coupon")
     }
   }
 

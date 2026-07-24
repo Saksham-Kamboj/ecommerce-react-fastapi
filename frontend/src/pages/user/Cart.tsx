@@ -171,7 +171,7 @@ export function UserCart() {
 
           {/* Order summary */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-4">
+            <Card className="sticky top-4 p-0">
               <CardContent className="flex flex-col gap-4 p-5">
                 <h2 className="text-lg font-semibold">Order Summary</h2>
                 <Separator />
