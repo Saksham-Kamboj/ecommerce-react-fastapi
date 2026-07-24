@@ -49,6 +49,8 @@ class OrderOut(BaseModel):
     total_amount: float
     
     coupon_id: uuid.UUID | None = None
+    coupon_code: str | None = None
+    subtotal_amount: float = 0.0
     discount_amount: float = 0.0
 
     # Shipping snapshot

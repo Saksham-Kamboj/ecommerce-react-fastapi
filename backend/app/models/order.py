@@ -49,6 +49,14 @@ class Order(Base):
     payments = relationship("Payment", back_populates="order", cascade="all, delete-orphan", order_by="Payment.created_at.desc()")
     coupon = relationship("Coupon")
 
+    @property
+    def subtotal_amount(self) -> float:
+        return float(self.total_amount) + float(self.discount_amount)
+
+    @property
+    def coupon_code(self) -> str | None:
+        return self.coupon.code if self.coupon else None
+
 
 class OrderItem(Base):
     __tablename__ = "order_items"

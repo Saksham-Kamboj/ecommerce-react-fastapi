@@ -109,7 +109,7 @@ def create_payment_order(
 
     payment = Payment(
         user_id=current_user.id,
-        amount=total,
+        amount=final_total,
         currency=settings.RAZORPAY_CURRENCY,
         provider_order_id=razorpay_order["id"],
         status=PaymentStatus.created,
