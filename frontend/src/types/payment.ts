@@ -3,6 +3,7 @@ export interface PaymentCreate {
   shipping_name: string
   shipping_phone?: string | null
   notes?: string | null
+  coupon_code?: string
   order_id?: string
 }
 

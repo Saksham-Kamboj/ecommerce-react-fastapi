@@ -285,7 +285,7 @@ export function OrderDetailPage() {
           <div className="flex items-center justify-between pt-3">
             <span className="font-medium">Total</span>
             <span className="text-xl font-bold text-primary">
-              ₹{Number(order.total_amount).toFixed(2)}
+              ₹{Number(order.subtotal_amount).toFixed(2)}
             </span>
           </div>
         </CardContent>
@@ -380,9 +380,25 @@ export function OrderDetailPage() {
                     </span>
                   )}
                 </dd>
-                <dt className="text-muted-foreground">Amount</dt>
+                {order.discount_amount > 0 && (
+                  <>
+                    <dt className="text-muted-foreground">Subtotal</dt>
+                    <dd className="text-right">
+                      ₹{Number(order.subtotal_amount).toFixed(2)}
+                    </dd>
+                    <dt className="whitespace-nowrap text-muted-foreground">
+                      Discount
+                      {order.coupon_code &&
+                        ` (${order.coupon_code}) (${Math.round((order.discount_amount / order.subtotal_amount) * 100)}%)`}
+                    </dt>
+                    <dd className="text-right text-emerald-600 dark:text-emerald-400">
+                      -₹{Number(order.discount_amount).toFixed(2)}
+                    </dd>
+                  </>
+                )}
+                <dt className="text-muted-foreground">Amount Paid</dt>
                 <dd className="text-right font-semibold text-primary">
-                  ₹{Number(order.payment.amount).toFixed(2)}{" "}
+                  ₹{Number(order.total_amount).toFixed(2)}{" "}
                   {order.payment.currency}
                 </dd>
                 <dt className="text-muted-foreground">Provider</dt>

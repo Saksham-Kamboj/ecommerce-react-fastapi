@@ -8,12 +8,20 @@ import { useAuth } from "@/contexts/AuthContext"
 import { ordersApi } from "@/lib/api/orders"
 import { paymentsApi } from "@/lib/api/payments"
 import { addressApi } from "@/lib/api/addresses"
+import { couponsApi } from "@/lib/api/coupons"
 import type { Address } from "@/types/address"
+import type { CouponOut } from "@/types/coupon"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -24,6 +32,7 @@ import {
   Package,
   ShoppingCart,
   ChevronDown,
+  Tag,
 } from "lucide-react"
 
 import {
@@ -59,6 +68,15 @@ export function CheckoutPage() {
   const [addresses, setAddresses] = useState<Address[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState<string>("new")
 
+  const [activeCoupons, setActiveCoupons] = useState<CouponOut[]>([])
+  const [isCouponsModalOpen, setIsCouponsModalOpen] = useState(false)
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponOut | null>(null)
+  const [discountAmount, setDiscountAmount] = useState(0)
+  const [couponCodeInput, setCouponCodeInput] = useState("")
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false)
+
+  const finalTotal = Math.max(0, total - discountAmount)
+
   useEffect(() => {
     addressApi
       .getAddresses()
@@ -72,6 +90,11 @@ export function CheckoutPage() {
           setSelectedAddressId(data[0].id)
         }
       })
+      .catch(console.error)
+
+    couponsApi
+      .getActiveCoupons()
+      .then((res) => setActiveCoupons(res.data))
       .catch(console.error)
   }, [])
 
@@ -127,6 +150,40 @@ export function CheckoutPage() {
     )
   }
 
+  const handleApplyCoupon = async (codeToApply: string) => {
+    if (!codeToApply.trim()) return
+    setIsApplyingCoupon(true)
+    try {
+      const res = await couponsApi.validateCoupon({
+        code: codeToApply,
+        cart_total: total,
+      })
+      const data = res.data
+      if (data.is_valid && data.coupon) {
+        setAppliedCoupon(data.coupon)
+        setDiscountAmount(data.discount_amount)
+        toast.success(res.message || "Coupon applied successfully!")
+        setCouponCodeInput(data.coupon.code)
+      } else {
+        toast.error(res.message || "Invalid coupon")
+        handleRemoveCoupon()
+      }
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to validate coupon"
+      )
+      handleRemoveCoupon()
+    } finally {
+      setIsApplyingCoupon(false)
+    }
+  }
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null)
+    setDiscountAmount(0)
+    setCouponCodeInput("")
+  }
+
   const onSubmit = async (data: CheckoutForm) => {
     setIsProcessing(true)
     try {
@@ -153,6 +210,7 @@ export function CheckoutPage() {
         shipping_name: data.name,
         shipping_phone: data.phone || null,
         notes: data.notes || null,
+        coupon_code: appliedCoupon?.code,
       })
 
       // Step 2 — Create payment (no order_id needed)
@@ -161,6 +219,7 @@ export function CheckoutPage() {
         shipping_name: data.name,
         shipping_phone: data.phone || null,
         notes: data.notes || null,
+        coupon_code: appliedCoupon?.code,
       })
       const { razorpay_order_id, amount, currency, key_id } = payRes.data
 
@@ -283,7 +342,7 @@ export function CheckoutPage() {
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col gap-4 px-6 pb-6">
+              <CardContent className="flex flex-col gap-4 px-6">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="grid gap-1.5">
                     <Label htmlFor="name">Full Name *</Label>
@@ -421,7 +480,7 @@ export function CheckoutPage() {
                   Order Summary
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col gap-4 px-6 pb-6">
+              <CardContent className="flex flex-col gap-4 px-6">
                 <div className="flex flex-col gap-2 text-sm">
                   {items.map((item) => (
                     <div key={item.id} className="flex justify-between">
@@ -435,12 +494,28 @@ export function CheckoutPage() {
                   ))}
                 </div>
 
+                <div className="flex items-center justify-between border-t border-border/50 pt-2 text-sm font-medium">
+                  <span>Subtotal</span>
+                  <span>₹{total.toFixed(2)}</span>
+                </div>
+
+                {appliedCoupon && (
+                  <div className="flex items-center justify-between text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    <span>
+                      Discount ({appliedCoupon.code})
+                      {total > 0 &&
+                        ` (${Math.round((discountAmount / total) * 100)}%)`}
+                    </span>
+                    <span>-₹{discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+
                 <Separator />
 
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Total</span>
                   <span className="text-xl font-bold text-primary">
-                    ₹{total.toFixed(2)}
+                    ₹{finalTotal.toFixed(2)}
                   </span>
                 </div>
 
@@ -448,9 +523,62 @@ export function CheckoutPage() {
                   Shipping and taxes calculated at checkout.
                 </p>
 
+                {/* Coupon Input Area */}
+                <div className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-3">
+                  <Label className="text-xs font-semibold">Discount Code</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter code"
+                      className="h-9 text-sm"
+                      value={couponCodeInput}
+                      onChange={(e) =>
+                        setCouponCodeInput(e.target.value.toUpperCase())
+                      }
+                      disabled={!!appliedCoupon || isApplyingCoupon}
+                    />
+                    {appliedCoupon ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-9 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={handleRemoveCoupon}
+                      >
+                        Remove
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="h-9"
+                        disabled={!couponCodeInput || isApplyingCoupon}
+                        onClick={() => handleApplyCoupon(couponCodeInput)}
+                      >
+                        {isApplyingCoupon ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Apply"
+                        )}
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* See All Coupons Button */}
+                  {!appliedCoupon && activeCoupons.length > 0 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-2 w-full text-xs"
+                      onClick={() => setIsCouponsModalOpen(true)}
+                    >
+                      <Tag className="mr-2 h-3 w-3" />
+                      View all available coupons
+                    </Button>
+                  )}
+                </div>
+
                 <Button
                   type="submit"
-                  className="w-full gap-2"
+                  className="mt-2 w-full gap-2"
                   disabled={isProcessing}
                 >
                   {isProcessing ? (
@@ -461,7 +589,7 @@ export function CheckoutPage() {
                   ) : (
                     <>
                       <CreditCard className="h-4 w-4" />
-                      Place Order & Pay ₹{total.toFixed(2)}
+                      Place Order & Pay ₹{finalTotal.toFixed(2)}
                     </>
                   )}
                 </Button>
@@ -479,6 +607,56 @@ export function CheckoutPage() {
           </div>
         </div>
       </form>
+
+      <Dialog open={isCouponsModalOpen} onOpenChange={setIsCouponsModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Available Coupons</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 flex max-h-[60vh] flex-col gap-3 overflow-y-auto pr-2">
+            {activeCoupons.map((coupon) => {
+              const isValidForCart =
+                !coupon.min_order_value || total >= coupon.min_order_value
+
+              return (
+                <div
+                  key={coupon.id}
+                  className={`flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors ${
+                    isValidForCart
+                      ? "border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/30"
+                      : "opacity-50 grayscale"
+                  }`}
+                  onClick={() => {
+                    if (isValidForCart) {
+                      handleApplyCoupon(coupon.code)
+                      setIsCouponsModalOpen(false)
+                    }
+                  }}
+                >
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2 font-bold">
+                      <Tag className="h-4 w-4 text-emerald-600" />
+                      {coupon.code}
+                    </div>
+                    {coupon.min_order_value && (
+                      <span className="text-xs text-muted-foreground">
+                        Min. order: ₹{coupon.min_order_value}
+                      </span>
+                    )}
+                  </div>
+                  <div className="font-bold text-emerald-600">
+                    {coupon.discount_type === "percentage"
+                      ? coupon.max_discount
+                        ? `Up to ₹${coupon.max_discount} OFF`
+                        : `${coupon.discount_value}% OFF`
+                      : `₹${coupon.discount_value} OFF`}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

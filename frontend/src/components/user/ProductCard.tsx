@@ -26,7 +26,10 @@ function getGradientFromName(name: string) {
   return colors[charSum % colors.length]
 }
 
-export function ProductCard({ product, hideActions = false }: Readonly<ProductCardProps>) {
+export function ProductCard({
+  product,
+  hideActions = false,
+}: Readonly<ProductCardProps>) {
   const gradientClass = getGradientFromName(product.name)
   const { cart, addToCart, updateQuantity } = useCart()
   const { isWishlisted, toggle } = useWishlist()
@@ -145,7 +148,9 @@ export function ProductCard({ product, hideActions = false }: Readonly<ProductCa
             onClick={handleCartClick}
           >
             <ShoppingCart className="mr-2 h-4 w-4" />
-            {isInCart ? `Added (${cartItem.quantity}) - Add More` : "Add to Cart"}
+            {isInCart
+              ? `Added (${cartItem.quantity}) - Add More`
+              : "Add to Cart"}
           </Button>
         </div>
       )}

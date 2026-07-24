@@ -170,8 +170,8 @@ export function AdminProductDetailPage() {
   const rating =
     reviews.length > 0
       ? (
-        reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
-      ).toFixed(1)
+          reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+        ).toFixed(1)
       : "0.0"
   const reviewsCount = reviews.length
 

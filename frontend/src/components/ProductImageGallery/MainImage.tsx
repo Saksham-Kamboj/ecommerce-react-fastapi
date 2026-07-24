@@ -37,7 +37,7 @@ export function MainImage({
     <div className="relative flex w-full max-w-2xl flex-col items-center">
       <div
         ref={containerRef}
-        className="relative flex aspect-[4/3] w-full cursor-crosshair items-center justify-center overflow-hidden rounded-2xl border bg-white p-4 shadow-sm"
+        className="relative flex aspect-[4/3] w-full cursor-crosshair items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm"
         onMouseEnter={() => setIsActive(true)}
         onMouseLeave={() => setIsActive(false)}
         onClick={onFullscreen}
@@ -53,7 +53,7 @@ export function MainImage({
           ref={imageRef}
           src={imageUrl}
           alt="Product"
-          className="h-full w-full object-contain"
+          className="h-full w-full rounded-lg object-contain"
           onLoad={() => setIsLoaded(true)}
           style={{ userSelect: "none" }}
           draggable={false}

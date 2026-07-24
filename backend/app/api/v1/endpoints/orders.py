@@ -13,6 +13,8 @@ from app.schemas.response import ApiResponse, PaginatedApiResponse, paginate
 from app.utils.email import send_order_placed_email, send_order_cancellation_email, send_order_status_update_email
 from app.crud.crud_notification import notification_crud
 from app.schemas.notification import NotificationCreate
+from app.crud.crud_coupon import coupon as coupon_crud
+from datetime import datetime, timezone
 
 router = APIRouter()
 
@@ -41,12 +43,27 @@ def place_order(
                 detail=f"Not enough stock for '{cart_item.product.name}'. Available: {cart_item.product.stock_quantity}",
             )
 
-    # Validate address
     address = address_crud.get(db, id=order_in.shipping_address_id)
     if not address or address.user_id != current_user.id:
         raise HTTPException(status_code=400, detail="Invalid shipping address")
 
-    return ApiResponse(message="Cart and address validated. Proceed to payment.")
+    if order_in.coupon_code:
+        coupon = coupon_crud.get_by_code(db, code=order_in.coupon_code)
+        if not coupon or not coupon.is_active:
+            raise HTTPException(status_code=400, detail="Invalid or inactive coupon code")
+        now = datetime.now(timezone.utc)
+        if coupon.valid_from and coupon.valid_from > now:
+            raise HTTPException(status_code=400, detail="Coupon is not valid yet")
+        if coupon.valid_until and coupon.valid_until < now:
+            raise HTTPException(status_code=400, detail="Coupon has expired")
+        if coupon.usage_limit and coupon.usage_count >= coupon.usage_limit:
+            raise HTTPException(status_code=400, detail="Coupon usage limit reached")
+        
+        total = sum(item.product.price * item.quantity for item in cart.items)
+        if coupon.min_order_value and total < float(coupon.min_order_value):
+            raise HTTPException(status_code=400, detail=f"Minimum order value of ₹{coupon.min_order_value} required")
+
+    return ApiResponse(message="Cart, address, and coupon validated. Proceed to payment.")
 
 
 @router.get("/", response_model=PaginatedApiResponse[OrderOut])

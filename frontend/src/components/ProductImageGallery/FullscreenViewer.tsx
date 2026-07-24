@@ -52,7 +52,7 @@ export function FullscreenViewer({
         variant="ghost"
         size="icon"
         onClick={onClose}
-        className="absolute right-6 top-6 z-50 rounded-full bg-white/10 text-white hover:bg-white/20"
+        className="absolute top-6 right-6 z-50 rounded-full bg-white/10 text-white hover:bg-white/20"
       >
         <X className="h-6 w-6" />
       </Button>

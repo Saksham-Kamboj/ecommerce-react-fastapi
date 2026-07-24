@@ -24,6 +24,11 @@ const AdminProductDetailPage = lazy(() =>
     default: m.AdminProductDetailPage,
   }))
 )
+const AdminCouponsPage = lazy(() =>
+  import("@/pages/admin/Coupons").then((m) => ({
+    default: m.AdminCouponsPage,
+  }))
+)
 
 export function AdminRoutes() {
   return (
@@ -90,6 +95,14 @@ export function AdminRoutes() {
           element={
             <Suspense fallback={<PageLoading />}>
               <AdminOrderDetailPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/coupons"
+          element={
+            <Suspense fallback={<PageLoading />}>
+              <AdminCouponsPage />
             </Suspense>
           }
         />

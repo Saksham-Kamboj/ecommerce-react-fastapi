@@ -23,6 +23,10 @@ class Order(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("users.id"), nullable=False, index=True)
     status: Mapped[str] = mapped_column(String(20), default=OrderStatus.pending, nullable=False)
     total_amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    
+    # Optional Coupon
+    coupon_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("coupons.id"), nullable=True, index=True)
+    discount_amount: Mapped[float] = mapped_column(Numeric(10, 2), default=0.0, nullable=False)
 
     # Shipping address snapshot at order time
     shipping_name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -43,6 +47,15 @@ class Order(Base):
     user = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
     payments = relationship("Payment", back_populates="order", cascade="all, delete-orphan", order_by="Payment.created_at.desc()")
+    coupon = relationship("Coupon")
+
+    @property
+    def subtotal_amount(self) -> float:
+        return float(self.total_amount) + float(self.discount_amount)
+
+    @property
+    def coupon_code(self) -> str | None:
+        return self.coupon.code if self.coupon else None
 
 
 class OrderItem(Base):
